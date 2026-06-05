@@ -10,6 +10,18 @@
 
 **114 long-horizon, real-world tasks** across 8 work domains, where every task requires the agent to **interleave GUI clicks with shell/code** in one trajectory. Each task is scored by a **trajectory-aware Agent-as-Judge** that reads the chat trace + deliverables and emits per-clause evidence — much harder to spoof than file-existence checks.
 
+## 🎬 Demo
+
+<p align="center">
+  <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">
+    <img src="https://weavebench.github.io/static/images/casestudy_3panel.png" width="80%" alt="Click to watch: an agent managing a RabbitMQ dead-letter-queue topology end-to-end" />
+  </a>
+</p>
+
+<p align="center">
+  <em>▶ <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4"><b>Watch the demo (RabbitMQ DLQ topology, OPS domain · 110 s)</b></a> · or browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
+</p>
+
 ## Headline results (from the paper)
 
 | Backbone × harness | PassRate ↑ |
