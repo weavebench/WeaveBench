@@ -37,18 +37,6 @@
 
 Full per-domain breakdowns + cross-harness sweep in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
 
-## How WeaveBench differs from related benchmarks
-
-| | Tasks | Modality | Judge | Horizon |
-|---|---|---|---|---|
-| **WeaveBench** | 114 | **hybrid GUI + CLI + code** | trajectory-aware Agent-as-Judge | long (∼200 turns) |
-| OSWorld | 369 | GUI-only desktop | per-task file/state checker | medium |
-| WebArena | 812 | GUI-only browser | URL/DOM-state checker | short |
-| SWE-bench Verified | 500 | code-only | pytest pass/fail | short |
-| GAIA | 466 | open-ended retrieval + tools | string match | short |
-
-The combination of (a) GUI **and** CLI required for the same task, (b) a long-horizon multi-deliverable contract, and (c) a judge that audits the *process* not just the artifact, is what's new.
-
 ## Try it in 30 seconds (no VM, no API key)
 
 Curious before you commit to the full setup? Install + run the offline demo:
@@ -153,37 +141,13 @@ results/run/<mode>/<model>/<DOMAIN>/<task>/
 
 Scoring runs automatically — every task is judged by a separate OpenClaw on the host that reads the deliverables + chat trace. See [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md) for the one-time host-side setup.
 
-## Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| Download interrupted mid-way (network drop, ctrl-C) | Just re-run `bash scripts/setup.sh` — `huggingface_hub` auto-resumes partial downloads, and `weavebench-download-judge` is idempotent (won't clobber edited configs unless `--force`). |
-| Want to start completely over | `rm -rf ./cache ~/judge_agent_test ./results` then re-run setup. |
-| `[error] openclaw bin not found` | The judge's `openclaw` CLI isn't on PATH. Run `npm install -g openclaw` (or `bash scripts/setup.sh`, which handles npm permissions), then `export AJ_OPENCLAW_BIN=$(command -v openclaw)`. |
-| HTTP 401 from OpenRouter | `OPENROUTER_API_KEY` is unset or wrong. Verify with `curl -s -H "Authorization: Bearer $OPENROUTER_API_KEY" https://openrouter.ai/api/v1/models | head`. |
-| HTTP 402 from OpenRouter | Out of credits. Add money to your OpenRouter account, or switch to a cheaper model (`--model openai/gpt-5.4-mini`). |
-| `npm install -g openclaw` → EACCES | `setup.sh` detects this and prints two A/B recovery options. Pick (A) per-user prefix or (B) sudo. |
-| Judge wrote `score.json` but values look random | Sanity-check the judge sees the real task .md: `cat ~/judge_agent_test/template_profile/openclaw.json | grep apiKey`. If you customised this file, re-run `weavebench-download-judge --force` to reset. |
-| Numbers don't match paper | First confirm `WEAVEBENCH_DATASET_REVISION` matches the SHA in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md), and that you're using the exact OpenRouter model snapshot ids listed there. OpenRouter aliases drift over time. |
-
 ## Reproducing paper numbers
 
 See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) for the pinned dataset revision, model snapshot ids, and per-table commands used in the paper.
 
-## Per-command CLI reference
-
-| Command | What it does |
-|---|---|
-| `weavebench-demo` | No-VM, no-API-key offline demo on a fixture (~1 s) |
-| `weavebench-quickstart` | Pre-flight check + downloads everything (calls the four below) |
-| `weavebench-download-dataset` | 114 task .md + 951 workspace assets (~207 MB) |
-| `weavebench-download-assets`  | Per-harness runtime tarballs (~72–514 MB each, ~852 MB total) |
-| `weavebench-download-vm`      | Ubuntu qcow2 VM image (28.46 GB; paper-canonical v3_eyeson_apps) |
-| `weavebench-download-judge`   | Host-side OpenClaw judge profile + workspace template (~7 KB) |
-| `weavebench-run`              | Run one task or a full sweep |
-
 ## More
 
+- OSWorld hybrid-scoring experiment (CLI agent vs vision, native + agent-as-judge): [`experiments/osworld_hybrid/`](./experiments/osworld_hybrid)
 - Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
 - Agent-as-Judge setup: [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md)
 - Reproducing paper numbers: [`docs/REPRODUCE.md`](./docs/REPRODUCE.md)
