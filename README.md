@@ -3,6 +3,7 @@
 > **WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces** — paper code release.
 
 [![CI](https://github.com/weavebench/WeaveBench/actions/workflows/ci.yml/badge.svg)](https://github.com/weavebench/WeaveBench/actions/workflows/ci.yml)
+[![arXiv](https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg)](https://arxiv.org/abs/2606.09426)
 [![Website](https://img.shields.io/badge/website-weavebench.github.io-blue)](https://weavebench.github.io)
 [![🤗 Dataset](https://img.shields.io/badge/🤗_dataset-wanlilll/WeaveBench-yellow)](https://huggingface.co/datasets/wanlilll/WeaveBench)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
@@ -159,9 +160,13 @@ See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) for the pinned dataset revision, 
 
 ```bibtex
 @article{li2026weavebench,
-  title  = {WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces},
-  author = {Li, Wanli and Zhou, Bowen and Yang, Yifan and Yu, Yunyao and Li, Dongsheng and Xu, Zhou and Shan, Caihua},
-  year   = {2026},
+  title         = {WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces},
+  author        = {Li, Wanli and Zhou, Bowen and Yu, Yunyao and Xu, Zhou and Yang, Yifan and Li, Dongsheng and Shan, Caihua},
+  year          = {2026},
+  eprint        = {2606.09426},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.AI},
+  url           = {https://arxiv.org/abs/2606.09426},
 }
 ```
 
