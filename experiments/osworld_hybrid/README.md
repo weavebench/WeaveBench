@@ -26,8 +26,7 @@ agent_judge/
 mm_agents/
   openclaw_agent.py       # CLI agent (openclaw runtime — needs the tarball, see below)
   gpt55_agent.py          # vision agent
-  gpt55_agent_fc.py       # vision agent, function-calling variant
-runners/                  # multi-env vision runners
+runners/                  # multi-env vision runner
 launchers/                # the exact commands used for the paper runs
 lib_run_single.py         # upstream OSWorld orchestrator (vision runners use it)
 ```
@@ -55,9 +54,8 @@ the top of each script for your setup.
 # CLI agent + hybrid scoring (the apples-to-apples paper run):
 bash launchers/run_osworld_gpt55_cli_fair.sh
 
-# Pure-vision baselines:
+# Pure-vision baseline:
 bash launchers/run_osworld_gpt55_cua.sh   # native CUA
-bash launchers/run_osworld_gpt55_fc.sh    # function-calling variant
 ```
 
 Or call the entrypoint directly:
