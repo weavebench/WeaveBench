@@ -457,6 +457,70 @@ def write_task_env_script(env, env_block: str, http_proxy: str = "") -> None:
                        "install -m 644 /tmp/_apt_no_proxy.conf "
                        "/etc/apt/apt.conf.d/99-no-proxy 2>/dev/null || true"])
 
+    _fix_google_chrome_apt_key(env, http_proxy=http_proxy)
+
+
+def _fix_google_chrome_apt_key(env, http_proxy: str = "",
+                               client_password: str = "password") -> None:
+    """Repair the stale Google Chrome apt signing key inside the VM.
+
+    The published Ubuntu.qcow2 ships
+    ``/etc/apt/sources.list.d/google-chrome.list`` pointing at
+    ``https://dl.google.com/linux/chrome/deb stable``, but Google has since
+    rotated its signing key. Every ``apt-get update`` then fails with
+    ``NO_PUBKEY FD533C07C264648F`` / ``repository ... is not signed``, and any
+    warmup running under ``set -e`` aborts there (reported for
+    ``DAV_task_10_polars_streamlit_xfilter``). Chrome is already pre-installed
+    in the image, so this online source is only needed for in-VM upgrades.
+
+    Strategy (idempotent, never fatal):
+
+    1. Fetch Google's current signing key into a dedicated keyring and rewrite
+       the ``.list`` with ``signed-by=`` (the modern, non-deprecated form).
+       Needs network — routed via ``http_proxy`` when set, since
+       ``dl.google.com`` is geo-blocked from some regions otherwise.
+    2. If the key refresh fails (offline / proxy down), disable the source so
+       ``apt-get update`` stops erroring on it.
+
+    A sentinel file makes re-entry on the same VM boot a no-op. All failures
+    are swallowed so this never blocks task startup.
+    """
+    proxy_export = (
+        f"export https_proxy='{http_proxy}' http_proxy='{http_proxy}'; "
+        if http_proxy else ""
+    )
+    script = (
+        "set -u\n"
+        "SENT=/tmp/_weavebench_chrome_key_fixed\n"
+        "[ -f \"$SENT\" ] && exit 0\n"
+        "LIST=/etc/apt/sources.list.d/google-chrome.list\n"
+        "[ -f \"$LIST\" ] || { touch \"$SENT\"; exit 0; }\n"
+        "KEYRING=/usr/share/keyrings/google-chrome.gpg\n"
+        f"{proxy_export}"
+        "if curl -fsSL --max-time 30 "
+        "https://dl.google.com/linux/linux_signing_key.pub "
+        "| gpg --dearmor -o \"$KEYRING\" 2>/dev/null && [ -s \"$KEYRING\" ]; then\n"
+        "  echo \"deb [arch=amd64 signed-by=$KEYRING] "
+        "https://dl.google.com/linux/chrome/deb/ stable main\" > \"$LIST\"\n"
+        "  echo weavebench-chrome-key-refreshed\n"
+        "else\n"
+        "  mv -f \"$LIST\" \"${LIST}.disabled\" 2>/dev/null || true\n"
+        "  echo weavebench-chrome-source-disabled\n"
+        "fi\n"
+        "touch \"$SENT\"\n"
+    )
+    # VM I/O is best-effort: a transport error here must never crash task
+    # startup (the in-VM step is already guarded by `|| true`).
+    try:
+        _vm_upload(env, script, "/tmp/_weavebench_fix_chrome_key.sh")
+        _vm_exec(env, ["bash", "-c",
+                       "echo '%s' | sudo -S -p '' bash "
+                       "/tmp/_weavebench_fix_chrome_key.sh 2>/dev/null || true"
+                       % client_password],
+                 timeout=60)
+    except Exception as exc:  # noqa: BLE001 — never block startup on this fix
+        logger.warning("google-chrome apt-key fix skipped (%s)", exc)
+
 
 def _inject_warmup_cache(env, client_password: str = "password") -> None:
     """Idempotently upload + unpack host-side apt/pip/npm cache into VM.
