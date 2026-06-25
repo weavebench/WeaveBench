@@ -74,7 +74,18 @@ CACHE_DIR="${CACHE_DIR:-${REPO_ROOT}/cache/runtime_assets}"
 CLIENT_PASSWORD="${CLIENT_PASSWORD:-password}"
 
 # ---- resolve source qcow2 --------------------------------------------------
-SRC_QCOW="${SRC_QCOW:-${OSWORLD_LOCAL_QCOW2_PATH:-${REPO_ROOT}/docker_vm_data/Ubuntu.qcow2}}"
+# Resolution order: explicit $SRC_QCOW -> $OSWORLD_LOCAL_QCOW2_PATH ->
+# cache/vm/Ubuntu.qcow2 (where scripts/setup.sh downloads it) ->
+# docker_vm_data/Ubuntu.qcow2 (legacy location).
+if [ -n "${SRC_QCOW:-}" ]; then
+  :
+elif [ -n "${OSWORLD_LOCAL_QCOW2_PATH:-}" ]; then
+  SRC_QCOW="${OSWORLD_LOCAL_QCOW2_PATH}"
+elif [ -f "${REPO_ROOT}/cache/vm/Ubuntu.qcow2" ]; then
+  SRC_QCOW="${REPO_ROOT}/cache/vm/Ubuntu.qcow2"
+else
+  SRC_QCOW="${REPO_ROOT}/docker_vm_data/Ubuntu.qcow2"
+fi
 SRC_QCOW="$(readlink -f "${SRC_QCOW}" 2>/dev/null || echo "${SRC_QCOW}")"
 [ -f "${SRC_QCOW}" ] || { echo "[fatal] source qcow2 not found: ${SRC_QCOW}"; exit 1; }
 
@@ -294,6 +305,23 @@ if [ "${BOOT_OK}" != "1" ]; then
   exit 1
 fi
 
+# ---- Step 3b: bake the repo's in-VM Flask server into the image ------------
+# The VM's control server (/home/user/server/main.py) is part of the qcow2,
+# NOT uploaded at runtime — so a fix to weavebench/desktop_env/server/main.py
+# never reaches an already-built image unless we write it in here. The key fix
+# is threaded=True (the stock image runs single-threaded, so a large
+# /setup/upload blocks every other request and the task appears to hang).
+# We upload the repo copy (multipart, no shell escaping) and mv it into place;
+# on next boot the server starts threaded. The repo file is the same 26-route
+# server with only the app.run line changed, so a whole-file replace is safe.
+REPO_SERVER="${REPO_ROOT}/weavebench/desktop_env/server/main.py"
+if [ -f "${REPO_SERVER}" ] && grep -q "threaded=True" "${REPO_SERVER}"; then
+  echo "[bake] baking threaded Flask server into the image (anti-hang)..."
+  BAKE_SRV="${SRV}" _vm upload "${REPO_SERVER}" /tmp/wb_server_main.py
+  BAKE_SRV="${SRV}" _vm exec 'test -f /home/user/server/main.py && { sudo cp /home/user/server/main.py /home/user/server/main.py.prebake 2>/dev/null || true; sudo cp /tmp/wb_server_main.py /home/user/server/main.py && sudo chown user:user /home/user/server/main.py && echo SERVER_PATCHED; grep -n "app.run" /home/user/server/main.py; } || echo "WARN: /home/user/server/main.py not found, skipped"' 60 \
+    || echo "[bake] WARN: Flask server bake failed (continuing; client-side retry still mitigates)"
+fi
+
 # ---- Step 4: shut down so QEMU flushes the qcow2 ---------------------------
 # The container's PID 1 is `exec qemu-system-x86_64` (via tini). `docker stop`
 # sends SIGTERM → tini → qemu; qemu's block layer flushes and closes the qcow2
@@ -369,7 +397,14 @@ BAKE_OK=1
 
 # ---- Step 6: optional promote ----------------------------------------------
 if [ "${PROMOTE:-0}" = "1" ]; then
-  LINK="${REPO_ROOT}/docker_vm_data/Ubuntu.qcow2"
+  # Repoint the canonical image the runtime boots from. Prefer cache/vm
+  # (scripts/setup.sh's download target) when it exists, else docker_vm_data.
+  if [ -e "${REPO_ROOT}/cache/vm/Ubuntu.qcow2" ] || [ -d "${REPO_ROOT}/cache/vm" ]; then
+    LINK="${REPO_ROOT}/cache/vm/Ubuntu.qcow2"
+  else
+    LINK="${REPO_ROOT}/docker_vm_data/Ubuntu.qcow2"
+  fi
+  mkdir -p "$(dirname "${LINK}")"
   if [ -L "${LINK}" ] || [ -f "${LINK}" ]; then
     BACKUP="${LINK}.prebake_${DATESTAMP}"
     mv "${LINK}" "${BACKUP}"
@@ -381,5 +416,5 @@ if [ "${PROMOTE:-0}" = "1" ]; then
 else
   echo "To use it, point the runtime at the baked image, e.g.:"
   echo "  export OSWORLD_LOCAL_QCOW2_PATH=${DST_QCOW}"
-  echo "  # or re-run with PROMOTE=1 to swap docker_vm_data/Ubuntu.qcow2 automatically."
+  echo "  # or re-run with PROMOTE=1 to repoint the default Ubuntu.qcow2 automatically."
 fi

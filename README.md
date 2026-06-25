@@ -54,12 +54,15 @@ This prints a real `score.json` from a paper-canonical Claude Opus 4.7 attempt a
 
 | What | Why |
 |---|---|
-| Linux host with **KVM** + **Docker** (≥ 8 CPU, ≥ 32 GB RAM, ≥ 150 GB free disk) | Every task spins up an Ubuntu VM (OSWorld-derived) for the agent to act in |
+| Linux host with **KVM** + **Docker** (≥ 8 CPU, ≥ 32 GB RAM, ≥ 150 GB free disk) | Every task spins up an Ubuntu VM (OSWorld-derived) for the agent to act in. The GUI provider runs QEMU **inside** the `happysixd/osworld-docker` container, so the host needs only Docker + `/dev/kvm` — **no host `qemu-system-x86_64` install required.** |
 | Python ≥ 3.10.12, Node ≥ 22 | Node powers the host-side OpenClaw judge (`npm install -g openclaw`) |
 | **OpenRouter API key** | Used by both the agent and the trajectory-aware judge — both default to `openai/gpt-5.5`. Pay-as-you-go. `export OPENROUTER_API_KEY=...` |
 
 > 🇨🇳 **Users in China**: `export HF_ENDPOINT=https://hf-mirror.com` — all `weavebench-download-*` commands honor it automatically.
 > Optionally `export HF_TOKEN=hf_...` if you have an account and want higher HF rate limits (not required — dataset is public).
+>
+> - **Proxy + mirror don't mix.** hf-mirror.com is reachable directly inside China — do **not** route it through an HTTP proxy (a proxy can rewrite the request and break downloads). If you use a proxy to reach the real `huggingface.co`, leave `HF_ENDPOINT` unset instead.
+> - **If a mirror rate-limits you (HTTP 429)** mid-download, lower the parallelism with `weavebench-download-dataset --max-workers 2` (or `export WEAVEBENCH_HF_MAX_WORKERS=2`). The download is resumable — just re-run the command and already-fetched files are skipped.
 
 ## Resource budget (read before you commit)
 
@@ -87,9 +90,27 @@ bash scripts/setup.sh                          # installs + downloads dataset + 
 
 `scripts/setup.sh` runs prereq checks → `pip install -e .` → `npm install -g openclaw` → `weavebench-download-{dataset,assets,judge,vm}` and prints the next command. Pass `--skip-vm` if you already have a qcow2 (you'll need to `export OSWORLD_LOCAL_QCOW2_PATH=...`).
 
+## Bake the harness into the qcow2 (recommended right after setup)
+
+Without baking, the runner uploads the ~491 MB OpenClaw runtime into the VM and installs it on the first task of **every VM boot** — a ~3–5 min tax you pay again and again. Bake it into the qcow2 **once**, right after the download finishes, and every run boots with OpenClaw already present (the install becomes a no-op):
+
+```bash
+# One-time, ~25 min. STAGE_DIR should be a fast local disk (the bake reads+writes
+# the 28 GB image throughout). PROMOTE=1 makes the baked image the default so you
+# don't have to set OSWORLD_LOCAL_QCOW2_PATH yourself.
+STAGE_DIR=/path/to/ssd PROMOTE=1 \
+  scripts/bake_harness_into_qcow2.sh openclaw
+```
+
+The bake boots one isolated VM, runs the *same* bootstrap the runtime uses (zero drift), graceful-shuts-down so QEMU flushes the install back into the qcow2, then re-boots read-only to verify. After it succeeds, runs print `Openclaw already bootstrapped in VM` and skip the upload. Only `openclaw` is wired up today; the other three harnesses are stubbed with a clear "not implemented yet" message.
+
+> Prefer not to bake? Skip this section — runs still work, they just re-install OpenClaw on each VM's first task.
+
 ## Run
 
 ```bash
+# If you baked with PROMOTE=1, the default image already has OpenClaw and you can
+# skip this export. Otherwise point at your qcow2 (baked or plain):
 export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
 
 # Smoke test: one WEB task (note the trailing _ in --task_filter — a bare

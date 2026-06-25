@@ -312,6 +312,22 @@ SUDO rm -f  /usr/local/bin/use_gui.py /usr/local/bin/use_gui || true
 #    which gpt-5-class model's safety filter currently flags as "I cannot assist").
 SUDO bash -c 'echo "user ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/99-openclaw-user; chmod 440 /etc/sudoers.d/99-openclaw-user'
 
+# 8) Provide `chromium` / `chromium-browser` as symlinks to the chrome the
+#    image already ships. Several WEB task warmups probe `which chromium` and,
+#    if missing, fall back to `apt-get install chromium` — which on Ubuntu 22.04
+#    is a transitional package that triggers a `snap install chromium`. Behind a
+#    restricted network the snap download hangs and the whole task stalls. The
+#    image already has google-chrome, so we alias to it (only when chromium is
+#    absent), making that warmup branch a no-op. Idempotent.
+if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/null 2>&1; then
+  CHROME_BIN="$(command -v google-chrome || command -v google-chrome-stable || true)"
+  if [ -n "$CHROME_BIN" ]; then
+    SUDO ln -sf "$CHROME_BIN" /usr/local/bin/chromium
+    SUDO ln -sf "$CHROME_BIN" /usr/local/bin/chromium-browser
+    echo "Aliased chromium/chromium-browser -> $CHROME_BIN"
+  fi
+fi
+
 touch /home/user/.openclaw_bootstrap.done
 echo "BOOTSTRAP_DONE"
 """
