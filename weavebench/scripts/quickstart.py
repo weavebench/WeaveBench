@@ -57,8 +57,15 @@ def _check_system_prereqs() -> list[str]:
     missing: list[str] = []
     if not shutil.which("docker"):
         missing.append("docker  (apt install docker.io / docker.com)")
+    # qemu-system-x86_64 is NOT a hard prerequisite: the default docker GUI
+    # provider boots the qcow2 inside the happysixd/osworld-docker container,
+    # which ships its own QEMU — the host needs only docker + /dev/kvm. A host
+    # qemu is only needed if you bypass docker and run QEMU directly, so we just
+    # inform rather than fail (matches scripts/setup.sh).
     if not shutil.which("qemu-system-x86_64"):
-        missing.append("qemu-system-x86_64  (apt install qemu-system-x86)")
+        print("  [info]    qemu-system-x86_64 not on host — fine for the docker "
+              "GUI provider (the container provides QEMU); only needed if you run "
+              "QEMU directly outside docker.")
     ok, ver = _check_node_ge_22()
     if not ok:
         missing.append(f"node 22+  ({ver})")
@@ -128,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
             print("  See README §Requirements for install hints.")
             return 1
     else:
-        print("       ✓ docker, qemu, node 22+, npm all present")
+        print("       ✓ docker, node 22+, npm all present")
     if not shutil.which("openclaw"):
         print("       ⚠  OpenClaw CLI not on PATH — run `npm install -g openclaw` "
               "before the first weavebench-run (or use scripts/setup.sh which "
