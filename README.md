@@ -123,6 +123,13 @@ weavebench-run \
     --task_filter task_1_ \
     --result_dir ./results/smoke
 
+# Heads-up: `--task_filter` (run time) is a SUBSTRING match on task ids, but the
+# downloader's `--include` is an HF PATH GLOB. They are not the same syntax. If
+# you only want to download a subset, use the full path glob, e.g.
+#   weavebench-download-dataset --include 'tasks/WEB/WEB_task_1_*'
+# A bare 'task_1_' as --include matches nothing (files are named <DOMAIN>_task_*);
+# the downloader now warns instead of silently reporting success.
+
 # Full 114-task sweep (multi-hour; tune --num_envs to your host)
 weavebench-run \
     --harness openclaw \

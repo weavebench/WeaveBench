@@ -43,8 +43,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dest", default="./cache",
                     help="Local cache root (default ./cache). Tasks land in <dest>/tasks/.")
     ap.add_argument("--include", default="tasks/*",
-                    help="Glob pattern to filter what to download "
-                         "(default 'tasks/*' — all 8 domains).")
+                    help="HF glob pattern (matched against full repo paths) for "
+                         "what to download. Default 'tasks/*' = all 8 domains. "
+                         "NOTE: this is a path glob, NOT the run-time --task_filter "
+                         "substring. To scope to one domain use 'tasks/WEB/*'; for "
+                         "one task use the FULL filename prefix, e.g. "
+                         "'tasks/WEB/WEB_task_1_*' (the files are named "
+                         "<DOMAIN>_task_<n>_*, so a bare 'task_1_' matches nothing).")
     ap.add_argument("--token", default=None,
                     help="HF token. Falls back to $HF_TOKEN / $HUGGINGFACE_TOKEN. "
                          "Optional — only needed for higher HF rate limits.")
@@ -120,7 +125,29 @@ def main(argv: list[str] | None = None) -> int:
                   f"resuming in {backoff}s...", file=sys.stderr)
             time.sleep(backoff)
 
-    print(f"[done] tasks staged under {local}/tasks/")
+    # Guard against a silent no-op: snapshot_download succeeds and returns the
+    # local dir even when allow_patterns matches nothing on the Hub (e.g. a user
+    # passed the run-time --task_filter value like 'task_1_' as --include, which
+    # is not a valid path glob). Without this, a 0-file download still printed
+    # [done] and the user only discovered the empty cache at run time. We count
+    # the files THIS --include actually matched on disk, so it's correct even if
+    # a previous full download already populated other parts of the cache.
+    import fnmatch
+    matched = [
+        p for p in dest.rglob("*")
+        if p.is_file() and fnmatch.fnmatch(str(p.relative_to(dest)), args.include)
+    ]
+    if not matched:
+        print(f"[warning] --include '{args.include}' matched 0 files.\n"
+              f"          --include is an HF PATH glob, not the run-time "
+              f"--task_filter substring.\n"
+              f"          For all tasks use 'tasks/*'; for one domain 'tasks/WEB/*'; "
+              f"for one task 'tasks/WEB/WEB_task_1_*'.",
+              file=sys.stderr)
+        return 5
+
+    print(f"[done] tasks staged under {local}/tasks/ "
+          f"({len(matched)} file(s) matched '{args.include}')")
     print(f"       use --tasks_root {dest / 'tasks'} with weavebench-run")
     return 0
 
