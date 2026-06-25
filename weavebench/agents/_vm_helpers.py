@@ -25,11 +25,36 @@ def _vm_url(env, path: str) -> str:
     return f"http://{env.vm_ip}:{env.server_port}{path}"
 
 
-def _vm_exec(env, cmd: list[str], shell: bool = False, timeout: int = 120) -> dict:
-    r = requests.post(_vm_url(env, "/setup/execute"),
-                      json={"command": cmd, "shell": shell}, timeout=timeout)
-    r.raise_for_status()
-    return r.json()
+def _vm_exec(env, cmd: list[str], shell: bool = False, timeout: int = 120,
+             retries: int = 4) -> dict:
+    """Execute a command in the VM, retrying transient Flask failures.
+
+    The in-VM Flask shim can transiently drop a connection or 5xx under
+    concurrent load (e.g. while a large /setup/upload is in flight). Without
+    retry, a single such blip raises and aborts the whole task — the dominant
+    cause of mid-run hangs. We retry connection errors and 5xx with
+    exponential backoff; 4xx (a real client error) is raised immediately.
+    """
+    last_err: Exception | None = None
+    for attempt in range(retries):
+        try:
+            r = requests.post(_vm_url(env, "/setup/execute"),
+                              json={"command": cmd, "shell": shell}, timeout=timeout)
+            r.raise_for_status()
+            return r.json()
+        except requests.HTTPError as e:
+            status = getattr(e.response, "status_code", None)
+            if status not in (500, 502, 503, 504):
+                raise
+            last_err = e
+        except (requests.ConnectionError, requests.Timeout) as e:
+            last_err = e
+        if attempt < retries - 1:
+            backoff = 2 ** attempt
+            logger.warning("_vm_exec transient failure (attempt %d/%d): %s; "
+                           "retrying in %ds", attempt + 1, retries, last_err, backoff)
+            time.sleep(backoff)
+    raise last_err  # type: ignore[misc]
 
 
 def _vm_launch(env, cmd: list[str], shell: bool = False) -> str:

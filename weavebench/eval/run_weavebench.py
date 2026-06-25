@@ -134,8 +134,8 @@ def main(argv: list[str] | None = None) -> int:
     passthrough = ap.add_argument_group("runner options")
     passthrough.add_argument("--num_envs", type=int, default=1,
                              help="Parallel VM workers (default 1).")
-    passthrough.add_argument("--max_steps", type=int, default=200,
-                             help="Max agent turns per task (default 200).")
+    passthrough.add_argument("--max_steps", type=int, default=300,
+                             help="Max agent turns per task (default 300).")
     passthrough.add_argument("--mode", choices=["gui", "cli", "both"], default="gui",
                              help="gui (default, needs X server) or cli (headless docker_lite).")
     passthrough.add_argument("--result_dir", required=True)

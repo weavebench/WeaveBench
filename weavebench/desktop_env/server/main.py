@@ -1800,4 +1800,10 @@ def run_bash_script():
             pass
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0")
+    # threaded=True: the server must answer a screenshot/execute request
+    # concurrently with an in-flight multi-hundred-MB /setup/upload. The Flask
+    # default is single-threaded, which serializes every request behind the
+    # upload and presents as the whole task hanging. debug=True is off in
+    # production: the Werkzeug reloader forks a child and is not meant for
+    # long-lived unattended runs.
+    app.run(host="0.0.0.0", threaded=True)

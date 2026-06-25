@@ -51,11 +51,18 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--revision", default=os.environ.get("WEAVEBENCH_DATASET_REVISION"),
                     help="Pin to a specific commit SHA. Falls back to "
                          "$WEAVEBENCH_DATASET_REVISION. Default: latest on main.")
+    ap.add_argument("--max-workers", type=int,
+                    default=int(os.environ.get("WEAVEBENCH_HF_MAX_WORKERS", "4")),
+                    help="Parallel download workers (default 4, or "
+                         "$WEAVEBENCH_HF_MAX_WORKERS). Lower it (e.g. 2) if a "
+                         "mirror like hf-mirror.com rate-limits you with HTTP 429.")
     args = ap.parse_args(argv)
 
     try:
         from huggingface_hub import snapshot_download
-        from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
+        from huggingface_hub.utils import (
+            GatedRepoError, RepositoryNotFoundError, HfHubHTTPError,
+        )
     except ImportError:
         print("[error] pip install huggingface_hub", file=sys.stderr)
         return 1
@@ -69,25 +76,49 @@ def main(argv: list[str] | None = None) -> int:
     dest.mkdir(parents=True, exist_ok=True)
 
     print(f"[fetch] {_HF_REPO} :: {args.include}"
-          + (f" @ {args.revision[:8]}" if args.revision else ""))
-    try:
-        local = snapshot_download(
-            repo_id=_HF_REPO,
-            repo_type="dataset",
-            allow_patterns=[args.include],
-            local_dir=str(dest),
-            token=token,
-            revision=args.revision,
-        )
-    except GatedRepoError:
-        print(f"[error] {_HF_REPO} is gated — request access at "
-              f"https://huggingface.co/datasets/{_HF_REPO}", file=sys.stderr)
-        return 2
-    except RepositoryNotFoundError:
-        print(f"[error] {_HF_REPO} not found OR your token doesn't have access. "
-              "If the dataset is private, ensure your token can read it.",
-              file=sys.stderr)
-        return 3
+          + (f" @ {args.revision[:8]}" if args.revision else "")
+          + f"  (max_workers={args.max_workers})")
+    # snapshot_download is resumable: already-downloaded files are skipped on
+    # retry. Mirrors (notably hf-mirror.com) rate-limit large fan-outs with
+    # 429, so we retry the whole call a few times with backoff — each retry
+    # only re-fetches what didn't land yet.
+    import time
+    local = None
+    for attempt in range(1, 6):
+        try:
+            local = snapshot_download(
+                repo_id=_HF_REPO,
+                repo_type="dataset",
+                allow_patterns=[args.include],
+                local_dir=str(dest),
+                token=token,
+                revision=args.revision,
+                max_workers=args.max_workers,
+            )
+            break
+        except GatedRepoError:
+            print(f"[error] {_HF_REPO} is gated — request access at "
+                  f"https://huggingface.co/datasets/{_HF_REPO}", file=sys.stderr)
+            return 2
+        except RepositoryNotFoundError:
+            print(f"[error] {_HF_REPO} not found OR your token doesn't have access. "
+                  "If the dataset is private, ensure your token can read it.",
+                  file=sys.stderr)
+            return 3
+        except HfHubHTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            if status != 429 or attempt == 5:
+                if status == 429:
+                    print(f"[error] {_HF_REPO}: still rate-limited (429) after "
+                          f"{attempt} attempts. Re-run the command to resume "
+                          f"(already-downloaded files are skipped), or lower "
+                          f"--max-workers.", file=sys.stderr)
+                    return 4
+                raise
+            backoff = 5 * attempt
+            print(f"[retry] HTTP 429 from the Hub/mirror (attempt {attempt}/5); "
+                  f"resuming in {backoff}s...", file=sys.stderr)
+            time.sleep(backoff)
 
     print(f"[done] tasks staged under {local}/tasks/")
     print(f"       use --tasks_root {dest / 'tasks'} with weavebench-run")

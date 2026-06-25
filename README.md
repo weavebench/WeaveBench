@@ -71,6 +71,8 @@ Wall time and OpenRouter cost per task depend heavily on your VM host, network, 
 
 If you already have an OSWorld-compatible qcow2 locally, use `bash scripts/setup.sh --skip-vm` and save the 28 GB.
 
+> **Note on docker images.** `OSWORLD_LOCAL_QCOW2_PATH` only points the runner at an existing VM *disk* — it does **not** skip the docker *engine* image. The GUI provider boots the qcow2 inside `happysixd/osworld-docker` (and the `--mode cli` ablation uses `weavebench-ubuntu:v1.2`); these are pulled once. `scripts/setup.sh` pre-pulls the GUI engine image for you, so the first task run doesn't stall on a surprise pull.
+
 ## One-command setup
 
 ```bash

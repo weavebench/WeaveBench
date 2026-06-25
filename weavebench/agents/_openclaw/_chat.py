@@ -325,11 +325,18 @@ def _assets_dir() -> Path:
     env_dir = os.environ.get("WEAVEBENCH_ASSETS_DIR")
     if env_dir:
         return Path(env_dir).expanduser().resolve()
-    repo_root = Path(__file__).resolve().parent.parent.parent
+    # __file__ = <repo>/weavebench/agents/_openclaw/_chat.py
+    #   parent          -> _openclaw/
+    #   parent.parent    -> agents/
+    #   parent.parent.parent       -> weavebench/  (the PACKAGE dir)
+    #   parent.parent.parent.parent -> <repo>      (where ./cache lives)
+    pkg_dir = Path(__file__).resolve().parent.parent.parent  # weavebench/
+    repo_root = pkg_dir.parent                               # <repo>/
     cache = repo_root / "cache" / "runtime_assets"
     if (cache / "openclaw.tar.gz").exists():
         return cache
-    return Path(__file__).resolve().parent.parent.parent / "assets"
+    # Fallback: the in-repo assets/ dir (ships source patches, not the tarball).
+    return pkg_dir / "assets"
 
 WEAVEBENCH_ASSETS_DIR = _assets_dir()
 _OPENCLAW_TARBALL_NFS = WEAVEBENCH_ASSETS_DIR / "openclaw.tar.gz"
@@ -728,8 +735,14 @@ class OpenClawChatAgent:
 
         logger.info("Bootstrapping openclaw inside VM (one-time, ~3-5 min)...")
         if not OPENCLAW_TARBALL.exists():
-            raise RuntimeError(f"Missing openclaw tarball at {OPENCLAW_TARBALL}. "
-                               f"Extract it from weavebench-ubuntu image first.")
+            repo_root = Path(__file__).resolve().parent.parent.parent.parent
+            raise RuntimeError(
+                f"openclaw runtime tarball not found at {OPENCLAW_TARBALL}.\n"
+                f"Expected it under {repo_root / 'cache' / 'runtime_assets'}/openclaw.tar.gz.\n"
+                f"Fix: run `weavebench-download-assets --harness openclaw` "
+                f"(or `bash scripts/setup.sh`) to download it, or set "
+                f"$WEAVEBENCH_ASSETS_DIR to the directory that contains openclaw.tar.gz."
+            )
         logger.info("Uploading openclaw tarball (%.1f MB)...",
                     OPENCLAW_TARBALL.stat().st_size / (1024 * 1024))
         _vm_upload_bytes(env, OPENCLAW_TARBALL, "/tmp/openclaw.tar.gz")

@@ -338,13 +338,17 @@ def _assets_dir() -> Path:
     env_dir = os.environ.get("WEAVEBENCH_ASSETS_DIR")
     if env_dir:
         return Path(env_dir).expanduser().resolve()
-    repo_root = Path(__file__).resolve().parent.parent.parent
+    # __file__ is <repo>/weavebench/agents/_openclaw/_responses.py — ./cache is
+    # at the repo root, FOUR parents up. The third parent is the weavebench/
+    # package dir, not the repo root.
+    pkg_dir = Path(__file__).resolve().parent.parent.parent  # weavebench/
+    repo_root = pkg_dir.parent                               # <repo>/
     # User-installed cache (created by scripts/download_assets.sh).
     cache = repo_root / "cache" / "runtime_assets"
     if (cache / "openclaw.tar.gz").exists():
         return cache
     # In-repo non-binary assets (TS plugin + JS patches + MCP server).
-    return Path(__file__).resolve().parent.parent.parent / "assets"
+    return pkg_dir / "assets"
 
 WEAVEBENCH_ASSETS_DIR = _assets_dir()
 _OPENCLAW_TARBALL_NFS = WEAVEBENCH_ASSETS_DIR / "openclaw.tar.gz"

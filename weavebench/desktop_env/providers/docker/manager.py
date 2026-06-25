@@ -135,17 +135,27 @@ class DockerVMManager(VMManager):
         else:
             vm_name = DOWNLOADED_FILE_NAME
 
-        if not os.path.exists(os.path.join(VMS_DIR, vm_name)):
-            _download_vm(VMS_DIR)
         nfs_path = os.path.join(VMS_DIR, vm_name)
 
-        # Per-host local cache override: avoids reading 28 GB from NFS at every
-        # cold boot. See local_vm_resolver.py for resolution order.
+        # Resolve a per-host local override (e.g. $OSWORLD_LOCAL_QCOW2_PATH or the
+        # IP map) BEFORE deciding to download. Otherwise a user who set
+        # OSWORLD_LOCAL_QCOW2_PATH to an existing qcow2 would still trigger an
+        # 11.4 GB download of the default image just because VMS_DIR is empty —
+        # only to then ignore it and boot from their local path. resolve returns
+        # `nfs_path` unchanged when no valid override exists.
         try:
             from weavebench.desktop_env.providers.docker.local_vm_resolver import (
                 resolve_qcow2_path,
             )
-            return resolve_qcow2_path(nfs_path)
+            resolved = resolve_qcow2_path(nfs_path)
         except Exception as exc:  # noqa: BLE001 — never break VM boot on cache logic
             logger.warning("local_vm_resolver failed (%s); using NFS path", exc)
-            return nfs_path
+            resolved = nfs_path
+
+        # Only download the default image when the resolver did NOT find a usable
+        # local override AND the default location is empty.
+        if os.path.abspath(resolved) == os.path.abspath(nfs_path) \
+                and not os.path.exists(nfs_path):
+            _download_vm(VMS_DIR)
+
+        return resolved

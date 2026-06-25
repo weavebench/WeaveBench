@@ -108,9 +108,21 @@ need OPENROUTER_API_KEY  "https://openrouter.ai/keys"                  || errs=$
 have_cmd python3                                                       || errs=$((errs+1))
 have_python_pip                                                        || errs=$((errs+1))
 have_cmd docker                                                        || errs=$((errs+1))
-have_cmd qemu-system-x86_64                                            || errs=$((errs+1))
 have_node_ge_22                                                        || errs=$((errs+1))
 have_cmd npm                                                           || errs=$((errs+1))
+
+# qemu-system-x86_64 is OPTIONAL, not a hard prerequisite. The default GUI
+# provider boots the qcow2 inside the `happysixd/osworld-docker` container,
+# which ships its own QEMU — the host needs only docker + KVM. A host qemu is
+# only needed if you bypass docker and run QEMU directly. So we just inform,
+# never fail the preflight on it.
+if command -v qemu-system-x86_64 >/dev/null 2>&1; then
+  echo "  [ok]      qemu-system-x86_64 (host QEMU present)"
+else
+  echo "  [info]    qemu-system-x86_64 not on host — fine for the docker GUI provider"
+  echo "            (the happysixd/osworld-docker image provides QEMU); only needed"
+  echo "            if you run QEMU directly outside docker."
+fi
 
 if [ -n "${HF_TOKEN:-}" ]; then
   echo "  [info]    HF_TOKEN set (will use for higher HF rate limits)"
@@ -205,6 +217,27 @@ if [ $SKIP_VM -eq 0 ]; then
 else
   echo
   echo "[4/4] qcow2  SKIPPED (--skip-vm). Set OSWORLD_LOCAL_QCOW2_PATH to your existing qcow2."
+fi
+
+# ---------- docker engine image ----------
+# The qcow2 is only the VM *disk*. The GUI provider boots it inside the
+# `happysixd/osworld-docker` container (the QEMU engine), which docker would
+# otherwise pull lazily on the FIRST task run — slow, and a surprise after the
+# user thinks setup is done. Pre-pull it here so `OSWORLD_LOCAL_QCOW2_PATH`
+# users (who skip the 28 GB) still get a ready-to-run environment. Note:
+# setting OSWORLD_LOCAL_QCOW2_PATH only skips the disk download, NOT this engine
+# image — they are independent.
+section "Pre-pulling docker engine image (happysixd/osworld-docker)"
+if command -v docker >/dev/null 2>&1; then
+  if docker image inspect happysixd/osworld-docker >/dev/null 2>&1; then
+    echo "[ok] happysixd/osworld-docker already present locally"
+  else
+    echo "Pulling happysixd/osworld-docker (GUI VM engine)..."
+    docker pull happysixd/osworld-docker || \
+      echo "[warn] pull failed — it will be pulled on first task run instead."
+  fi
+else
+  echo "[skip] docker not found on PATH; the GUI provider needs it at run time."
 fi
 
 # ---------- next ----------
