@@ -58,23 +58,13 @@ This prints a real `score.json` from a paper-canonical Claude Opus 4.7 attempt a
 | Python ≥ 3.10.12, Node ≥ 22 | Node powers the host-side OpenClaw judge (`npm install -g openclaw`) |
 | **OpenRouter API key** | Used by both the agent and the trajectory-aware judge — both default to `openai/gpt-5.5`. Pay-as-you-go. `export OPENROUTER_API_KEY=...` |
 
-> 🇨🇳 **Users in China**: `export HF_ENDPOINT=https://hf-mirror.com` — all `weavebench-download-*` commands honor it automatically.
-> Optionally `export HF_TOKEN=hf_...` if you have an account and want higher HF rate limits (not required — dataset is public).
->
-> - **Proxy + mirror don't mix.** hf-mirror.com is reachable directly inside China — do **not** route it through an HTTP proxy (a proxy can rewrite the request and break downloads). If you use a proxy to reach the real `huggingface.co`, leave `HF_ENDPOINT` unset instead.
-> - **If a mirror rate-limits you (HTTP 429)** mid-download, lower the parallelism with `weavebench-download-dataset --max-workers 2` (or `export WEAVEBENCH_HF_MAX_WORKERS=2`). The download is resumable — just re-run the command and already-fetched files are skipped.
+> 🇨🇳 **Users in China**: `export HF_ENDPOINT=https://hf-mirror.com` (all `weavebench-download-*` honor it). hf-mirror is reachable directly — don't put it behind an HTTP proxy. On a 429 rate-limit, lower parallelism with `--max-workers 2` and re-run (downloads resume).
 
-## Resource budget (read before you commit)
+## Resource budget
 
-| Resource | Estimate |
-|---|---|
-| Disk for one-time setup | **~29.5 GB** (207 MB tasks + 852 MB runtime tarballs + 28.46 GB qcow2 + 7 KB judge template) |
+One-time setup is **~29.5 GB** (207 MB tasks + 852 MB runtime + 28.46 GB qcow2 + 7 KB judge template). Per-task wall time and OpenRouter cost vary with your host, model, and `--num_envs` — run one smoke task to calibrate before a full sweep. Already have an OSWorld qcow2? Use `bash scripts/setup.sh --skip-vm` and save 28 GB.
 
-Wall time and OpenRouter cost per task depend heavily on your VM host, network, chosen model, and how many parallel envs you run — `--num_envs 8` on a beefy host is roughly an order of magnitude faster than `--num_envs 1` on a laptop-class server. Run one smoke task first to calibrate before kicking off the full sweep.
-
-If you already have an OSWorld-compatible qcow2 locally, use `bash scripts/setup.sh --skip-vm` and save the 28 GB.
-
-> **Note on docker images.** `OSWORLD_LOCAL_QCOW2_PATH` only points the runner at an existing VM *disk* — it does **not** skip the docker *engine* image. The GUI provider boots the qcow2 inside `happysixd/osworld-docker` (and the `--mode cli` ablation uses `weavebench-ubuntu:v1.2`); these are pulled once. `scripts/setup.sh` pre-pulls the GUI engine image for you, so the first task run doesn't stall on a surprise pull.
+> `OSWORLD_LOCAL_QCOW2_PATH` skips the VM *disk* download, not the docker *engine* image (`happysixd/osworld-docker`). `setup.sh` pre-pulls that engine image so the first run doesn't stall.
 
 ## One-command setup
 
@@ -92,32 +82,37 @@ bash scripts/setup.sh                          # installs + downloads dataset + 
 
 ## Bake OpenClaw into the qcow2 (standard step before running)
 
-After setup, bake the harness into the image **once**. This is the normal path:
-without it, every VM boot re-uploads the ~491 MB OpenClaw runtime and installs it
-on that VM's first task (a ~3–5 min tax, paid again and again), whereas a baked
-image boots with OpenClaw already present so the install is a no-op.
+Bake the harness into the image **once** after setup. Otherwise every VM boot re-uploads the ~491 MB OpenClaw runtime and installs it on that VM's first task (~3–5 min each time); a baked image boots ready, install is a no-op.
 
 ```bash
-# One-time, ~25 min. STAGE_DIR should be a fast local disk (the bake reads+writes
-# the 28 GB image throughout). PROMOTE=1 makes the baked image the default so the
-# Run step below works without any extra env var.
+# One-time, ~25 min. STAGE_DIR = a fast local disk (the bake reads+writes the
+# 28 GB image). PROMOTE=1 makes the baked image the default (no env var to Run).
 STAGE_DIR=/path/to/ssd PROMOTE=1 \
   scripts/bake_harness_into_qcow2.sh openclaw
 ```
 
-The bake boots one isolated VM, runs the *same* bootstrap the runtime uses (zero drift), graceful-shuts-down so QEMU flushes the install back into the qcow2, then re-boots read-only to verify. After it succeeds, runs print `Openclaw already bootstrapped in VM` and skip the upload. Only `openclaw` is wired up today; the other three harnesses are stubbed with a clear "not implemented yet" message.
+The bake boots an isolated VM, runs the *same* bootstrap the runtime uses, flushes the install back into the qcow2, and re-boots read-only to verify. Only `openclaw` is wired up today.
 
-> In a hurry? You can skip baking and run straight away — it still works, it just re-installs OpenClaw on each VM's first task (slower). Baking is recommended for any real sweep.
+> In a hurry? Skip baking and run directly — it works, just re-installs OpenClaw on each VM's first task.
 
 ## Run
 
+Scoring runs a second OpenClaw (the judge) **on the host**, so point it at the
+judge template `setup.sh` installed (`setup.sh` also prints these three lines):
+
+```bash
+export AJ_OPENCLAW_BIN=$(command -v openclaw)
+export AJ_TEMPLATE_PROFILE=$HOME/judge_agent_test/template_profile
+export AJ_TEMPLATE_WORKSPACE=$HOME/judge_agent_test/template_workspace
+```
+
 ```bash
 # If you baked with PROMOTE=1 (the standard path), the default image already has
-# OpenClaw — skip this export. Only set it if you did NOT bake / not promote:
+# OpenClaw. Otherwise point at your qcow2:
 # export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
 
-# Smoke test: one WEB task (note the trailing _ in --task_filter — a bare
-# 'task_1' is a substring match and would also include task_10..task_19)
+# Smoke test: one WEB task (trailing _ matters — a bare 'task_1' also matches
+# task_10..task_19)
 weavebench-run \
     --harness openclaw \
     --model openai/gpt-5.5 \
@@ -125,13 +120,6 @@ weavebench-run \
     --domains WEB \
     --task_filter task_1_ \
     --result_dir ./results/smoke
-
-# Heads-up: `--task_filter` (run time) is a SUBSTRING match on task ids, but the
-# downloader's `--include` is an HF PATH GLOB. They are not the same syntax. If
-# you only want to download a subset, use the full path glob, e.g.
-#   weavebench-download-dataset --include 'tasks/WEB/WEB_task_1_*'
-# A bare 'task_1_' as --include matches nothing (files are named <DOMAIN>_task_*);
-# the downloader now warns instead of silently reporting success.
 
 # Full 114-task sweep (multi-hour; tune --num_envs to your host)
 weavebench-run \
@@ -142,7 +130,9 @@ weavebench-run \
     --result_dir ./results/run
 ```
 
-Swap `--harness` to `codex`, `claudecode`, or `hermes`. Swap `--model` to anything OpenRouter exposes (`anthropic/claude-opus-4.7`, `google/gemini-2.5-pro`, …).
+Swap `--harness` to `codex`, `claudecode`, or `hermes` (baking is openclaw-only; the others install per task). Swap `--model` to anything OpenRouter exposes (`anthropic/claude-opus-4.7`, `google/gemini-2.5-pro`, …).
+
+> `--task_filter` (run time) is a substring match on task ids; the downloader's `--include` is an HF path glob — not the same syntax. To download a subset use the full glob, e.g. `weavebench-download-dataset --include 'tasks/WEB/WEB_task_1_*'`.
 
 ### Optional env vars
 
