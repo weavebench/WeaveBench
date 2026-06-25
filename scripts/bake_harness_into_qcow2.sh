@@ -207,13 +207,25 @@ echo "==================================================="
 case "${HARNESS}" in
   openclaw)
     TARBALL="${CACHE_DIR}/openclaw.tar.gz"
-    PLUGIN_DIR="${CACHE_DIR}/computer_tool_plugin"
-    PATCH_DIR="${CACHE_DIR}/openclaw_patches"
+    # The plugin/patch SOURCE files are NOT in the HF tarball download — they
+    # ship in the repo's weavebench/assets/. Prefer cache (if a user populated
+    # it) but fall back to the in-repo dir so a fresh checkout bakes correctly.
+    INREPO_ASSETS="${REPO_ROOT}/weavebench/assets"
+    if [ -f "${CACHE_DIR}/computer_tool_plugin/openclaw.plugin.json" ]; then
+      PLUGIN_DIR="${CACHE_DIR}/computer_tool_plugin"
+    else
+      PLUGIN_DIR="${INREPO_ASSETS}/computer_tool_plugin"
+    fi
+    if [ -f "${CACHE_DIR}/openclaw_patches/openai-responses-shared.patched.js" ]; then
+      PATCH_DIR="${CACHE_DIR}/openclaw_patches"
+    else
+      PATCH_DIR="${INREPO_ASSETS}/openclaw_patches"
+    fi
     MARKER="/home/user/.openclaw_bootstrap.done"
 
     [ -f "${TARBALL}" ] || { echo "[fatal] missing ${TARBALL} — run scripts/download_assets.sh openclaw"; exit 1; }
-    [ -f "${PLUGIN_DIR}/openclaw.plugin.json" ] || { echo "[fatal] missing ${PLUGIN_DIR}/openclaw.plugin.json"; exit 1; }
-    [ -f "${PATCH_DIR}/openai-responses-shared.patched.js" ] || { echo "[fatal] missing openclaw patches in ${PATCH_DIR}"; exit 1; }
+    [ -f "${PLUGIN_DIR}/openclaw.plugin.json" ] || { echo "[fatal] missing computer_tool_plugin/openclaw.plugin.json (looked in cache and ${INREPO_ASSETS})"; exit 1; }
+    [ -f "${PATCH_DIR}/openai-responses-shared.patched.js" ] || { echo "[fatal] missing openclaw patches (looked in cache and ${INREPO_ASSETS})"; exit 1; }
 
     # Extract the EXACT BOOTSTRAP_SH the runtime uses — no copy/paste drift.
     BOOTSTRAP_SH="$(python3 - <<'PY'

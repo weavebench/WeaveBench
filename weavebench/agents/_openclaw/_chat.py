@@ -356,6 +356,28 @@ def _assets_dir() -> Path:
 
 WEAVEBENCH_ASSETS_DIR = _assets_dir()
 _OPENCLAW_TARBALL_NFS = WEAVEBENCH_ASSETS_DIR / "openclaw.tar.gz"
+# The in-repo assets/ dir always ships the non-tarball source files (the
+# computer-tool plugin + pi-ai patches) — they travel with the git package, not
+# with the HuggingFace tarball download. Keep a direct handle so bootstrap can
+# find them even when WEAVEBENCH_ASSETS_DIR resolves to cache/ (which only has
+# the tarball).
+_INREPO_ASSETS_DIR = Path(__file__).resolve().parent.parent.parent / "assets"
+
+
+def _resolve_asset_file(relpath: str) -> Path:
+    """Locate a non-tarball asset (plugin / patch) shipped with the package.
+
+    Prefer WEAVEBENCH_ASSETS_DIR (so an override or a fully-populated cache
+    wins), but fall back to the in-repo assets/ dir. This matters because
+    `weavebench-download-assets` only fetches the *.tar.gz files into
+    cache/runtime_assets/, NOT the plugin/patch source files — those live in
+    weavebench/assets/. Without this fallback, a fresh user crashes in bootstrap
+    with FileNotFoundError on computer_tool_plugin/openclaw.plugin.json.
+    """
+    primary = WEAVEBENCH_ASSETS_DIR / relpath
+    if primary.exists():
+        return primary
+    return _INREPO_ASSETS_DIR / relpath
 
 
 def _resolve_openclaw_tarball() -> Path:
@@ -648,19 +670,17 @@ class OpenClawChatAgent:
                              "&& echo YES || echo NO"])
         pi_ai_patched = "YES" in (out.get("output") or "")
         logger.info("Refreshing computer-tool plugin from local assets (pi-ai patched=%s)...", pi_ai_patched)
-        asset_dir = WEAVEBENCH_ASSETS_DIR
-        plugin_dir = asset_dir / "computer_tool_plugin"
-        patch_dir = asset_dir / "openclaw_patches"
+        # Same source-file resolution as bootstrap: these plugin/patch files
+        # live in the repo's weavebench/assets/, not the HF tarball cache.
         _vm_exec(env, ["bash", "-c", "mkdir -p /tmp/computer_tool_plugin /tmp/openclaw_patches"])
         for fname in ("openclaw.plugin.json", "index.ts"):
-            _vm_upload(env, (plugin_dir / fname).read_text(),
+            _vm_upload(env, _resolve_asset_file(f"computer_tool_plugin/{fname}").read_text(),
                        f"/tmp/computer_tool_plugin/{fname}")
-        _vm_upload(env, (patch_dir / "openai-responses-shared.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-responses-shared.patched.js")
-        _vm_upload(env, (patch_dir / "openai-responses.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-responses.patched.js")
-        _vm_upload(env, (patch_dir / "openai-completions.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-completions.patched.js")
+        for fname in ("openai-responses-shared.patched.js",
+                      "openai-responses.patched.js",
+                      "openai-completions.patched.js"):
+            _vm_upload(env, _resolve_asset_file(f"openclaw_patches/{fname}").read_text(),
+                       f"/tmp/openclaw_patches/{fname}")
         sh = (
             f"echo '{self.client_password}' | sudo -S -p '' bash -c '"
             "mkdir -p /home/user/.openclaw/extensions/computer-tool && "
@@ -765,20 +785,21 @@ class OpenClawChatAgent:
 
         # Upload the computer-tool plugin (manifest + index.ts) and the pi-ai
         # patch (openai-responses-shared.patched.js) needed for native CUA.
-        asset_dir = WEAVEBENCH_ASSETS_DIR
-        plugin_dir = asset_dir / "computer_tool_plugin"
-        patch_dir = asset_dir / "openclaw_patches"
+        # These source files are NOT in the HF tarball download — they ship in
+        # the repo's weavebench/assets/. _resolve_asset_file falls back there
+        # when WEAVEBENCH_ASSETS_DIR (often cache/, which only has the tarball)
+        # doesn't have them, so a fresh user no longer crashes here.
         _vm_exec(env, ["bash", "-c", "mkdir -p /tmp/computer_tool_plugin /tmp/openclaw_patches"])
         for fname in ("openclaw.plugin.json", "index.ts"):
-            _vm_upload(env, (plugin_dir / fname).read_text(),
+            _vm_upload(env, _resolve_asset_file(f"computer_tool_plugin/{fname}").read_text(),
                        f"/tmp/computer_tool_plugin/{fname}")
-        _vm_upload(env, (patch_dir / "openai-responses-shared.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-responses-shared.patched.js")
-        _vm_upload(env, (patch_dir / "openai-responses.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-responses.patched.js")
-        # WeaveBench image-cap patch for chat.completions branch (gemini-3-flash etc.)
-        _vm_upload(env, (patch_dir / "openai-completions.patched.js").read_text(),
-                   "/tmp/openclaw_patches/openai-completions.patched.js")
+        for fname in ("openai-responses-shared.patched.js",
+                      "openai-responses.patched.js",
+                      # WeaveBench image-cap patch for the chat.completions branch
+                      # (gemini-3-flash etc.).
+                      "openai-completions.patched.js"):
+            _vm_upload(env, _resolve_asset_file(f"openclaw_patches/{fname}").read_text(),
+                       f"/tmp/openclaw_patches/{fname}")
         _vm_upload(env, BOOTSTRAP_SH, "/tmp/openclaw_bootstrap.sh")
         _vm_exec(env, ["bash", "-c", "chmod +x /tmp/openclaw_bootstrap.sh"])
         # Run synchronously via launch + wait_file (bypass 120s execute timeout)

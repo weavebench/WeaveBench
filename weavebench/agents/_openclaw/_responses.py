@@ -352,6 +352,28 @@ def _assets_dir() -> Path:
 
 WEAVEBENCH_ASSETS_DIR = _assets_dir()
 _OPENCLAW_TARBALL_NFS = WEAVEBENCH_ASSETS_DIR / "openclaw.tar.gz"
+# The in-repo assets/ dir always ships the non-tarball source files (the
+# computer-tool plugin + pi-ai patches) — they travel with the git package, not
+# with the HuggingFace tarball download. Keep a direct handle so bootstrap can
+# find them even when WEAVEBENCH_ASSETS_DIR resolves to cache/ (which only has
+# the tarball).
+_INREPO_ASSETS_DIR = Path(__file__).resolve().parent.parent.parent / "assets"
+
+
+def _resolve_asset_file(relpath: str) -> Path:
+    """Locate a non-tarball asset (plugin / patch) shipped with the package.
+
+    Prefer WEAVEBENCH_ASSETS_DIR (so an override or a fully-populated cache
+    wins), but fall back to the in-repo assets/ dir. This matters because
+    `weavebench-download-assets` only fetches the *.tar.gz files into
+    cache/runtime_assets/, NOT the plugin/patch source files — those live in
+    weavebench/assets/. Without this fallback, a fresh user crashes in bootstrap
+    with FileNotFoundError on computer_tool_plugin/openclaw.plugin.json.
+    """
+    primary = WEAVEBENCH_ASSETS_DIR / relpath
+    if primary.exists():
+        return primary
+    return _INREPO_ASSETS_DIR / relpath
 
 
 def _resolve_openclaw_tarball() -> Path:
@@ -752,19 +774,16 @@ class OpenClawAgent:
                              "&& echo YES || echo NO"])
         pi_ai_patched = "YES" in (out.get("output") or "")
         logger.info("Refreshing computer-tool plugin from local assets (pi-ai patched=%s)...", pi_ai_patched)
-        asset_dir = WEAVEBENCH_ASSETS_DIR
-        plugin_dir = asset_dir / "computer_tool_plugin"
-        patch_dir = asset_dir / "openclaw_patches"
         _vm_exec(env, ["bash", "-c", "mkdir -p /tmp/computer_tool_plugin /tmp/openclaw_patches"])
         for fname in ("openclaw.plugin.json", "index.ts"):
-            _vm_upload(env, (plugin_dir / fname).read_text(),
+            _vm_upload(env, _resolve_asset_file(f"computer_tool_plugin/{fname}").read_text(),
                        f"/tmp/computer_tool_plugin/{fname}")
-        _vm_upload(env, (patch_dir / "openai-responses-shared.patched.js").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/openai-responses-shared.patched.js").read_text(),
                    "/tmp/openclaw_patches/openai-responses-shared.patched.js")
-        _vm_upload(env, (patch_dir / "openai-responses.patched.js").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/openai-responses.patched.js").read_text(),
                    "/tmp/openclaw_patches/openai-responses.patched.js")
         # WeaveBench ws_stream dedup patch (see ws_stream_dedup_patch.py docstring)
-        _vm_upload(env, (patch_dir / "ws_stream_dedup_patch.py").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/ws_stream_dedup_patch.py").read_text(),
                    "/tmp/openclaw_patches/ws_stream_dedup_patch.py")
         sh = (
             f"echo '{self.client_password}' | sudo -S -p '' bash -c '"
@@ -1073,19 +1092,16 @@ print("PDF_OVERRIDE_PATCHED", patched)
 
         # Upload the computer-tool plugin (manifest + index.ts) and the WeaveBench
         # pi-ai patches (function-tool CUA wire routing, no native CUA path).
-        asset_dir = WEAVEBENCH_ASSETS_DIR
-        plugin_dir = asset_dir / "computer_tool_plugin"
-        patch_dir = asset_dir / "openclaw_patches"
         _vm_exec(env, ["bash", "-c", "mkdir -p /tmp/computer_tool_plugin /tmp/openclaw_patches"])
         for fname in ("openclaw.plugin.json", "index.ts"):
-            _vm_upload(env, (plugin_dir / fname).read_text(),
+            _vm_upload(env, _resolve_asset_file(f"computer_tool_plugin/{fname}").read_text(),
                        f"/tmp/computer_tool_plugin/{fname}")
-        _vm_upload(env, (patch_dir / "openai-responses-shared.patched.js").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/openai-responses-shared.patched.js").read_text(),
                    "/tmp/openclaw_patches/openai-responses-shared.patched.js")
-        _vm_upload(env, (patch_dir / "openai-responses.patched.js").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/openai-responses.patched.js").read_text(),
                    "/tmp/openclaw_patches/openai-responses.patched.js")
         # WeaveBench ws_stream dedup patch (consumed by BOOTSTRAP_SH step 6.5)
-        _vm_upload(env, (patch_dir / "ws_stream_dedup_patch.py").read_text(),
+        _vm_upload(env, _resolve_asset_file("openclaw_patches/ws_stream_dedup_patch.py").read_text(),
                    "/tmp/openclaw_patches/ws_stream_dedup_patch.py")
         _vm_upload(env, BOOTSTRAP_SH, "/tmp/openclaw_bootstrap.sh")
         _vm_exec(env, ["bash", "-c", "chmod +x /tmp/openclaw_bootstrap.sh"])
@@ -1200,11 +1216,10 @@ print("PDF_OVERRIDE_PATCHED", patched)
         # path inside openclaw's own dist/reply-*.js — see
         # ws_stream_dedup_patch.py docstring).
         try:
-            patch_dir = WEAVEBENCH_ASSETS_DIR / "openclaw_patches"
             for fname in ("openai-responses-shared.patched.js",
                           "openai-responses.patched.js",
                           "ws_stream_dedup_patch.py"):
-                _vm_upload(env, (patch_dir / fname).read_text(),
+                _vm_upload(env, _resolve_asset_file(f"openclaw_patches/{fname}").read_text(),
                            f"/tmp/openclaw_patches/{fname}")
             _vm_exec(env, ["bash", "-c",
                 "echo '" + self.client_password + "' | sudo -S -p '' bash -c '"
