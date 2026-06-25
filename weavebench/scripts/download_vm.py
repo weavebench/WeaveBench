@@ -69,7 +69,9 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         from huggingface_hub import hf_hub_download
-        from huggingface_hub.utils import GatedRepoError, RepositoryNotFoundError
+        from huggingface_hub.utils import (
+            GatedRepoError, RepositoryNotFoundError, HfHubHTTPError,
+        )
     except ImportError:
         print("[error] pip install huggingface_hub", file=sys.stderr)
         return 1
@@ -84,23 +86,45 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"[fetch] {_HF_REPO}::{_FILE}  (28.46 GB, may take a while)"
           + (f" @ {args.revision[:8]}" if args.revision else ""))
-    try:
-        local = hf_hub_download(
-            repo_id=_HF_REPO,
-            repo_type="dataset",
-            filename=_FILE,
-            local_dir=str(dest),
-            token=token,
-            revision=args.revision,
-        )
-    except GatedRepoError:
-        print(f"[error] {_HF_REPO} is gated — request access at "
-              f"https://huggingface.co/datasets/{_HF_REPO}", file=sys.stderr)
-        return 2
-    except RepositoryNotFoundError:
-        print(f"[error] {_HF_REPO} not found OR your token doesn't have access.",
-              file=sys.stderr)
-        return 3
+    # hf_hub_download is resumable: a re-run continues a partial 28 GB file
+    # rather than restarting. Mirrors (notably hf-mirror.com) rate-limit large
+    # transfers with 429, so we retry with backoff — each retry resumes where
+    # the last left off.
+    import time
+    local = None
+    for attempt in range(1, 6):
+        try:
+            local = hf_hub_download(
+                repo_id=_HF_REPO,
+                repo_type="dataset",
+                filename=_FILE,
+                local_dir=str(dest),
+                token=token,
+                revision=args.revision,
+            )
+            break
+        except GatedRepoError:
+            print(f"[error] {_HF_REPO} is gated — request access at "
+                  f"https://huggingface.co/datasets/{_HF_REPO}", file=sys.stderr)
+            return 2
+        except RepositoryNotFoundError:
+            print(f"[error] {_HF_REPO} not found OR your token doesn't have access.",
+                  file=sys.stderr)
+            return 3
+        except HfHubHTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            if status != 429 or attempt == 5:
+                if status == 429:
+                    print(f"[error] {_HF_REPO}: still rate-limited (429) after "
+                          f"{attempt} attempts. Re-run the command to resume the "
+                          f"download (the partial file is kept and continued).",
+                          file=sys.stderr)
+                    return 5
+                raise
+            backoff = 5 * attempt
+            print(f"[retry] HTTP 429 from the Hub/mirror (attempt {attempt}/5); "
+                  f"resuming in {backoff}s...", file=sys.stderr)
+            time.sleep(backoff)
 
     local_path = Path(local)
     print(f"[done] qcow2 staged at {local_path}")
