@@ -90,28 +90,31 @@ bash scripts/setup.sh                          # installs + downloads dataset + 
 
 `scripts/setup.sh` runs prereq checks → `pip install -e .` → `npm install -g openclaw` → `weavebench-download-{dataset,assets,judge,vm}` and prints the next command. Pass `--skip-vm` if you already have a qcow2 (you'll need to `export OSWORLD_LOCAL_QCOW2_PATH=...`).
 
-## Bake the harness into the qcow2 (recommended right after setup)
+## Bake OpenClaw into the qcow2 (standard step before running)
 
-Without baking, the runner uploads the ~491 MB OpenClaw runtime into the VM and installs it on the first task of **every VM boot** — a ~3–5 min tax you pay again and again. Bake it into the qcow2 **once**, right after the download finishes, and every run boots with OpenClaw already present (the install becomes a no-op):
+After setup, bake the harness into the image **once**. This is the normal path:
+without it, every VM boot re-uploads the ~491 MB OpenClaw runtime and installs it
+on that VM's first task (a ~3–5 min tax, paid again and again), whereas a baked
+image boots with OpenClaw already present so the install is a no-op.
 
 ```bash
 # One-time, ~25 min. STAGE_DIR should be a fast local disk (the bake reads+writes
-# the 28 GB image throughout). PROMOTE=1 makes the baked image the default so you
-# don't have to set OSWORLD_LOCAL_QCOW2_PATH yourself.
+# the 28 GB image throughout). PROMOTE=1 makes the baked image the default so the
+# Run step below works without any extra env var.
 STAGE_DIR=/path/to/ssd PROMOTE=1 \
   scripts/bake_harness_into_qcow2.sh openclaw
 ```
 
 The bake boots one isolated VM, runs the *same* bootstrap the runtime uses (zero drift), graceful-shuts-down so QEMU flushes the install back into the qcow2, then re-boots read-only to verify. After it succeeds, runs print `Openclaw already bootstrapped in VM` and skip the upload. Only `openclaw` is wired up today; the other three harnesses are stubbed with a clear "not implemented yet" message.
 
-> Prefer not to bake? Skip this section — runs still work, they just re-install OpenClaw on each VM's first task.
+> In a hurry? You can skip baking and run straight away — it still works, it just re-installs OpenClaw on each VM's first task (slower). Baking is recommended for any real sweep.
 
 ## Run
 
 ```bash
-# If you baked with PROMOTE=1, the default image already has OpenClaw and you can
-# skip this export. Otherwise point at your qcow2 (baked or plain):
-export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
+# If you baked with PROMOTE=1 (the standard path), the default image already has
+# OpenClaw — skip this export. Only set it if you did NOT bake / not promote:
+# export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
 
 # Smoke test: one WEB task (note the trailing _ in --task_filter — a bare
 # 'task_1' is a substring match and would also include task_10..task_19)

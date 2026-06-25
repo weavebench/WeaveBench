@@ -242,14 +242,21 @@ fi
 
 # ---------- next ----------
 QCOW="$CACHE/vm/Ubuntu.qcow2"
-section "Setup complete. Run a smoke test:"
+section "Setup complete. Recommended next step: bake OpenClaw into the image."
 
 cat <<EOF
 
-  # If this is a fresh shell, re-export OPENROUTER_API_KEY first:
+  # 1) Bake OpenClaw into the qcow2 ONCE (standard step; ~25 min). Without it,
+  #    every VM boot re-installs the 491 MB runtime on its first task. With it,
+  #    runs boot ready and the install is a no-op. PROMOTE=1 makes the baked
+  #    image the default so the run command below needs no extra env var.
+  STAGE_DIR=/path/to/ssd PROMOTE=1 scripts/bake_harness_into_qcow2.sh openclaw
+
+  # 2) Then run a smoke test. If this is a fresh shell, re-export your key:
   #   export OPENROUTER_API_KEY=sk-or-v1-...
 
-  $([ $SKIP_VM -eq 0 ] && echo "export OSWORLD_LOCAL_QCOW2_PATH=$QCOW" || echo "# point OSWORLD_LOCAL_QCOW2_PATH at your local qcow2")
+  # If you baked with PROMOTE=1, skip the next line (the default image is baked).
+  $([ $SKIP_VM -eq 0 ] && echo "# export OSWORLD_LOCAL_QCOW2_PATH=$QCOW   # only if you did NOT bake/promote" || echo "# point OSWORLD_LOCAL_QCOW2_PATH at your local qcow2")
   export AJ_OPENCLAW_BIN=\$(command -v openclaw)
   export AJ_TEMPLATE_PROFILE=$JUDGE_HOME/template_profile
   export AJ_TEMPLATE_WORKSPACE=$JUDGE_HOME/template_workspace
@@ -263,6 +270,9 @@ cat <<EOF
       --domains WEB \\
       --task_filter task_1_ \\
       --result_dir ./results/smoke
+
+  # In a hurry? You can skip step 1 and run directly — slower (re-installs each
+  # VM's first task) but works.
 
 For full sweep + judge details, see docs/AGENT_JUDGE.md.
 EOF
