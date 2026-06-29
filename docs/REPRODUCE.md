@@ -109,7 +109,7 @@ Paper-best cross-pairing: **Claude Opus 4.7 + Claude Code = 41.2% PR**.
 ## Aggregating results
 
 Each task writes `results/<run>/<mode>/<model>/<DOMAIN>/<task>/score.json`.
-PassRate = fraction of tasks with `overall_score >= 0.5`. Overall = mean of
+PassRate = fraction of tasks with `overall_score >= 0.80`. Overall = mean of
 `overall_score` across the 114 tasks.
 
 There's no canonical aggregator script in v0.1 — `jq -r '.overall_score' **/score.json`

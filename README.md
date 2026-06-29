@@ -1,46 +1,109 @@
 # WeaveBench
 
-> **WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces** — paper code release.
+> **WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces**
 
-[![CI](https://github.com/weavebench/WeaveBench/actions/workflows/ci.yml/badge.svg)](https://github.com/weavebench/WeaveBench/actions/workflows/ci.yml)
-[![arXiv](https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg)](https://arxiv.org/abs/2606.09426)
-[![Website](https://img.shields.io/badge/website-weavebench.github.io-blue)](https://weavebench.github.io)
-[![🤗 Dataset](https://img.shields.io/badge/🤗_dataset-wanlilll/WeaveBench-yellow)](https://huggingface.co/datasets/wanlilll/WeaveBench)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![tests](https://img.shields.io/badge/tests-58_passing-brightgreen.svg)](./tests)
+[![arXiv](https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg?style=flat-square)](https://arxiv.org/abs/2606.09426)
+[![Website](https://img.shields.io/badge/🌐-Website-1f6feb.svg?style=flat-square)](https://weavebench.github.io)
+[![Dataset](https://img.shields.io/badge/🤗-Dataset-ffce00.svg?style=flat-square)](https://huggingface.co/datasets/wanlilll/WeaveBench)
+[![Daily Papers](https://img.shields.io/badge/🤗_Daily_Papers-%234-ff8800.svg?style=flat-square)](https://huggingface.co/papers/2606.09426)
+[![License](https://img.shields.io/badge/License-MIT-2ea44f.svg?style=flat-square)](./LICENSE)
 
-**114 long-horizon, real-world tasks** across 8 work domains, where every task requires the agent to **interleave GUI clicks with shell/code** in one trajectory. Each task is scored by a **trajectory-aware Agent-as-Judge** that reads the chat trace + deliverables and emits per-clause evidence — much harder to spoof than file-existence checks.
+**A benchmark for computer-use agents that weave GUI and CLI/code together in real deployed runtimes.** 114 long-horizon, real-world tasks across 8 work domains, each requiring the agent to **interleave GUI observation with CLI/code execution in one trajectory**, scored by a **trajectory-aware Agent-as-Judge** that reads the full chat trace + deliverables and zeroes fabricated evidence. The best frontier pairing clears just **41.2%** — far from saturation.
+
+## 📰 News
+
+- **2026-06-12** — WeaveBench hit **#4 on [Hugging Face Daily Papers](https://huggingface.co/papers/2606.09426)** (104 upvotes). 🎉
+- **2026-06-10** — Evaluated **9 frontier backbones × 4 agent runtimes** (OpenClaw, Codex CLI, Claude Code, Hermes); best pairing tops out at **41.2% PassRate**. Full leaderboard in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
+- **2026-06-10** — Paper v2 on [arXiv:2606.09426](https://arxiv.org/abs/2606.09426); code + 114-task dataset + qcow2 runtime released.
+- **2026-06-08** — Initial preprint and [project website](https://weavebench.github.io) live.
+
+<sub>Want your model on the board? See [Submit your results](#-submit-your-results).</sub>
+
+## TL;DR
+
+|  |  |
+|---|---|
+| **What** | 114 long-horizon tasks, 8 domains (WEB, DAV, OPS, DOC, DES, GAM, SPA, DSK), sourced from real user requests with traceable provenance. |
+| **The twist** | Each task is *channel-non-substitutable*: no single-channel rewrite can solve it. GUI exposes transient rendered state (canvas, dialogs, charts); CLI/code carries persistent state (configs, logs, services). You need both, woven together. |
+| **Scoring** | A trajectory-aware agentic judge re-fetches evidence over multiple turns and **zeros any rollout with high-confidence fabrication** (synthetic screenshots, hard-coded metrics). Outcome-only grading overestimates GPT-5.5 by **+20 pts** (53.5% → audited 33.3%). |
+| **Headline** | Best model-runtime pairing (Claude Opus 4.7 + Claude Code) = **41.2% PassRate**, vs >78% the same backbones reach on OSWorld-Verified. |
 
 ## 🎬 Demo
 
 <p align="center">
-  <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">
-    <img src="https://weavebench.github.io/static/images/casestudy_3panel.png" width="80%" alt="Click to watch: an agent managing a RabbitMQ dead-letter-queue topology end-to-end" />
-  </a>
+  <video src="https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4" width="85%" controls muted>
+    <!-- Fallback for renderers that don't inline video (e.g. some mirrors) -->
+    <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">▶ Watch the demo</a>
+  </video>
 </p>
 
 <p align="center">
-  <em>▶ <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4"><b>Watch the demo (RabbitMQ DLQ topology, OPS domain · 110 s)</b></a> · or browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
+  <img src="https://weavebench.github.io/static/images/casestudy_3panel.png" width="85%" alt="Three real-world workflows requiring interleaved GUI and CLI/code" />
 </p>
 
-## Headline results (from the paper)
+<p align="center">
+  <em>An agent diagnosing a RabbitMQ dead-letter-queue routing black-hole end-to-end (OPS domain, sped up 10×). It cross-checks the broker over the CLI and the Management UI on screen, fixes the binding, and re-verifies — exactly the GUI↔CLI interleaving WeaveBench requires. Browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
+</p>
 
-| Backbone × harness | PassRate ↑ |
-|---|---|
-| **Claude Opus 4.7 + Claude Code** (best frontier pairing) | **41.2 %** |
-| Claude Opus 4.7 + OpenClaw | 35.1 % |
-| GPT-5.5 + Codex CLI | 35.1 % |
-| GPT-5.5 + OpenClaw | 33.3 % |
-| GPT-5.4 + OpenClaw | 22.8 % |
-| Gemini 3.1 Pro + OpenClaw | 1.8 % |
+## Why hybrid interfaces? (the core claim)
 
-> Frontier backbones report >78 % on OSWorld-Verified for comparable models — **WeaveBench is far from saturation**.
+GUI and CLI/code carry **fundamentally different state**, so neither suffices alone — GUIs expose transient rendered state (canvases, dialogs, chart tooltips, spatial layout) that no API returns, while CLI/code carries persistent scriptable state (source, configs, logs, services) that no screenshot can produce. WeaveBench admits a task only when success *requires* weaving the two together (criterion P1 in the paper). That single admission rule is what separates it from prior "multi-interface" benchmarks where the extra channel is a convenience, not a requirement:
 
-Full per-domain breakdowns + cross-harness sweep in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
+| Benchmark | Platform | Multi-channel | **Non-substitutable** | In-the-wild | Cross-app | **Traj. judge** | Deployed runtime |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| WebArena | Web | ✗ | ✗ | P | P | ✗ | ✗ |
+| OSWorld | Real OS | ✗ | ✗ | P | P | ✗ | ✗ |
+| WindowsAgentArena | Real OS | ✗ | ✗ | P | P | ✗ | ✗ |
+| OSWorld-MCP | Real OS | ✓ | ✗ | P | P | ✗ | ✗ |
+| ScienceBoard | Real OS | ✓ | P | P | P | ✗ | ✗ |
+| WildClawBench | Headless OS | ✗ | ✗ | ✓ | P | P | ✓ |
+| **WeaveBench (ours)** | **Real OS** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** |
+
+> ✓/✗/P = satisfied / not / partial. Full positioning table + per-task falsifiers in the [paper](https://arxiv.org/abs/2606.09426).
+
+## Anatomy of a task
+
+Take **`OPS_task_17_rabbitmq_dlq_topology_mgmt`** (the demo above). An SRE alert says the `orders.dlq` dead-letter queue is stuck at depth 0 while ~30% of orders are being nack'd and silently vanishing. The agent must produce a paste-ready post-mortem — and the evidence has to **cross-validate two channels**.
+
+**Why it can't be done from one channel:**
+
+| Step | Channel | What happens |
+|---|---|---|
+| 1. Snapshot the broker | 🖥️ CLI | `rabbitmqctl list_queues` → `orders.dlq` depth ≈ 0 but `orders.audit` keeps growing |
+| 2. Dump bindings + queue args | 🖥️ CLI | `x-dead-letter-routing-key=dead.unrouted` ≠ the binding's literal `dead.routed.*` — **root cause is a routing-key typo a topic exchange won't wildcard-match** |
+| 3. Visualize the rate gap | 🪟 GUI | Hover the Management UI's *Message rates* chart so the publish-vs-deliver gap (≥4 msg/s) is readable in a tooltip — **a number no JSON dump renders the same way** |
+| 4. Fix + re-bind | 🖥️ CLI | Write a re-entrant `06_remediation.sh` that re-binds `orders.dlx → orders.dlq` on `dead.unrouted` |
+| 5. Prove the fix landed | 🪟 GUI | Re-screenshot the Overview after ≥10 s — DLQ depth now climbs to ≥20, **visible on the live panel** |
+
+The judge then checks an explicit **cross-channel evidence chain** (`cross_channel.json`: ≥5 channel switches, ≥2 `STRUCT:` + ≥2 `VISUAL:` entries). Skip either channel and the score is **hard-capped at 0.4** — you cannot pass by dumping JSON alone or by screenshotting alone.
+
+**Anti-gaming is built in:** text dumps must trace back to real broker queries in the action log (no `echo`-ing the answer), and screenshots must be real Management-UI renders — a PIL-drawn PNG that satisfies a file-existence check gets zeroed by the judge's VLM rubric.
+
+## 🏅 Leaderboard (from the paper)
+
+**Table 1 — Fixed harness (OpenClaw), varying backbone.** PR = PassRate (%) at τ=0.80; Overall = mean per-task score over all 114 tasks. Per-domain columns are PassRate.
+
+<p align="center">
+  <img src="./docs/media/leaderboard_table1.png" width="92%" alt="WeaveBench Table 1: model API comparison on a fixed OpenClaw runtime" />
+</p>
+
+**Table 2 — Strongest APIs × 4 agent runtimes.** Same model API, runtime swapped. The model on its native runtime dominates; cross-pairing collapses.
+
+<p align="center">
+  <img src="./docs/media/leaderboard_table2.png" width="92%" alt="WeaveBench Table 2: strongest model APIs across four agent runtimes" />
+</p>
+
+> Two findings the numbers make concrete: **(1)** frontier backbones report >78% on OSWorld-Verified — WeaveBench is **far from saturation**; **(2)** runtime alignment matters as much as the model — the *same* GPT-5.5 API swings **20 pts** (35.1% on Codex CLI → 14.9% on Claude Code). The two most GUI-heavy domains (SPA, DES) are the bottom of the table for nearly every backbone, pinning the GUI side as the binding constraint. Reproduce exactly with [`docs/REPRODUCE.md`](./docs/REPRODUCE.md); [submit your own pairing](#-submit-your-results).
+
+## The trajectory-aware judge — and why outcome-only grading lies
+
+The embedded file-only `grade(...)` in each task is **spoofable**: an agent can fabricate a PNG that passes a file-existence + OCR check. WeaveBench instead scores with a host-side agentic judge that reads (a) the task spec, (b) the agent's `chat.jsonl` trace, and (c) the unpacked deliverables, decomposes each deliverable into verifiable clauses, scores 8 process+outcome dimensions, and **zeroes any rollout where it can verbatim-quote a fabrication signature**.
+
+The gap is not academic: without this audit, **GPT-5.5 would appear to pass 53.5% instead of the audited 33.3%.** Details in [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md) and [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+
+---
 
 ## Try it in 30 seconds (no VM, no API key)
-
-Curious before you commit to the full setup? Install + run the offline demo:
 
 ```bash
 git clone https://github.com/weavebench/WeaveBench.git && cd WeaveBench
@@ -48,25 +111,24 @@ pip install -e .
 weavebench-demo
 ```
 
-This prints a real `score.json` from a paper-canonical Claude Opus 4.7 attempt at `WEB_task_1_mockup_pixel_diff` — judge model, per-artifact evidence quotes, the works. ~1 second, no network calls. Use this to see what scoring looks like before deciding to spin up a 29.5 GB qcow2.
+Prints a real `score.json` from a paper-canonical Claude Opus 4.7 attempt at `WEB_task_1_mockup_pixel_diff` — judge model, per-artifact evidence quotes, the works. ~1 second, no network calls. See what scoring looks like before spinning up a 29.5 GB qcow2.
 
-## Requirements (for the full pipeline)
+## Full setup
+
+<details>
+<summary><b>Requirements</b></summary>
 
 | What | Why |
 |---|---|
-| Linux host with **KVM** + **Docker** (≥ 8 CPU, ≥ 32 GB RAM, ≥ 150 GB free disk) | Every task spins up an Ubuntu VM (OSWorld-derived) for the agent to act in. The GUI provider runs QEMU **inside** the `happysixd/osworld-docker` container, so the host needs only Docker + `/dev/kvm` — **no host `qemu-system-x86_64` install required.** |
+| Linux host with **KVM** + **Docker** (≥ 8 CPU, ≥ 32 GB RAM, ≥ 150 GB free disk) | Every task spins up an Ubuntu VM (OSWorld-derived). QEMU runs **inside** the `happysixd/osworld-docker` container, so the host needs only Docker + `/dev/kvm` — **no host `qemu-system-x86_64` install required.** |
 | Python ≥ 3.10.12, Node ≥ 22 | Node powers the host-side OpenClaw judge (`npm install -g openclaw`) |
-| **OpenRouter API key** | Used by both the agent and the trajectory-aware judge — both default to `openai/gpt-5.5`. Pay-as-you-go. `export OPENROUTER_API_KEY=...` |
+| **OpenRouter API key** | Used by both the agent and the trajectory-aware judge — both default to `openai/gpt-5.5`. `export OPENROUTER_API_KEY=...` |
 
-> 🇨🇳 **Users in China**: `export HF_ENDPOINT=https://hf-mirror.com` (all `weavebench-download-*` honor it). hf-mirror is reachable directly — don't put it behind an HTTP proxy. On a 429 rate-limit, lower parallelism with `--max-workers 2` and re-run (downloads resume).
+> 🇨🇳 **Users in China**: `export HF_ENDPOINT=https://hf-mirror.com` (all `weavebench-download-*` honor it). hf-mirror is reachable directly — don't put it behind an HTTP proxy. On a 429, lower parallelism with `--max-workers 2` and re-run (downloads resume).
 
-## Resource budget
+**Resource budget:** one-time setup is **~29.5 GB** (207 MB tasks + 852 MB runtime + 28.46 GB qcow2 + 7 KB judge template). Already have an OSWorld qcow2? Use `bash scripts/setup.sh --skip-vm` and save 28 GB. `OSWORLD_LOCAL_QCOW2_PATH` skips the VM *disk* download, not the docker *engine* image — `setup.sh` pre-pulls that so the first run doesn't stall.
 
-One-time setup is **~29.5 GB** (207 MB tasks + 852 MB runtime + 28.46 GB qcow2 + 7 KB judge template). Per-task wall time and OpenRouter cost vary with your host, model, and `--num_envs` — run one smoke task to calibrate before a full sweep. Already have an OSWorld qcow2? Use `bash scripts/setup.sh --skip-vm` and save 28 GB.
-
-> `OSWORLD_LOCAL_QCOW2_PATH` skips the VM *disk* download, not the docker *engine* image (`happysixd/osworld-docker`). `setup.sh` pre-pulls that engine image so the first run doesn't stall.
-
-## One-command setup
+</details>
 
 ```bash
 git clone https://github.com/weavebench/WeaveBench.git && cd WeaveBench
@@ -78,27 +140,27 @@ export OPENROUTER_API_KEY=sk-or-v1-...
 bash scripts/setup.sh                          # installs + downloads dataset + runtime + 28 GB qcow2
 ```
 
-`scripts/setup.sh` runs prereq checks → `pip install -e .` → `npm install -g openclaw` → `weavebench-download-{dataset,assets,judge,vm}` and prints the next command. Pass `--skip-vm` if you already have a qcow2 (you'll need to `export OSWORLD_LOCAL_QCOW2_PATH=...`).
+`scripts/setup.sh` runs prereq checks → `pip install -e .` → `npm install -g openclaw` → `weavebench-download-{dataset,assets,judge,vm}` and prints the next command. Pass `--skip-vm` if you already have a qcow2 (then `export OSWORLD_LOCAL_QCOW2_PATH=...`).
 
-## Bake OpenClaw into the qcow2 (standard step before running)
+<details>
+<summary><b>Bake a harness into the qcow2 (recommended one-time step)</b></summary>
 
-Bake the harness into the image **once** after setup. Otherwise every VM boot re-uploads the ~491 MB OpenClaw runtime and installs it on that VM's first task (~3–5 min each time); a baked image boots ready, install is a no-op.
+Otherwise every VM boot re-uploads the harness runtime (~70–500 MB) and installs it on that VM's first task (~3–5 min each time); a baked image boots ready.
 
 ```bash
-# One-time, ~25 min. STAGE_DIR = a fast local disk (the bake reads+writes the
-# 28 GB image). PROMOTE=1 makes the baked image the default (no env var to Run).
+# One-time, ~25 min. STAGE_DIR = a fast local disk (reads+writes the 28 GB image).
+# PROMOTE=1 makes the baked image the default (no env var needed to Run).
 STAGE_DIR=/path/to/ssd PROMOTE=1 \
-  scripts/bake_harness_into_qcow2.sh openclaw
+  scripts/bake_harness_into_qcow2.sh openclaw      # or: codex | claudecode | hermes
 ```
 
-The bake boots an isolated VM, runs the *same* bootstrap the runtime uses, flushes the install back into the qcow2, and re-boots read-only to verify. Only `openclaw` is wired up today.
+The bake boots an isolated VM, runs the *same* bootstrap the runtime uses, flushes the install back into the qcow2, and re-boots read-only to verify. All four harnesses (`openclaw`, `codex`, `claudecode`, `hermes`) are supported — each produces a **separate** image, so bake the one(s) you plan to run and point `OSWORLD_LOCAL_QCOW2_PATH` at the match (or `PROMOTE=1` the one you use most). Run `scripts/download_assets.sh <harness>` first if you haven't fetched its tarball. In a hurry? Skip it and run directly — just re-installs per VM's first task.
 
-> In a hurry? Skip baking and run directly — it works, just re-installs OpenClaw on each VM's first task.
+</details>
 
 ## Run
 
-Scoring runs a second OpenClaw (the judge) **on the host**, so point it at the
-judge template `setup.sh` installed (`setup.sh` also prints these three lines):
+Scoring runs a second OpenClaw (the judge) **on the host**, so point it at the judge template `setup.sh` installed (it prints these three lines):
 
 ```bash
 export AJ_OPENCLAW_BIN=$(command -v openclaw)
@@ -107,12 +169,10 @@ export AJ_TEMPLATE_WORKSPACE=$HOME/judge_agent_test/template_workspace
 ```
 
 ```bash
-# If you baked with PROMOTE=1 (the standard path), the default image already has
-# OpenClaw. Otherwise point at your qcow2:
-# export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
+# If you baked with PROMOTE=1, the default image already has OpenClaw.
+# Otherwise: export OSWORLD_LOCAL_QCOW2_PATH=./cache/vm/Ubuntu.qcow2
 
-# Smoke test: one WEB task (trailing _ matters — a bare 'task_1' also matches
-# task_10..task_19)
+# Smoke test: one WEB task (trailing _ matters — bare 'task_1' also matches task_10..19)
 weavebench-run \
     --harness openclaw \
     --model openai/gpt-5.5 \
@@ -130,28 +190,40 @@ weavebench-run \
     --result_dir ./results/run
 ```
 
-Swap `--harness` to `codex`, `claudecode`, or `hermes` (baking is openclaw-only; the others install per task). Swap `--model` to anything OpenRouter exposes (`anthropic/claude-opus-4.7`, `google/gemini-2.5-pro`, …).
+Swap `--harness` to `codex`, `claudecode`, or `hermes` (each can be baked the same way — see the bake section). Swap `--model` to anything OpenRouter exposes (`anthropic/claude-opus-4.7`, `google/gemini-2.5-pro`, …).
 
-> `--task_filter` (run time) is a substring match on task ids; the downloader's `--include` is an HF path glob — not the same syntax. To download a subset use the full glob, e.g. `weavebench-download-dataset --include 'tasks/WEB/WEB_task_1_*'`.
+### Convenience smoke scripts
 
-### Optional env vars
+Two wrappers in `examples/` save you typing the full command. Both fetch the harness runtime tarball automatically if it's missing (setup.sh only pre-downloads openclaw), so any harness works out of the box.
 
 ```bash
-# OpenRouter overrides
-export OPENROUTER_BASE_URL=...                       # default https://openrouter.ai/api/v1
-export JUDGE_MODEL=anthropic/claude-opus-4.7         # judge defaults to openai/gpt-5.5;
-                                                     # set this if you want a different judge
+# One harness — pick whichever you want to test:
+bash examples/run.sh openclaw        # default if no arg
+bash examples/run.sh codex
+bash examples/run.sh claudecode
+bash examples/run.sh hermes
 
-# Reproducibility — pin to the exact dataset commit used for the paper.
-# See docs/REPRODUCE.md for the canonical SHA + per-table model snapshot ids.
-export WEAVEBENCH_DATASET_REVISION=<full sha from docs/REPRODUCE.md>
+# Several harnesses in one go — pass the ones you want (omit to run all four):
+bash examples/run_all_harnesses.sh codex hermes     # just these two
+bash examples/run_all_harnesses.sh                  # all four, sequentially
 ```
 
-> ℹ️ **Default model.** Both the agent and the judge default to
-> `openai/gpt-5.5` — one model, one billing line, easy to reason about.
-> Pass `--model <other>` to change the agent and/or `JUDGE_MODEL=<other>`
-> to change just the judge. See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md)
-> for the exact backbones used in the paper.
+`run_all_harnesses.sh` runs each harness sequentially and prints a PASS/FAIL summary. Override the model with `MODEL=anthropic/claude-opus-4.7 bash examples/run.sh codex`. Each writes to `./results/<harness>_smoke/`.
+
+> `--task_filter` (run time) is a substring match on task ids; the downloader's `--include` is an HF path glob — not the same syntax. To download a subset: `weavebench-download-dataset --include 'tasks/WEB/WEB_task_1_*'`.
+
+<details>
+<summary><b>Optional env vars</b></summary>
+
+```bash
+export OPENROUTER_BASE_URL=...                       # default https://openrouter.ai/api/v1
+export JUDGE_MODEL=anthropic/claude-opus-4.7         # judge defaults to openai/gpt-5.5
+export WEAVEBENCH_DATASET_REVISION=<full sha>        # pin to the paper's exact dataset commit
+```
+
+Both the agent and the judge default to `openai/gpt-5.5` — one model, one billing line. Pass `--model <other>` to change the agent and/or `JUDGE_MODEL=<other>` to change just the judge. See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) for the exact backbones used in the paper.
+
+</details>
 
 ## Output
 
@@ -163,11 +235,17 @@ results/run/<mode>/<model>/<DOMAIN>/<task>/
   └── score.json            # trajectory-aware judge: per-clause evidence + overall_score
 ```
 
-Scoring runs automatically — every task is judged by a separate OpenClaw on the host that reads the deliverables + chat trace. See [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md) for the one-time host-side setup.
+Scoring runs automatically — every task is judged by a separate OpenClaw on the host that reads the deliverables + chat trace. See [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md).
 
-## Reproducing paper numbers
+## 🏆 Submit your results
 
-See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) for the pinned dataset revision, model snapshot ids, and per-table commands used in the paper.
+Run the full 114-task sweep and we'll add your model-runtime pairing to the leaderboard:
+
+1. `weavebench-run` over all 114 tasks with a pinned `WEAVEBENCH_DATASET_REVISION` (see [`docs/REPRODUCE.md`](./docs/REPRODUCE.md)).
+2. Open an issue titled `[leaderboard] <model> + <harness>` and attach your per-task `score.json` files (or a tarball of `results/`).
+3. We re-verify a sample and update the board.
+
+Reproducing paper numbers exactly? [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) has the pinned dataset revision, model snapshot ids, and per-table commands.
 
 ## More
 
@@ -175,9 +253,8 @@ See [`docs/REPRODUCE.md`](./docs/REPRODUCE.md) for the pinned dataset revision, 
 - Architecture: [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
 - Agent-as-Judge setup: [`docs/AGENT_JUDGE.md`](./docs/AGENT_JUDGE.md)
 - Reproducing paper numbers: [`docs/REPRODUCE.md`](./docs/REPRODUCE.md)
-- Contributing: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
-- Changelog: [`CHANGELOG.md`](./CHANGELOG.md)
-- Dataset + runtime + qcow2: [🤗 wanlilll/WeaveBench](https://huggingface.co/datasets/wanlilll/WeaveBench)
+- Contributing: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · Changelog: [`CHANGELOG.md`](./CHANGELOG.md)
+- Dataset + runtime + qcow2: [🤗 Dataset](https://huggingface.co/datasets/wanlilll/WeaveBench)
 
 ## Citation
 

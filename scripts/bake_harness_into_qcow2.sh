@@ -41,22 +41,14 @@
 #              (keeps a timestamped backup of whatever it replaced)
 #   KEEP_GOING=1 do not delete a half-baked DST_QCOW on failure (for debugging)
 #
-# Only `openclaw` is implemented today. The other three harnesses are wired as
-# explicit "not yet implemented" branches so the interface is stable and the
-# missing piece is obvious rather than silently wrong.
+# openclaw, codex, claudecode and hermes are all implemented.
 
 set -euo pipefail
 
 HARNESS="${1:-openclaw}"
 
 case "${HARNESS}" in
-  openclaw) ;;
-  codex|claudecode|hermes)
-    echo "[fatal] harness '${HARNESS}' bake not implemented yet."
-    echo "        The interface is reserved. To add it: stage its tarball(s)"
-    echo "        from cache/runtime_assets/, extract its agent's bootstrap"
-    echo "        commands, and set MARKER to /home/user/.weavebench_${HARNESS}_bootstrap.done"
-    exit 2 ;;
+  openclaw|codex|claudecode|hermes) ;;
   *)
     echo "[fatal] unknown harness: ${HARNESS} (expected openclaw|codex|claudecode|hermes)"; exit 1 ;;
 esac
@@ -222,6 +214,7 @@ case "${HARNESS}" in
       PATCH_DIR="${INREPO_ASSETS}/openclaw_patches"
     fi
     MARKER="/home/user/.openclaw_bootstrap.done"
+    BOOTLOG="/tmp/openclaw_bootstrap.log"
 
     [ -f "${TARBALL}" ] || { echo "[fatal] missing ${TARBALL} — run scripts/download_assets.sh openclaw"; exit 1; }
     [ -f "${PLUGIN_DIR}/openclaw.plugin.json" ] || { echo "[fatal] missing computer_tool_plugin/openclaw.plugin.json (looked in cache and ${INREPO_ASSETS})"; exit 1; }
@@ -254,6 +247,100 @@ echo "--- openclaw ---"; which openclaw; openclaw --version | head -1
 echo "--- node ---"; node --version
 echo "--- plugin ---"; test -f /home/user/.openclaw/extensions/computer-tool/openclaw.plugin.json && echo PLUGIN_OK
 echo "--- sudo ---"; sudo -n true && echo PASSWORDLESS_SUDO_OK'
+    ;;
+
+  codex|claudecode)
+    # codex/claudecode bootstrap is a short synchronous install (no apt/service
+    # restarts), so BOOTSTRAP_SH stays empty (sentinel) and Step 3 runs
+    # INSTALL_BODY directly via _vm exec instead of the detached-poll path.
+    TARBALL="${CACHE_DIR}/${HARNESS}.tar.gz"
+    MCP_SRC="${REPO_ROOT}/weavebench/assets/weavebench_computer_mcp/server.py"
+    MARKER="/home/user/.weavebench_${HARNESS}_bootstrap.done"
+    BOOTLOG="/tmp/${HARNESS}_bootstrap.log"
+    BOOTSTRAP_SH=""
+    [ -f "${TARBALL}" ] || { echo "[fatal] missing ${TARBALL} — copy from sibling cache or run scripts/download_assets.sh ${HARNESS}"; exit 1; }
+    [ -f "${MCP_SRC}" ] || { echo "[fatal] missing MCP server ${MCP_SRC}"; exit 1; }
+
+    if [ "${HARNESS}" = "codex" ]; then
+      JS_PATH="/usr/lib/node_modules/@openai/codex/bin/codex.js"; BIN="/usr/local/bin/codex"; MCP_ADD=""
+    else
+      JS_PATH="/usr/lib/node_modules/@anthropic-ai/claude-code/cli.js"; BIN="/usr/local/bin/claude"
+      MCP_ADD="${BIN} mcp remove weavebench_computer 2>/dev/null; ${BIN} mcp add -s user weavebench_computer -- /usr/bin/python3 /usr/local/lib/weavebench_computer_mcp/server.py"
+    fi
+
+    stage_assets() {
+      echo "[bake] uploading ${HARNESS}.tar.gz ($(du -h "${TARBALL}" | cut -f1))..."
+      BAKE_SRV="${SRV}" _vm upload "${TARBALL}" "/tmp/${HARNESS}.tar.gz"
+      BAKE_SRV="${SRV}" _vm exec 'mkdir -p /tmp/weavebench_computer_mcp' 60
+      BAKE_SRV="${SRV}" _vm upload "${MCP_SRC}" /tmp/weavebench_computer_mcp/server.py
+    }
+
+    INSTALL_BODY="set -e
+sudo tar xzf /tmp/${HARNESS}.tar.gz -C /
+sudo ln -sf ${JS_PATH} ${BIN}
+test -x ${JS_PATH}
+sudo mkdir -p /usr/local/lib/weavebench_computer_mcp
+sudo cp -f /tmp/weavebench_computer_mcp/server.py /usr/local/lib/weavebench_computer_mcp/server.py
+sudo chmod +x /usr/local/lib/weavebench_computer_mcp/server.py
+${BIN} --version 2>&1
+mkdir -p \$(dirname ${MARKER}) && date -u +%FT%TZ > ${MARKER}"
+
+    VERIFY_CMD="set -e
+echo '--- marker ---'; test -f ${MARKER} && echo MARKER_OK || { echo MARKER_MISSING; exit 1; }
+echo '--- bin ---'; which ${BIN##*/}; ${BIN} --version | head -1
+echo '--- node ---'; node --version
+echo '--- mcp ---'; test -f /usr/local/lib/weavebench_computer_mcp/server.py && echo MCP_OK || { echo MCP_MISSING; exit 1; }"
+    ;;
+
+  hermes)
+    # hermes is a self-contained Python venv tarball (rooted at /opt/hermes),
+    # NOT a node CLI. Bootstrap also installs `mcp` offline from bundled wheels
+    # (hermes 0.14.0 doesn't ship it) and applies the vision-bridge source
+    # patch. All synchronous, so BOOTSTRAP_SH stays empty (sentinel).
+    TARBALL="${CACHE_DIR}/hermes.tar.gz"
+    WHEELS="${CACHE_DIR}/hermes_mcp_wheels.tar.gz"
+    MCP_SRC="${REPO_ROOT}/weavebench/assets/weavebench_computer_mcp/server.py"
+    VISION_PATCH="${REPO_ROOT}/weavebench/assets/hermes_patches/vision_bridge.py"
+    MARKER="/home/user/.weavebench_hermes_bootstrap.done"
+    BOOTLOG="/tmp/hermes_bootstrap.log"
+    BOOTSTRAP_SH=""; MCP_ADD=""
+    BIN="/usr/local/bin/hermes"; ENTRY="/opt/hermes/.venv/bin/hermes"; VENV_PY="/opt/hermes/.venv/bin/python3"
+    [ -f "${TARBALL}" ] || { echo "[fatal] missing ${TARBALL} — copy from sibling cache or run scripts/download_assets.sh hermes"; exit 1; }
+    [ -f "${WHEELS}" ] || { echo "[fatal] missing ${WHEELS} — copy from sibling cache or run scripts/download_assets.sh hermes"; exit 1; }
+    [ -f "${MCP_SRC}" ] || { echo "[fatal] missing MCP server ${MCP_SRC}"; exit 1; }
+    [ -f "${VISION_PATCH}" ] || { echo "[fatal] missing vision patch ${VISION_PATCH}"; exit 1; }
+
+    stage_assets() {
+      echo "[bake] uploading hermes.tar.gz ($(du -h "${TARBALL}" | cut -f1))..."
+      BAKE_SRV="${SRV}" _vm upload "${TARBALL}" /tmp/hermes.tar.gz
+      BAKE_SRV="${SRV}" _vm upload "${WHEELS}" /tmp/hermes_mcp_wheels.tar.gz
+      BAKE_SRV="${SRV}" _vm exec 'mkdir -p /tmp/weavebench_computer_mcp' 60
+      BAKE_SRV="${SRV}" _vm upload "${MCP_SRC}" /tmp/weavebench_computer_mcp/server.py
+      BAKE_SRV="${SRV}" _vm upload "${VISION_PATCH}" /tmp/weavebench_hermes_vision_patch.py
+    }
+
+    INSTALL_BODY="set -e
+sudo mkdir -p /opt
+sudo tar xzf /tmp/hermes.tar.gz -C /
+test -x ${ENTRY}
+sudo ln -sf ${ENTRY} ${BIN}
+rm -rf /tmp/hermes_mcp_wheels && mkdir -p /tmp/hermes_mcp_wheels
+tar xzf /tmp/hermes_mcp_wheels.tar.gz -C /tmp/hermes_mcp_wheels
+sudo ${VENV_PY} -m pip install -q --no-input --no-index --find-links /tmp/hermes_mcp_wheels /tmp/hermes_mcp_wheels/mcp-*.whl 2>&1 | tail -5
+${VENV_PY} -c 'from mcp import StdioServerParameters, ClientSession; print(\"mcp OK\")'
+sudo ${VENV_PY} /tmp/weavebench_hermes_vision_patch.py 2>&1
+sudo mkdir -p /usr/local/lib/weavebench_computer_mcp
+sudo cp -f /tmp/weavebench_computer_mcp/server.py /usr/local/lib/weavebench_computer_mcp/server.py
+sudo chmod +x /usr/local/lib/weavebench_computer_mcp/server.py
+${BIN} version 2>&1 | head -3 || ${BIN} --version 2>&1 | head -3
+mkdir -p \$(dirname ${MARKER}) && date -u +%FT%TZ > ${MARKER}"
+
+    VERIFY_CMD="set -e
+echo '--- marker ---'; test -f ${MARKER} && echo MARKER_OK || { echo MARKER_MISSING; exit 1; }
+echo '--- bin ---'; which hermes; ${BIN} version 2>&1 | head -1 || ${BIN} --version 2>&1 | head -1
+echo '--- mcp import ---'; ${VENV_PY} -c 'from mcp import StdioServerParameters; print(\"MCP_IMPORT_OK\")'
+echo '--- vision patch ---'; test -f /opt/hermes/.weavebench_vision_bridge_patched && echo VISION_PATCH_OK || { echo VISION_PATCH_MISSING; exit 1; }
+echo '--- mcp server ---'; test -f /usr/local/lib/weavebench_computer_mcp/server.py && echo MCP_OK || { echo MCP_MISSING; exit 1; }"
     ;;
 esac
 
@@ -288,6 +375,7 @@ wait_ready "${SRV}" "bake" || { docker logs --tail 50 "${NAME}" || true; exit 1;
 
 # ---- Step 3: stage assets + run the harness's own bootstrap ----------------
 stage_assets
+if [ -n "${BOOTSTRAP_SH}" ]; then
 echo "[bake] running ${HARNESS} bootstrap inside the VM (zero-drift)..."
 # Stage BOOTSTRAP_SH as a file in the VM and run it DETACHED (setsid nohup),
 # then poll for the marker. Running it inline over a single /setup/execute call
@@ -303,7 +391,7 @@ echo "[bake] bootstrap launched; polling for marker ${MARKER} (up to ~30 min)...
 BOOT_OK=0
 for i in $(seq 1 180); do
   sleep 10
-  OUT="$(BAKE_SRV="${SRV}" _vm rawexec "test -f ${MARKER} && echo DONE || echo WAIT; tail -1 /tmp/openclaw_bootstrap.log 2>/dev/null" 30 2>/dev/null || echo CONNERR)"
+  OUT="$(BAKE_SRV="${SRV}" _vm rawexec "test -f ${MARKER} && echo DONE || echo WAIT; tail -1 ${BOOTLOG} 2>/dev/null" 30 2>/dev/null || echo CONNERR)"
   case "${OUT}" in
     *DONE*) echo "[bake] marker present after ~$((i*10))s"; BOOT_OK=1; break ;;
     *CONNERR*) echo "  [t=$((i*10))s] VM busy (apt/service restart) — retrying" ;;
@@ -313,8 +401,21 @@ done
 
 if [ "${BOOT_OK}" != "1" ]; then
   echo "[fatal] bootstrap did not complete — dumping log tail:"
-  BAKE_SRV="${SRV}" _vm rawexec 'tail -60 /tmp/openclaw_bootstrap.log 2>/dev/null' 60 || true
+  BAKE_SRV="${SRV}" _vm rawexec "tail -60 ${BOOTLOG} 2>/dev/null" 60 || true
   exit 1
+fi
+else
+  # Short synchronous install (codex/claudecode): run INSTALL_BODY via sudo
+  # shim, then the user-scope MCP add if any. No detached poll needed.
+  echo "[bake] running ${HARNESS} install inside the VM (synchronous)..."
+  BAKE_SRV="${SRV}" _vm exec "${INSTALL_BODY}" 300 \
+    || { echo "[fatal] ${HARNESS} install failed"; exit 1; }
+  if [ -n "${MCP_ADD:-}" ]; then
+    echo "[bake] registering MCP with ${HARNESS} (user scope)..."
+    BAKE_SRV="${SRV}" _vm rawexec "${MCP_ADD}" 120 || echo "[bake] WARN: MCP add returned non-zero (continuing)"
+  fi
+  BAKE_SRV="${SRV}" _vm exec "test -f ${MARKER} && echo MARKER_OK" 30 \
+    || { echo "[fatal] marker ${MARKER} not written"; exit 1; }
 fi
 
 # ---- Step 3b: bake the repo's in-VM Flask server into the image ------------
