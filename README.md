@@ -194,18 +194,19 @@ Swap `--harness` to `codex`, `claudecode`, or `hermes` (each can be baked the sa
 
 ### Convenience smoke scripts
 
-Two wrappers in `examples/` save you typing the full command. Both fetch the harness runtime tarball automatically if it's missing (setup.sh only pre-downloads openclaw), so any harness works out of the box.
+Two wrappers in `examples/` save you typing the full command. Both fetch the harness runtime tarball automatically if it's missing (setup.sh only pre-downloads openclaw), and both **auto-detect a baked image** for the harness: if one exists it's used (boot-ready), otherwise the run proceeds on the plain image and the harness installs on the VM's first task (~3-5 min). Pass `--bake` to bake first (~25 min one-time) and run on the fresh baked image.
 
 ```bash
 # One harness — pick whichever you want to test:
 bash examples/run.sh openclaw        # default if no arg
 bash examples/run.sh codex
-bash examples/run.sh claudecode
 bash examples/run.sh hermes
+bash examples/run.sh codex --bake    # bake first, then run
 
 # Several harnesses in one go — pass the ones you want (omit to run all four):
 bash examples/run_all_harnesses.sh codex hermes     # just these two
 bash examples/run_all_harnesses.sh                  # all four, sequentially
+bash examples/run_all_harnesses.sh --bake           # all four, baking each first
 ```
 
 `run_all_harnesses.sh` runs each harness sequentially and prints a PASS/FAIL summary. Override the model with `MODEL=anthropic/claude-opus-4.7 bash examples/run.sh codex`. Each writes to `./results/<harness>_smoke/`.
