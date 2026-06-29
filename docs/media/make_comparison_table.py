@@ -38,8 +38,8 @@ n_rows = len(ROWS)
 n_cols = len(COLS)
 
 # Header occupies 1.4 row-heights to fit the two-line labels; rows start below.
-HDR_H = 1.4
-fig_w, fig_h = 12.0, 0.6 * (n_rows + HDR_H + 1.4)
+HDR_H = 1.5
+fig_w, fig_h = 13.0, 0.72 * (n_rows + HDR_H + 1.4)
 fig, ax = plt.subplots(figsize=(fig_w, fig_h), dpi=200)
 ax.set_xlim(0, n_cols)
 ax.set_ylim(0, n_rows + HDR_H)
@@ -62,8 +62,8 @@ for c in range(n_cols):
                                facecolor=grad, edgecolor="white", lw=1.5, zorder=1))
     ha = "left" if c == 0 else "center"
     tx = col_x[c] + 0.12 if c == 0 else cell_center(c)
-    ax.text(tx, hy + HDR_H / 2, COLS[c], color="white", fontsize=10.5,
-            fontweight="bold", ha=ha, va="center", linespacing=1.1, zorder=2)
+    ax.text(tx, hy + HDR_H / 2, COLS[c], color="white", fontsize=14,
+            fontweight="bold", ha=ha, va="center", linespacing=1.15, zorder=2)
 
 # --- data rows ---
 for r, row in enumerate(ROWS):
@@ -78,22 +78,22 @@ for r, row in enumerate(ROWS):
     for c, val in enumerate(row):
         if c == 0:
             color = PINK if is_ours else "#111827"
-            ax.text(col_x[0] + 0.12, y + 0.5, val, color=color, fontsize=10.5,
+            ax.text(col_x[0] + 0.12, y + 0.5, val, color=color, fontsize=14,
                     fontweight="bold" if is_ours else "normal",
                     ha="left", va="center", zorder=2)
         elif c == 1:
             ax.text(cell_center(c), y + 0.5, val, color="#374151",
-                    fontsize=10, ha="center", va="center", zorder=2)
+                    fontsize=13, ha="center", va="center", zorder=2)
         else:
             color = SYM_COLOR.get(val, "#111827")
-            ax.text(cell_center(c), y + 0.5, val, color=color, fontsize=13,
+            ax.text(cell_center(c), y + 0.5, val, color=color, fontsize=18,
                     fontweight="bold", ha="center", va="center", zorder=2)
 
 # --- title + subtitle above the table ---
-fig.suptitle(TITLE, x=0.012, y=0.99, ha="left", fontsize=14, fontweight="bold")
-fig.text(0.012, 0.945, SUBTITLE, ha="left", fontsize=10, color="#6b7280")
+fig.suptitle(TITLE, x=0.012, y=0.995, ha="left", fontsize=18, fontweight="bold")
+fig.text(0.012, 0.93, SUBTITLE, ha="left", fontsize=13, color="#6b7280")
 
-plt.subplots_adjust(left=0.005, right=0.995, top=0.88, bottom=0.01)
+plt.subplots_adjust(left=0.005, right=0.995, top=0.85, bottom=0.01)
 out = __file__.rsplit("/", 1)[0] + "/comparison_table.png"
 fig.savefig(out, dpi=200, bbox_inches="tight", facecolor="white")
 print("wrote", out)

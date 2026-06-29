@@ -33,15 +33,10 @@
 
 ## 🎬 Demo
 
-<p align="center">
-  <video src="https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4" width="100%" controls muted>
-    <!-- Fallback for renderers that don't inline video (e.g. some mirrors) -->
-    <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">▶ Watch the demo</a>
-  </video>
-</p>
+https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4
 
 <p align="center">
-  <em>An agent diagnosing a RabbitMQ dead-letter-queue routing black-hole end-to-end (OPS domain, sped up 10×). It cross-checks the broker over the CLI and the Management UI on screen, fixes the binding, and re-verifies — exactly the GUI↔CLI interleaving WeaveBench requires.</em>
+  <em>An agent diagnosing a RabbitMQ dead-letter-queue routing black-hole end-to-end (OPS domain, sped up 10×). It cross-checks the broker over the CLI and the Management UI on screen, fixes the binding, and re-verifies — exactly the GUI↔CLI interleaving WeaveBench requires. Can't see the player? <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">Watch the demo here</a>.</em>
 </p>
 
 <br />
@@ -54,14 +49,12 @@
   <em>Three more cross-channel workflows at a glance. Browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
 </p>
 
-## Why hybrid interfaces? (the core claim)
-
-## Why hybrid interfaces? (the core claim)
+## Why hybrid interfaces?
 
 GUI and CLI/code carry **fundamentally different state**, so neither suffices alone — GUIs expose transient rendered state (canvases, dialogs, chart tooltips, spatial layout) that no API returns, while CLI/code carries persistent scriptable state (source, configs, logs, services) that no screenshot can produce. WeaveBench admits a task only when success *requires* weaving the two together (criterion P1 in the paper). That single admission rule is what separates it from prior "multi-interface" benchmarks where the extra channel is a convenience, not a requirement:
 
 <p align="center">
-  <img src="./docs/media/comparison_table.png" width="92%" alt="WeaveBench vs. prior computer-use benchmarks: the only one that is multi-channel, non-substitutable, in-the-wild, cross-app, trajectory-judged, and deployed-runtime" />
+  <img src="./docs/media/comparison_table.png" width="100%" alt="WeaveBench vs. prior computer-use benchmarks: the only one that is multi-channel, non-substitutable, in-the-wild, cross-app, trajectory-judged, and deployed-runtime" />
 </p>
 
 > Full positioning table + per-task falsifiers in the [paper](https://arxiv.org/abs/2606.09426).
@@ -89,13 +82,13 @@ The judge then checks an explicit **cross-channel evidence chain** (`cross_chann
 **Table 1 — Fixed harness (OpenClaw), varying backbone.** PR = PassRate (%) at τ=0.80; Overall = mean per-task score over all 114 tasks. Per-domain columns are PassRate.
 
 <p align="center">
-  <img src="./docs/media/leaderboard_table1.png" width="92%" alt="WeaveBench Table 1: model API comparison on a fixed OpenClaw runtime" />
+  <img src="./docs/media/leaderboard_table1.png" width="100%" alt="WeaveBench Table 1: model API comparison on a fixed OpenClaw runtime" />
 </p>
 
 **Table 2 — Strongest APIs × 4 agent runtimes.** Same model API, runtime swapped. The model on its native runtime dominates; cross-pairing collapses.
 
 <p align="center">
-  <img src="./docs/media/leaderboard_table2.png" width="92%" alt="WeaveBench Table 2: strongest model APIs across four agent runtimes" />
+  <img src="./docs/media/leaderboard_table2.png" width="100%" alt="WeaveBench Table 2: strongest model APIs across four agent runtimes" />
 </p>
 
 > Two findings the numbers make concrete: **(1)** frontier backbones report >78% on OSWorld-Verified — WeaveBench is **far from saturation**; **(2)** runtime alignment matters as much as the model — the *same* GPT-5.5 API swings **20 pts** (35.1% on Codex CLI → 14.9% on Claude Code). The two most GUI-heavy domains (SPA, DES) are the bottom of the table for nearly every backbone, pinning the GUI side as the binding constraint. Reproduce exactly with [`docs/REPRODUCE.md`](./docs/REPRODUCE.md); [submit your own pairing](#-submit-your-results).
