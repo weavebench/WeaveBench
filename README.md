@@ -2,11 +2,13 @@
 
 > **WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces**
 
-[![arXiv](https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg?style=flat-square)](https://arxiv.org/abs/2606.09426)
-[![Website](https://img.shields.io/badge/🌐-Website-1f6feb.svg?style=flat-square)](https://weavebench.github.io)
-[![Dataset](https://img.shields.io/badge/🤗-Dataset-ffce00.svg?style=flat-square)](https://huggingface.co/datasets/wanlilll/WeaveBench)
-[![Daily Papers](https://img.shields.io/badge/🤗_Daily_Papers-%234-ff8800.svg?style=flat-square)](https://huggingface.co/papers/2606.09426)
-[![License](https://img.shields.io/badge/License-MIT-2ea44f.svg?style=flat-square)](./LICENSE)
+<p align="center">
+<a href="https://arxiv.org/abs/2606.09426"><img src="https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg?style=flat-square" alt="arXiv" /></a>
+<a href="https://weavebench.github.io"><img src="https://img.shields.io/badge/🌐-Website-1f6feb.svg?style=flat-square" alt="Website" /></a>
+<a href="https://huggingface.co/datasets/wanlilll/WeaveBench"><img src="https://img.shields.io/badge/🤗-Dataset-ffce00.svg?style=flat-square" alt="Dataset" /></a>
+<a href="https://huggingface.co/papers/2606.09426"><img src="https://img.shields.io/badge/🤗_Daily_Papers-%234-ff8800.svg?style=flat-square" alt="Daily Papers" /></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-2ea44f.svg?style=flat-square" alt="License" /></a>
+</p>
 
 **A benchmark for computer-use agents that weave GUI and CLI/code together in real deployed runtimes.** 114 long-horizon, real-world tasks across 8 work domains, each requiring the agent to **interleave GUI observation with CLI/code execution in one trajectory**, scored by a **trajectory-aware Agent-as-Judge** that reads the full chat trace + deliverables and zeroes fabricated evidence. The best frontier pairing clears just **41.2%** — far from saturation.
 
@@ -14,19 +16,20 @@
 
 - **2026-06-12** — WeaveBench hit **#4 on [Hugging Face Daily Papers](https://huggingface.co/papers/2606.09426)** (104 upvotes). 🎉
 - **2026-06-10** — Evaluated **9 frontier backbones × 4 agent runtimes** (OpenClaw, Codex CLI, Claude Code, Hermes); best pairing tops out at **41.2% PassRate**. Full leaderboard in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
-- **2026-06-10** — Paper v2 on [arXiv:2606.09426](https://arxiv.org/abs/2606.09426); code + 114-task dataset + qcow2 runtime released.
 - **2026-06-08** — Initial preprint and [project website](https://weavebench.github.io) live.
+- **2026-06-06** — Released the **OSWorld hybrid-scoring experiment** (CLI agent vs vision, native grading + agent-as-judge re-judge) under [`experiments/osworld_hybrid/`](./experiments/osworld_hybrid).
 
 <sub>Want your model on the board? See [Submit your results](#-submit-your-results).</sub>
 
 ## TL;DR
 
-|  |  |
-|---|---|
-| **What** | 114 long-horizon tasks, 8 domains (WEB, DAV, OPS, DOC, DES, GAM, SPA, DSK), sourced from real user requests with traceable provenance. |
-| **The twist** | Each task is *channel-non-substitutable*: no single-channel rewrite can solve it. GUI exposes transient rendered state (canvas, dialogs, charts); CLI/code carries persistent state (configs, logs, services). You need both, woven together. |
-| **Scoring** | A trajectory-aware agentic judge re-fetches evidence over multiple turns and **zeros any rollout with high-confidence fabrication** (synthetic screenshots, hard-coded metrics). Outcome-only grading overestimates GPT-5.5 by **+20 pts** (53.5% → audited 33.3%). |
-| **Headline** | Best model-runtime pairing (Claude Opus 4.7 + Claude Code) = **41.2% PassRate**, vs >78% the same backbones reach on OSWorld-Verified. |
+**What** — 114 long-horizon tasks across 8 domains (WEB, DAV, OPS, DOC, DES, GAM, SPA, DSK), sourced from real user requests with traceable provenance.
+
+**The twist** — Each task is *channel-non-substitutable*: no single-channel rewrite can solve it. GUI exposes transient rendered state (canvas, dialogs, charts); CLI/code carries persistent state (configs, logs, services). You need both, woven together.
+
+**Scoring** — A trajectory-aware agentic judge re-fetches evidence over multiple turns and **zeros any rollout with high-confidence fabrication** (synthetic screenshots, hard-coded metrics). Outcome-only grading overestimates GPT-5.5 by **+20 pts** (53.5% → audited 33.3%).
+
+**Headline** — Best model-runtime pairing (Claude Opus 4.7 + Claude Code) = **41.2% PassRate**, vs >78% the same backbones reach on OSWorld-Verified.
 
 ## 🎬 Demo
 
@@ -49,17 +52,11 @@
 
 GUI and CLI/code carry **fundamentally different state**, so neither suffices alone — GUIs expose transient rendered state (canvases, dialogs, chart tooltips, spatial layout) that no API returns, while CLI/code carries persistent scriptable state (source, configs, logs, services) that no screenshot can produce. WeaveBench admits a task only when success *requires* weaving the two together (criterion P1 in the paper). That single admission rule is what separates it from prior "multi-interface" benchmarks where the extra channel is a convenience, not a requirement:
 
-| Benchmark | Platform | Multi-channel | **Non-substitutable** | In-the-wild | Cross-app | **Traj. judge** | Deployed runtime |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| WebArena | Web | ✗ | ✗ | P | P | ✗ | ✗ |
-| OSWorld | Real OS | ✗ | ✗ | P | P | ✗ | ✗ |
-| WindowsAgentArena | Real OS | ✗ | ✗ | P | P | ✗ | ✗ |
-| OSWorld-MCP | Real OS | ✓ | ✗ | P | P | ✗ | ✗ |
-| ScienceBoard | Real OS | ✓ | P | P | P | ✗ | ✗ |
-| WildClawBench | Headless OS | ✗ | ✗ | ✓ | P | P | ✓ |
-| **WeaveBench (ours)** | **Real OS** | **✓** | **✓** | **✓** | **✓** | **✓** | **✓** |
+<p align="center">
+  <img src="./docs/media/comparison_table.png" width="92%" alt="WeaveBench vs. prior computer-use benchmarks: the only one that is multi-channel, non-substitutable, in-the-wild, cross-app, trajectory-judged, and deployed-runtime" />
+</p>
 
-> ✓/✗/P = satisfied / not / partial. Full positioning table + per-task falsifiers in the [paper](https://arxiv.org/abs/2606.09426).
+> Full positioning table + per-task falsifiers in the [paper](https://arxiv.org/abs/2606.09426).
 
 ## Anatomy of a task
 
