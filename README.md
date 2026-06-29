@@ -34,19 +34,27 @@
 ## 🎬 Demo
 
 <p align="center">
-  <video src="https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4" width="85%" controls muted>
+  <video src="https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4" width="100%" controls muted>
     <!-- Fallback for renderers that don't inline video (e.g. some mirrors) -->
     <a href="https://weavebench.github.io/static/videos/rabbitmq_dlq_topology_mgmt.mp4">▶ Watch the demo</a>
   </video>
 </p>
 
 <p align="center">
-  <img src="https://weavebench.github.io/static/images/casestudy_3panel.png" width="85%" alt="Three real-world workflows requiring interleaved GUI and CLI/code" />
+  <em>An agent diagnosing a RabbitMQ dead-letter-queue routing black-hole end-to-end (OPS domain, sped up 10×). It cross-checks the broker over the CLI and the Management UI on screen, fixes the binding, and re-verifies — exactly the GUI↔CLI interleaving WeaveBench requires.</em>
+</p>
+
+<br />
+
+<p align="center">
+  <img src="https://weavebench.github.io/static/images/casestudy_3panel.png" width="100%" alt="Three real-world workflows requiring interleaved GUI and CLI/code" />
 </p>
 
 <p align="center">
-  <em>An agent diagnosing a RabbitMQ dead-letter-queue routing black-hole end-to-end (OPS domain, sped up 10×). It cross-checks the broker over the CLI and the Management UI on screen, fixes the binding, and re-verifies — exactly the GUI↔CLI interleaving WeaveBench requires. Browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
+  <em>Three more cross-channel workflows at a glance. Browse <a href="https://weavebench.github.io">all task demos on the website</a>.</em>
 </p>
+
+## Why hybrid interfaces? (the core claim)
 
 ## Why hybrid interfaces? (the core claim)
 
