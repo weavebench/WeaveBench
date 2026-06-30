@@ -1586,4 +1586,24 @@ echo DONE > /tmp/openclaw_run.done
         except Exception as e:
             logger.warning("[screenshot-fetch] outer exception: %s", e)
 
-        return {"agent_done": ok, "elapsed_seconds": round(elapsed, 2)}
+        # Parse the AGENT_EXIT / RETRIES_USED markers the runner echoed into
+        # agent.log (lines 1519-1520) so run()'s return is symmetric with the
+        # codex/claudecode/hermes harnesses (which already expose exit_code).
+        agent_exit = None
+        retries_used = None
+        try:
+            import re as _re
+            _log = (output_dir / "agent.log").read_text(
+                encoding="utf-8", errors="ignore")[-8192:]
+            _m = _re.search(r"AGENT_EXIT=(\d+)", _log)
+            if _m:
+                agent_exit = int(_m.group(1))
+            _mr = _re.search(r"RETRIES_USED=(\d+)", _log)
+            if _mr:
+                retries_used = int(_mr.group(1))
+        except Exception:
+            pass
+
+        return {"agent_done": ok, "elapsed_seconds": round(elapsed, 2),
+                "timed_out": not ok, "exit_code": agent_exit,
+                "retries_used": retries_used}

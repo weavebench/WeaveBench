@@ -66,6 +66,88 @@ def _resolve_judge_workspace() -> Path:
     return Path.home() / "judge_agent_test" / "judge_workspace"
 
 
+def _parse_agent_log_markers(agent_log: Path) -> dict:
+    """Extract the AGENT_EXIT / RETRIES_USED markers that every harness runner
+    (openclaw/codex/claudecode/hermes) echoes into agent.log at the end of its
+    in-VM retry loop. Returns {agent_exit, retries_used} with None when a marker
+    is absent (e.g. agent.log missing, or the runner was wall-clock-killed before
+    it could echo AGENT_EXIT)."""
+    out = {"agent_exit": None, "retries_used": None}
+    if not agent_log.exists():
+        return out
+    try:
+        import re
+        # Only the tail matters; the markers are echoed last. The Python side of
+        # codex/claude/hermes also appends "[<harness>] AGENT_EXIT=N" lines, so a
+        # plain AGENT_EXIT=(\d+) search would match those too — that's fine, they
+        # carry the same value as the runner's own marker.
+        tail = agent_log.read_text(encoding="utf-8", errors="ignore")[-8192:]
+        m_exit = re.search(r"AGENT_EXIT=(\d+)", tail)
+        if m_exit:
+            out["agent_exit"] = int(m_exit.group(1))
+        m_retry = re.search(r"RETRIES_USED=(\d+)", tail)
+        if m_retry:
+            out["retries_used"] = int(m_retry.group(1))
+    except Exception:
+        pass
+    return out
+
+
+# Below this many generated output tokens we treat a "completed" run as having
+# produced nothing — the retry-exhausted empty-run case the process signals
+# (agent_done=True, AGENT_EXIT=0) cannot otherwise distinguish. Not exactly 0
+# because a bare refusal ("I'm sorry, ...") still emits a few dozen tokens.
+EMPTY_RUN_OUTPUT_TOKENS = 8
+
+
+def _classify_agent_status(agent_done, markers: dict, token_usage: dict) -> dict:
+    """Unified post-run health verdict for ALL four harnesses.
+
+    Returns a dict {status, reason, agent_exit, retries_used} where status is:
+      - "timeout"    : runner never wrote its done-file (agent_done is False);
+                       agent.log usually lacks an AGENT_EXIT marker.
+      - "crashed"    : runner finished but the last agent invocation exited
+                       non-zero (AGENT_EXIT != 0).
+      - "empty_run"  : runner finished cleanly (agent_done True, AGENT_EXIT 0)
+                       but the model produced ~no output — the retry-exhausted
+                       upstream-failure / silent-fail case that the process
+                       signals alone cannot catch.
+      - "ok"         : finished cleanly and produced real output.
+
+    This is the single point of truth that makes the four harnesses consistent:
+    they all funnel chat.jsonl through aggregate_chat_jsonl and all echo the same
+    AGENT_EXIT/RETRIES_USED markers, so one classifier covers every harness.
+    """
+    agent_exit = markers.get("agent_exit")
+    retries_used = markers.get("retries_used")
+    verdict = {"status": "ok", "reason": None,
+               "agent_exit": agent_exit, "retries_used": retries_used}
+
+    if agent_done is False:
+        verdict["status"] = "timeout"
+        verdict["reason"] = "runner did not write done-file (wall-clock timeout)"
+        return verdict
+
+    if agent_exit is not None and agent_exit != 0:
+        verdict["status"] = "crashed"
+        verdict["reason"] = f"agent runner exited non-zero (AGENT_EXIT={agent_exit})"
+        return verdict
+
+    # agent_done True (or unknown) and no non-zero exit: did the model actually
+    # produce anything? Use the token aggregation we already computed.
+    tu_ok = bool(token_usage.get("ok"))
+    n_calls = token_usage.get("n_calls") or 0
+    output = token_usage.get("output") or 0
+    if tu_ok and (n_calls == 0 or output <= EMPTY_RUN_OUTPUT_TOKENS):
+        verdict["status"] = "empty_run"
+        rsuffix = f", retries_used={retries_used}" if retries_used else ""
+        verdict["reason"] = (f"clean exit but no model output "
+                             f"(n_calls={n_calls}, output_tokens={output}{rsuffix})")
+        return verdict
+
+    return verdict
+
+
 def run_one_aj(env, agent: "OpenClawAgent", task: dict, mode: str,
                 output_dir: Path, tasks_root: Path, http_proxy: str = "") -> dict:
     """Same signature as ds.run_one but uses Agent-as-Judge instead of grader."""
@@ -122,28 +204,26 @@ def run_one_aj(env, agent: "OpenClawAgent", task: dict, mode: str,
             logger.warning("[%s/%s/%s] token aggregation failed (non-fatal): %s",
                            task["category"], task["task_id"], mode, exc)
 
-        # 3a. (unchanged) detect openclaw crash via agent.log
+        # 3a. Unified harness-health verdict (openclaw/codex/claudecode/hermes).
+        #     All four echo AGENT_EXIT/RETRIES_USED into agent.log and funnel
+        #     chat.jsonl through aggregate_chat_jsonl, so one classifier makes
+        #     them consistent. Catches the retry-exhausted "empty_run" case that
+        #     agent_done=True + AGENT_EXIT=0 alone cannot distinguish.
         agent_log = output_dir / "agent.log"
-        if agent_log.exists():
-            try:
-                import re
-                tail = agent_log.read_text(encoding="utf-8",
-                                           errors="ignore")[-4096:]
-                m = re.search(r"AGENT_EXIT=(\d+)", tail)
-                if m and int(m.group(1)) != 0:
-                    code = int(m.group(1))
-                    snippet = ""
-                    for line in tail.splitlines()[-10:]:
-                        if line.strip():
-                            snippet = line.strip()[:200]
-                            break
-                    record["error"] = (f"openclaw runtime exited non-zero "
-                                       f"(AGENT_EXIT={code}): {snippet}")
-                    logger.warning("[%s/%s/%s] openclaw crash detected (%s)",
-                                   task["category"], task["task_id"], mode,
-                                   record["error"][:140])
-            except Exception:
-                pass
+        markers = _parse_agent_log_markers(agent_log)
+        verdict = _classify_agent_status(
+            record.get("agent_done"), markers,
+            record.get("agent_token_usage") or {})
+        record["agent_status"] = verdict["status"]
+        record["retries_used"] = verdict["retries_used"]
+        record["agent_exit"] = verdict["agent_exit"]
+        if verdict["status"] != "ok":
+            note = f"agent_{verdict['status']}: {verdict['reason']}"
+            record["error"] = (record.get("error") or "")
+            record["error"] = (record["error"] + " | " + note) if record["error"] else note
+            logger.warning("[%s/%s/%s] agent health=%s (%s)",
+                           task["category"], task["task_id"], mode,
+                           verdict["status"], verdict["reason"])
 
         # 4. (NEW: skip grader). Still archive deliverables — this is what the
         #    judge needs to read on the host.
