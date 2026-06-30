@@ -14,11 +14,11 @@
 
 ## 📰 News
 
-- **2026-06-30** — **OSWorld-V2** under a **hybrid GUI+CLI harness** (codex CLI in-VM + GUI, native grading): GPT-5.5 **+5.5 pt Binary (13.0→18.5%)** at **~2× tool-call efficiency (149.8→77.5/task)**. [`experiments/osworld_v2_hybrid/`](./experiments/osworld_v2_hybrid).
+- **2026-06-30** — **OSWorld-V2** with a **hybrid GUI+CLI harness**: GPT-5.5 **+5.5 pt Binary (13.0→18.5%)** at ~2× tool-call efficiency. [`experiments/osworld_v2_hybrid/`](./experiments/osworld_v2_hybrid).
 - **2026-06-12** — WeaveBench hit **#4 on [Hugging Face Daily Papers](https://huggingface.co/papers/2606.09426)** (104 upvotes). 🎉
-- **2026-06-10** — Evaluated **9 frontier backbones × 4 agent runtimes** (OpenClaw, Codex CLI, Claude Code, Hermes); best pairing tops out at **41.2% PassRate**. Full leaderboard in [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
 - **2026-06-08** — Initial preprint and [project website](https://weavebench.github.io) live.
 - **2026-06-06** — Released the **OSWorld hybrid-scoring experiment** (CLI agent vs vision, native grading + agent-as-judge re-judge) under [`experiments/osworld_hybrid/`](./experiments/osworld_hybrid).
+- **2026-06-05** — **WeaveBench released** — 114 channel-non-substitutable tasks across 8 domains with a trajectory-aware agentic judge; evaluated 9 backbones × 4 runtimes, best pairing **41.2% PassRate** ([`docs/REPRODUCE.md`](./docs/REPRODUCE.md)).
 
 <sub>Want your model on the board? See [Submit your results](#-submit-your-results).</sub>
 
