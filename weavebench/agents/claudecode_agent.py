@@ -512,6 +512,10 @@ class ClaudeCodeAgent:
                 fh.write(f"\n[claudecode_agent] AGENT_EXIT="
                          f"{exit_code if exit_code is not None else -1}\n")
                 fh.write(f"[claudecode_agent] RETRIES_USED={retries_used}\n")
+                # The runner already wrote a real MAX_STEPS_REACHED=N marker
+                # (from claude's --max-turns result subtype) into retry.log. Only
+                # synthesize one here if the run timed out before the runner
+                # could emit it (no done-file => stream-json result never came).
                 if not done:
                     fh.write(f"[claudecode_agent] MAX_STEPS_REACHED=0 "
                              f"timed_out_after={elapsed:.0f}s\n")
@@ -559,6 +563,7 @@ class ClaudeCodeAgent:
         """
         model_arg = shlex.quote(self.model)
         max_retries = self.max_refusal_retries
+        max_turns = self.max_steps
         recovery_msg = (
             "The previous turn ended with a transient upstream provider error "
             "(silent fail / response.failed / connection error). This was an "
@@ -622,6 +627,7 @@ while : ; do
     echo "$RECOVERY_MSG" | {CLAUDE_BIN_IN_VM} --print --output-format stream-json \\
       --verbose --dangerously-skip-permissions --setting-sources user \\
       --effort high --model {model_arg} --resume "$SESSION_ID" \\
+      --max-turns {max_turns} \\
       --disallowedTools "$DISALLOWED_TOOLS" \\
       >> "$RUN_LOG" 2>> "$RETRY_LOG"
   else
@@ -629,6 +635,7 @@ while : ; do
     {CLAUDE_BIN_IN_VM} --print --output-format stream-json \\
       --verbose --dangerously-skip-permissions --setting-sources user \\
       --effort high --model {model_arg} \\
+      --max-turns {max_turns} \\
       --disallowedTools "$DISALLOWED_TOOLS" \\
       < "$PROMPT_FILE" >> "$RUN_LOG" 2>> "$RETRY_LOG"
   fi
@@ -701,6 +708,24 @@ done
 
 echo "RETRIES_USED=$RETRIES_USED" >> "$RETRY_LOG"
 echo "AGENT_EXIT=$RC" >> "$RETRY_LOG"
+
+# Step-cap detection: claude --max-turns ends the final turn with a result
+# event whose subtype is "error_max_turns" (and num_turns >= the cap). Surface
+# it as a tail marker so run() / classify_trajectories.py can tell a step-capped
+# run apart from a clean finish. Parity with openclaw's MAX_STEPS_REACHED.
+LAST_RES=$(tac "$RUN_LOG" | grep -m1 '"type":"result"' || true)
+STEPS_CAPPED=$(echo "$LAST_RES" | python3 -c '
+import sys, json
+try:
+    r = json.loads(sys.stdin.read())
+    sub = r.get("subtype", "")
+    turns = r.get("num_turns", 0) or 0
+    print("1" if (sub == "error_max_turns" or turns >= {max_turns}) else "0")
+except Exception:
+    print("0")
+' 2>/dev/null || echo 0)
+echo "MAX_STEPS_REACHED=$STEPS_CAPPED max_turns={max_turns}" >> "$RETRY_LOG"
+
 echo $RC > "$DONE_FILE"
 exit $RC
 '''
