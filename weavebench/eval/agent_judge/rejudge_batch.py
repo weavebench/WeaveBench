@@ -36,7 +36,10 @@ logger = logging.getLogger("rejudge_batch")
 def find_candidates(rollout_root: Path) -> list[dict]:
     """Walk rollout dir and yield tasks that need (re)judging."""
     cands = []
-    for task_dir in rollout_root.glob("task subdir/gui/*/*/*/"):
+    # Layout: <rollout_root>/[<bench_subdir>/]gui/<model>/<CAT>/<TASK>/.
+    # `**` tolerates an optional bench_subdir level (older runs) and also
+    # matches when result_dir is the harness dir directly (gui right under root).
+    for task_dir in rollout_root.glob("**/gui/*/*/*"):
         if not task_dir.is_dir():
             continue
         chat = task_dir / "chat.jsonl"
