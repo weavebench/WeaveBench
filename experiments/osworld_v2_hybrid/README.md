@@ -1,9 +1,11 @@
-# OSWorld-V2 hybrid GUI+CLI re-evaluation
+# OSWorld-V2 hybrid GUI+CLI evaluation
 
 A harness ablation on **OSWorld-V2** (108 tasks): we drive each task with a
 **hybrid GUI+CLI agent** — the OpenAI `codex` CLI injected inside the VM plus a
 GUI action channel — on the same **GPT-5.5** backbone the paper benchmarks.
-Scored with OSWorld's native grader (`env.evaluate()`).
+Scored with OSWorld-V2's own evaluator (`env.evaluate()`, checkpoint-based with
+bounded model judgment) — the same grader as the paper's Table 3, so the numbers
+are directly comparable to the official GPT-5.5 row.
 
 ## Headline
 
