@@ -11,11 +11,13 @@ are directly comparable to the official GPT-5.5 row.
 
 | Model / harness | Binary (%) | Partial (%) | Tool calls/task |
 |---|---|---|---|
-| **GPT-5.5 + codex hybrid (this work)** | **18.5** | 59.3 | 77.5 |
+| **GPT-5.5 + codex hybrid (this work)** | **18.5** | 49.6 | 77.5 |
 | GPT-5.5 batched (official Table 3) | 13.0 | 49.5 | 149.8 |
 
 Same backbone, swapping the official batched loop for the codex hybrid harness
-lifts GPT-5.5 **13.0% → 18.5% Binary** at ~half the tool calls. Dropping 4
+lifts GPT-5.5 **13.0% → 18.5% Binary** at ~half the tool calls, with partial
+credit holding steady (49.5 → 49.6) — the gains come from pushing near-complete
+tasks over the line, not from broad partial progress. Dropping 4
 infra-failure tasks (063/064/082/069) gives a 104-task cohort: **51.39% avg /
 19.23% Binary**. Full breakdown in
 [`results/codex_hybrid_gpt55/RESULT_ANALYSIS.md`](./results/codex_hybrid_gpt55/RESULT_ANALYSIS.md).

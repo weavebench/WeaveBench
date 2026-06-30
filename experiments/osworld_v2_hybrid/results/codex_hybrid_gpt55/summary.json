@@ -8,18 +8,16 @@
     "all_108": {
       "n": 108,
       "binary_pct": 18.52,
-      "partial_pct": 59.26,
-      "avg_score_pct": 49.64,
+      "partial_pct": 49.64,
       "binary_count": 20,
-      "partial_count": 64
+      "nonzero_partial_count": 64
     },
     "de_infra_104": {
       "n": 104,
       "binary_pct": 19.23,
-      "partial_pct": 60.58,
-      "avg_score_pct": 51.39,
+      "partial_pct": 51.39,
       "binary_count": 20,
-      "partial_count": 63
+      "nonzero_partial_count": 63
     }
   },
   "efficiency": {

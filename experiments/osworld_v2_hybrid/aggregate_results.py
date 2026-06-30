@@ -102,15 +102,17 @@ def main():
     def cohort(keep):
         n = len(keep)
         binary = sum(1 for r in keep if r["score"] >= 0.999)
-        partial = sum(1 for r in keep if 0 < r["score"] < 0.999)
         avg = sum(r["score"] for r in keep) / n
+        nonzero = sum(1 for r in keep if 0 < r["score"] < 0.999)
         return {
             "n": n,
+            # Paper Table 3 metrics: Binary = fraction at score 1.0; Partial =
+            # mean partial-credit score over all tasks (NOT the fraction of
+            # tasks with a partial score).
             "binary_pct": round(binary / n * 100, 2),
-            "partial_pct": round(partial / n * 100, 2),
-            "avg_score_pct": round(avg * 100, 2),
+            "partial_pct": round(avg * 100, 2),
             "binary_count": binary,
-            "partial_count": partial,
+            "nonzero_partial_count": nonzero,
         }
 
     def mean(key, src=rows):

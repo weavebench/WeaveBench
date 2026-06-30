@@ -73,14 +73,14 @@ codex 混合方案是各方案最高; GUI+CLI 比纯 CLI 高约 15 个点。
 
 | Model | Binary (%) | Partial (%) | Cost/task | Tool calls/task | Out tok/task | Steps/task |
 |---|---|---|---|---|---|---|
-| codex hybrid (GUI+CLI) | 18.5 | 59.3 | — | 68 (med) | — | 1 turn (med) |
-| codex 纯 CLI | 11.1 | 49.1 | — | — | — | 2 turn (med) |
-| claude CLI max | 12.0 | 60.2 | $39.71 (med) | — | 11,657 (med) | 23 (med) |
-| openclaw / cuaclaw hybrid | 12.0 | 62.0 | — | — | — | — |
+| codex hybrid (GUI+CLI) | 18.5 | 49.6 | — | 68 (med) | — | 1 turn (med) |
+| codex 纯 CLI | 11.1 | 34.2 | — | — | — | 2 turn (med) |
+| claude CLI max | 12.0 | 40.9 | $39.71 (med) | — | 11,657 (med) | 23 (med) |
+| openclaw / cuaclaw hybrid | 12.0 | 40.5 | — | — | — | — |
 | 官方纯 GUI (gpt-5.5, 500步) | 0.0 | — | — | — | — | 117.5 (med) |
 
-> 注: Binary = score=1.0 占比; Partial = 0<score<1 占比 (二者相加 ≈ 有产出的题, 余下为 0 分)。
-> 均为全 108 题口径; codex hybrid 去 infra(104 题)口径 Binary=19.2%。
+> 注: 对齐 paper Table 3 口径 — **Binary = score=1.0 的题占比; Partial = 全 108 题的平均部分分(partial credit / 平均分), 不是"拿到部分分的题占比"**。
+> 均为全 108 题口径; codex hybrid 去 infra(104 题)口径 Binary=19.2% / Partial=51.4%。
 
 ### 字段口径与可得性(各 harness 采集不一致, 不能直接比绝对值)
 
