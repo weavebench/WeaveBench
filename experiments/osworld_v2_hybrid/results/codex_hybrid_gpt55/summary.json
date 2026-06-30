@@ -1,0 +1,48 @@
+{
+  "run": "FULL_108_gpt55_codex_xhigh_20260628_125852",
+  "model": "gpt-5.5",
+  "harness": "codex CLI injected into VM + GUI channel (hybrid)",
+  "reasoning_effort": "xhigh",
+  "scoring": "native OSWorld env.evaluate() (paper-faithful)",
+  "cohorts": {
+    "all_108": {
+      "n": 108,
+      "binary_pct": 18.52,
+      "partial_pct": 49.64,
+      "binary_count": 20,
+      "nonzero_partial_count": 64
+    },
+    "de_infra_104": {
+      "n": 104,
+      "binary_pct": 19.23,
+      "partial_pct": 51.39,
+      "binary_count": 20,
+      "nonzero_partial_count": 63
+    }
+  },
+  "efficiency": {
+    "tool_calls_per_task": {
+      "mean": 77.5,
+      "median": 68.0
+    },
+    "gui_calls_per_task": {
+      "mean": 9.2,
+      "median": 5.0
+    },
+    "cli_calls_per_task": {
+      "mean": 68.3,
+      "median": 56.0
+    },
+    "total_tokens_per_task_incl_input": {
+      "mean": 696058.9,
+      "median": 558376,
+      "note": "codex CLI logs only a combined token total (input+reasoning+output); output-only tokens and cost were not recorded -> reported as '-' in tables"
+    }
+  },
+  "excluded_infra_tasks": {
+    "063": "VM ext4 journal error -> root remounted read-only",
+    "064": "network: Connection broken / IncompleteRead during execution",
+    "082": "network: Connection reset by peer during task setup",
+    "069": "framework: multiphase_unsupported_in_inject_runner"
+  }
+}
