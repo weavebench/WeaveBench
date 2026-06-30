@@ -57,47 +57,30 @@
 - 已按 EVAL 日志人工修正回 0.7(见 023/score.json 的 note 字段)。
 - 与 064/082 的区别: 064/082 故障在执行/setup 阶段导致任务没跑完(真失败); 023 任务和打分都成功, 只是事后取产物失败 → 不剔, 计 0.7。
 
-## 横向对比(同 benchmark, gpt-5.5)
+## 两种口径(codex hybrid)
 
-| 方案 | 平均分 | 严格通过率 |
+| 口径 | 平均分(Partial) | 严格通过率(Binary) |
 |---|---|---|
-| **codex hybrid (GUI+CLI, 去infra 104题)** | **51.39%** | **19.23%** |
-| codex hybrid (GUI+CLI, 原始 108题) | 49.64% | 18.52% |
-| codex 纯 CLI (gui=False) | 34.18% | 11.11% |
-| openclaw GUI+CLI hybrid | 40.52% | 12.04% |
-| claude CLI max | 40.93% | 12.04% |
+| **去 infra bug(推荐, 104 题)** | **51.39%** | **19.23%** |
+| 原始 108 题 | 49.64% | 18.52% |
 
-codex 混合方案是各方案最高; GUI+CLI 比纯 CLI 高约 15 个点。
+## 对比 paper Table 3(同 backbone gpt-5.5)
 
-## 效率统计表(per-task, 全 108 题口径)
+我们的 codex hybrid 与 paper Table 3 里官方 GPT-5.5(batched)行直接对比(同评测器、同 108 题):
 
-| Model | Binary (%) | Partial (%) | Cost/task | Tool calls/task | Out tok/task | Steps/task |
-|---|---|---|---|---|---|---|
-| codex hybrid (GUI+CLI) | 18.5 | 49.6 | — | 68 (med) | — | 1 turn (med) |
-| codex 纯 CLI | 11.1 | 34.2 | — | — | — | 2 turn (med) |
-| claude CLI max | 12.0 | 40.9 | $39.71 (med) | — | 11,657 (med) | 23 (med) |
-| openclaw / cuaclaw hybrid | 12.0 | 40.5 | — | — | — | — |
-| 官方纯 GUI (gpt-5.5, 500步) | 0.0 | — | — | — | — | 117.5 (med) |
+| Model / harness | Binary (%) | Partial (%) | Tool calls/task |
+|---|---|---|---|
+| **GPT-5.5 + codex hybrid(本工作)** | **18.5** | 49.6 | 77.5 |
+| GPT-5.5 batched(paper Table 3) | 13.0 | 49.5 | 149.8 |
 
-> 注: 对齐 paper Table 3 口径 — **Binary = score=1.0 的题占比; Partial = 全 108 题的平均部分分(partial credit / 平均分), 不是"拿到部分分的题占比"**。
-> 均为全 108 题口径; codex hybrid 去 infra(104 题)口径 Binary=19.2% / Partial=51.4%。
+> 口径对齐 paper Table 3:**Binary = score=1.0 的题占比;Partial = 全 108 题的平均部分分(partial credit / 平均分),不是"拿到部分分的题占比"**。
+> codex hybrid 去 infra(104 题)口径:Binary 19.2% / Partial 51.4%。
 
-### 字段口径与可得性(各 harness 采集不一致, 不能直接比绝对值)
+**结论**:同一 GPT-5.5 backbone,把官方 batched loop 换成 codex hybrid harness,Binary **+5.5 pt(13.0 → 18.5%)**,而 Partial 几乎不变(49.5 → 49.6)且 tool calls/task 砍半(149.8 → 77.5)。增益来自把"接近完成"的任务推过满分线,而非普遍提升部分进度。
 
-- **codex (hybrid / 纯CLI)**: 来自 in-VM `codex` CLI 的 agent.log。
-  - `Tool calls/task` = `hybrid_codex_action_mix.json` 的 CLI+GUI 动作总数 (median 68, mean 77.5)。
-  - `Steps/task` 用 codex turn 数代替 (hybrid median 1, 纯CLI median 2) — codex 单 turn 内含多次工具调用, 与 claude 的 turn 不可比。
-  - **Cost 无法计**: codex CLI 只在结尾打印 "tokens used" 总量(含 input+reasoning+output, median ~558k tok/task), 不拆 output, 也无单价 → Out tok/task、Cost/task 留空。
-- **claude CLI max**: 来自 `claude_stream.jsonl` 的 result 事件, 字段最全。
-  - Cost/task = `total_cost_usd` (median $39.71, mean $56.95)。
-  - Out tok/task = `usage.output_tokens` (median 11,657, mean 15,529)。
-  - Steps/task = `num_turns` (median 23, mean 26.7)。
-  - 101/108 题有 usage(7 题异常无 result 事件)。
-- **openclaw / cuaclaw hybrid**: 分数取自 `check/hybrid_*_time.json`; per-task token/cost/toolcall 未单独采集 → 留空。
-- **官方纯 GUI**: 取自 xlangai 官方 trajectory 包(results_gpt5.5_500steps), 只有 step/timing, 无分数对齐到本表评测器 → Binary 显示 0 是因该来源未含本地 native 分, 仅 Steps(median 117.5)可用作 GUI 步数参考。
+字段口径说明:
+- `Tool calls/task` = codex agent.log 的 CLI+GUI 动作总数(mean 77.5 / median 68)。
+- `Cost/task`、`Out tok/task` 留空(`—`):codex CLI 只打印 "tokens used" 总量(含 input+reasoning+output, median ~558k tok/task),不拆 output、无单价,无法与 paper 的纯 output token / cost 对齐。
+- paper 的 `Steps/task`(一次 observe→act 回合)对应我们的 tool-call 数(codex 单动作执行 ≈ single-action),不是 1–2 次 `codex exec`。
 
-### 关键对比解读
-
-- **codex hybrid 用极少的"轮次"达到最高分**: median 1 个 codex turn(单 turn 内自主多步), 而 claude 需 median 23 turn — codex 把多步操作压在一次长链路里。
-- **codex token 消耗大**: median ~558k tok/task(含 input 累积), 反映 xhigh + 单 turn 长上下文; claude output 只有 ~12k(但 input 达 ~1.97M, cost $39.71/task)。
-- Cost 维度只有 claude 有权威数字($39.71/task median); codex 需用 LiteLLM 侧用量日志另算, 当前 run 未落盘。
+> 注:其余 harness(纯 CLI / claude / cuaclaw / 官方纯 GUI)的对照后续再补。
