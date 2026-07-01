@@ -106,9 +106,11 @@ def test_classify_crashed_on_nonzero_exit():
 
 def test_classify_empty_run_retry_exhausted():
     """THE bug: clean process signals (done True, exit 0) but no model output —
-    retry-exhausted upstream failure must be caught as empty_run, not ok."""
+    retry-exhausted upstream failure must be caught as empty_run, not ok.
+    chat_bytes=0 because a genuine empty run leaves a tiny/absent chat.jsonl."""
     v = _classify_agent_status(
-        True, {"agent_exit": 0, "retries_used": 3}, _tu(n_calls=0, output=0))
+        True, {"agent_exit": 0, "retries_used": 3}, _tu(n_calls=0, output=0),
+        chat_bytes=0)
     assert v["status"] == "empty_run"
     assert "retries_used=3" in v["reason"]
 
@@ -116,14 +118,27 @@ def test_classify_empty_run_retry_exhausted():
 def test_classify_empty_run_bare_refusal():
     """A bare refusal emits a few dozen tokens but no real work → still empty."""
     v = _classify_agent_status(
-        True, {"agent_exit": 0, "retries_used": 0}, _tu(n_calls=1, output=5))
+        True, {"agent_exit": 0, "retries_used": 0}, _tu(n_calls=1, output=5),
+        chat_bytes=200)
     assert v["status"] == "empty_run"
+
+
+def test_classify_not_empty_when_chat_is_large():
+    """Regression: aggregate_chat_jsonl only parses openclaw's message.usage, so
+    on codex/hermes it reports n_calls=0 even for a rich multi-MB transcript.
+    A large chat.jsonl must veto the empty_run verdict — the agent clearly ran
+    (verified: a codex task scored 0.984 while token stats showed n_calls=0)."""
+    v = _classify_agent_status(
+        True, {"agent_exit": 0, "retries_used": 0}, _tu(n_calls=0, output=0),
+        chat_bytes=4_887_014)  # real size of the misclassified codex chat.jsonl
+    assert v["status"] == "ok"
 
 
 def test_classify_crashed_takes_precedence_over_empty():
     """Non-zero exit is reported as crashed even when tokens are also ~0."""
     v = _classify_agent_status(
-        True, {"agent_exit": 1, "retries_used": 2}, _tu(n_calls=0, output=0))
+        True, {"agent_exit": 1, "retries_used": 2}, _tu(n_calls=0, output=0),
+        chat_bytes=0)
     assert v["status"] == "crashed"
 
 
@@ -132,5 +147,5 @@ def test_classify_ok_when_token_usage_unavailable():
     clean-exit run is NOT downgraded to empty_run on missing evidence."""
     v = _classify_agent_status(
         True, {"agent_exit": 0, "retries_used": 0},
-        {"ok": False, "error": "chat.jsonl missing"})
+        {"ok": False, "error": "chat.jsonl missing"}, chat_bytes=0)
     assert v["status"] == "ok"
