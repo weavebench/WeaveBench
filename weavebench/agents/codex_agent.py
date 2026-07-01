@@ -650,6 +650,9 @@ class CodexAgent:
             with (output_dir / "agent.log").open("a", encoding="utf-8") as fh:
                 fh.write(f"\n[codex_agent] AGENT_EXIT={exit_code if exit_code is not None else -1}\n")
                 fh.write(f"[codex_agent] RETRIES_USED={retries_used}\n")
+                # The runner already wrote a real MAX_STEPS_REACHED=N marker (from
+                # the step-cap watchdog) into run.log => agent.log. Only synthesize
+                # a fallback when the run timed out before the runner finished.
                 if not done:
                     fh.write(f"[codex_agent] MAX_STEPS_REACHED=0 timed_out_after={elapsed:.0f}s\n")
         except OSError:
@@ -698,6 +701,11 @@ class CodexAgent:
         """
         display_export = 'export DISPLAY=:0' if self.gui else 'unset DISPLAY'
         max_retries = self.max_refusal_retries
+        # Step-cap budget: parity with openclaw. Each refusal-retry re-runs the
+        # whole codex exec from scratch (no resume), so each retry can spend up
+        # to max_steps more tool calls — bump the cap by (1 + max_retries) so the
+        # watchdog doesn't kill a legitimate retry sequence early.
+        watchdog_cap = self.max_steps * (1 + self.max_refusal_retries)
         return f'''#!/usr/bin/env bash
 # wcb codex runner v0.2 — retry-hardened (parity with openclaw Hook A)
 set -u
@@ -710,6 +718,29 @@ PROMPT_FILE={CODEX_PROMPT_PATH}
 RUN_LOG={CODEX_RUN_LOG}
 DONE_FILE={CODEX_RUN_DONE}
 MAX_RETRIES={max_retries}
+STEPS_CAPPED={CODEX_RUN_DONE}.steps_capped
+rm -f "$STEPS_CAPPED"
+
+# Step-cap watchdog (parity with openclaw): codex exec is a oneshot autonomous
+# loop with no native max-turns flag, so we count tool calls across every
+# rollout.jsonl (retries spawn new uuid dirs) and kill codex once the count
+# reaches watchdog_cap = max_steps * (1 + max_refusal_retries). Each
+# "type":"function_call" event in rollout.jsonl is one step.
+WATCHDOG_CAP={watchdog_cap}
+(
+  while : ; do
+    sleep 5
+    n=$(find {CODEX_SESSIONS_DIR} -name '*.jsonl' -exec grep -o '"type":"function_call"' {{}} + 2>/dev/null | wc -l)
+    if [ "$n" -ge "$WATCHDOG_CAP" ]; then
+      echo "MAX_STEPS_REACHED ($n function_calls >= $WATCHDOG_CAP) — killing codex" >> "$RUN_LOG"
+      echo MAX_STEPS_REACHED > "$STEPS_CAPPED"
+      pkill -TERM -f '@openai/codex' 2>/dev/null || true
+      pkill -TERM -f '/usr/local/bin/codex' 2>/dev/null || true
+      break
+    fi
+  done
+) &
+WATCH_PID=$!
 
 TRY=0
 RC=0
@@ -720,6 +751,8 @@ while : ; do
     < "$PROMPT_FILE" >> "$RUN_LOG" 2>&1
   RC=$?
   echo "AGENT_TURN_EXIT=$RC try=$TRY" >> "$RUN_LOG"
+  # Watchdog killed codex for hitting the step cap — stop, don't retry.
+  [ -f "$STEPS_CAPPED" ] && break
   [ "$TRY" -ge "$MAX_RETRIES" ] && break
 
   # Detect transient upstream errors in the LAST ~200 lines of run log.
@@ -761,6 +794,12 @@ done
 
 echo "RETRIES_USED=$RETRIES_USED" >> "$RUN_LOG"
 echo "AGENT_EXIT=$RC" >> "$RUN_LOG"
+kill $WATCH_PID 2>/dev/null || true
+if [ -f "$STEPS_CAPPED" ]; then
+  echo "MAX_STEPS_REACHED=1 cap=$WATCHDOG_CAP" >> "$RUN_LOG"
+else
+  echo "MAX_STEPS_REACHED=0 cap=$WATCHDOG_CAP" >> "$RUN_LOG"
+fi
 echo $RC > "$DONE_FILE"
 exit $RC
 '''

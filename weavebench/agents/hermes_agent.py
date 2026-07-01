@@ -867,6 +867,9 @@ class HermesAgent:
             with (output_dir / "agent.log").open("a", encoding="utf-8") as fh:
                 fh.write(f"\n[hermes_agent] AGENT_EXIT={exit_code if exit_code is not None else -1}\n")
                 fh.write(f"[hermes_agent] RETRIES_USED={retries_used}\n")
+                # The runner already wrote a real MAX_STEPS_REACHED=N marker (from
+                # the step-cap watchdog) into run.log => agent.log. Only synthesize
+                # a fallback when the run timed out before the runner finished.
                 if not done:
                     fh.write(f"[hermes_agent] MAX_STEPS_REACHED=0 timed_out_after={elapsed:.0f}s\n")
         except OSError:
@@ -939,6 +942,10 @@ class HermesAgent:
         """
         display_export = "export DISPLAY=:0" if self.gui else "unset DISPLAY"
         max_retries = self.max_refusal_retries
+        # Step-cap budget: parity with openclaw. Each refusal-retry re-runs the
+        # whole hermes -z oneshot from scratch, so bump the cap by
+        # (1 + max_refusal_retries) so the watchdog tolerates retry sequences.
+        watchdog_cap = self.max_steps * (1 + self.max_refusal_retries)
         return f'''#!/usr/bin/env bash
 # wcb hermes runner v0.2 — retry-hardened (parity with openclaw Hook A)
 set -u
@@ -970,6 +977,31 @@ PROMPT_BODY=$(cat {HERMES_PROMPT_PATH})
 RUN_LOG={HERMES_RUN_LOG}
 DONE_FILE={HERMES_RUN_DONE}
 MAX_RETRIES={max_retries}
+STEPS_CAPPED={HERMES_RUN_DONE}.steps_capped
+rm -f "$STEPS_CAPPED"
+
+# Step-cap watchdog (parity with openclaw): hermes -z is a oneshot autonomous
+# loop with no native max-turns flag. hermes writes its transcript incrementally
+# to a single session_*.json (.messages array); we count "role":"assistant"
+# occurrences in it — the SAME unit openclaw counts in chat.jsonl. We grep the
+# raw bytes rather than parse JSON so a half-written file just under-counts by
+# one and recovers next poll (no crash). Kill hermes once the count reaches
+# watchdog_cap = max_steps * (1 + max_refusal_retries).
+WATCHDOG_CAP={watchdog_cap}
+(
+  while : ; do
+    sleep 5
+    n=$(grep -o '"role": *"assistant"' {HERMES_SESSIONS_DIR}/session_*.json 2>/dev/null | wc -l)
+    if [ "$n" -ge "$WATCHDOG_CAP" ]; then
+      echo "MAX_STEPS_REACHED ($n assistant replies >= $WATCHDOG_CAP) — killing hermes" >> "$RUN_LOG"
+      echo MAX_STEPS_REACHED > "$STEPS_CAPPED"
+      pkill -TERM -f '/opt/hermes/.venv/bin/hermes' 2>/dev/null || true
+      pkill -TERM -f 'hermes_cli' 2>/dev/null || true
+      break
+    fi
+  done
+) &
+WATCH_PID=$!
 
 TRY=0
 RC=0
@@ -983,6 +1015,8 @@ while : ; do
     >> "$RUN_LOG" 2>&1
   RC=$?
   echo "AGENT_TURN_EXIT=$RC try=$TRY" >> "$RUN_LOG"
+  # Watchdog killed hermes for hitting the step cap — stop, don't retry.
+  [ -f "$STEPS_CAPPED" ] && break
   [ "$TRY" -ge "$MAX_RETRIES" ] && break
 
   TAIL=$(tail -200 "$RUN_LOG" 2>/dev/null)
@@ -1025,6 +1059,12 @@ done
 
 echo "RETRIES_USED=$RETRIES_USED" >> "$RUN_LOG"
 echo "AGENT_EXIT=$RC" >> "$RUN_LOG"
+kill $WATCH_PID 2>/dev/null || true
+if [ -f "$STEPS_CAPPED" ]; then
+  echo "MAX_STEPS_REACHED=1 cap=$WATCHDOG_CAP" >> "$RUN_LOG"
+else
+  echo "MAX_STEPS_REACHED=0 cap=$WATCHDOG_CAP" >> "$RUN_LOG"
+fi
 echo $RC > "$DONE_FILE"
 exit $RC
 '''
