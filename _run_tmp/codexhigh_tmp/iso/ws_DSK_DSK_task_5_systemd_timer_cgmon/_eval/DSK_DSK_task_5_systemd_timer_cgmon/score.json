@@ -1,0 +1,413 @@
+{
+  "artifact_checks": [
+    {
+      "id": "bug_findings.md",
+      "task_says": "Hard constraints for main deliverable `bug_findings.md`: At least 3 paragraphs, each ≥ 80 characters of body. Each paragraph must reference one of `sample.service` / `sample.timer` (preferably in `file:line` form); the three paragraphs must each correspond to one of the three independent defects (spread across the `[Install]` section of `sample.service`, the schedule section of `sample.timer`, and the resource-constraint configuration of `sample.service`). Each paragraph must describe the symptom, the localization process (which commands / interfaces you used and what you observed), and the fix approach. Do not preset a fixed example for the concrete fix values — reason them out yourself from the systemd documentation.",
+      "spec_clauses": [
+        "At least 3 paragraphs, each ≥ 80 characters of body",
+        "Each paragraph references one of `sample.service` / `sample.timer`, preferably in `file:line` form",
+        "Three paragraphs each correspond to one of the three independent defects spread across `[Install]` section of `sample.service`, schedule section of `sample.timer`, and resource-constraint configuration of `sample.service`",
+        "Each paragraph describes the symptom",
+        "Each paragraph describes the localization process, including commands/interfaces used and observations",
+        "Each paragraph describes the fix approach",
+        "Does not merely preset a fixed example for concrete fix values"
+      ],
+      "clause_results": [
+        {"clause": "At least 3 paragraphs, each ≥ 80 characters of body", "satisfied": true, "evidence": "File has 3 nonempty paragraphs with lengths about 783, 708, and 803 characters."},
+        {"clause": "Each paragraph references one of `sample.service` / `sample.timer`, preferably in `file:line` form", "satisfied": true, "evidence": "Paragraphs cite `sample.service.bak:12-13`, `sample.timer.bak:5-7`, `sample.service.bak:5-10`, `sample.service:11`, and `sample.timer:5-6`."},
+        {"clause": "Three paragraphs each correspond to one of the three independent defects spread across `[Install]` section of `sample.service`, schedule section of `sample.timer`, and resource-constraint configuration of `sample.service`", "satisfied": true, "evidence": "Paragraph 1 covers the install-target defect, paragraph 2 covers the timer OnCalendar defect, and paragraph 3 covers missing CPU quota/resource control."},
+        {"clause": "Each paragraph describes the symptom", "satisfied": true, "evidence": "Symptoms include non-existent `multi-user.target` warning, timer bad-setting/zero timers, and unthrottled CPU-bound workload."},
+        {"clause": "Each paragraph describes the localization process, including commands/interfaces used and observations", "satisfied": true, "evidence": "Mentions `systemctl --user enable/status`, `list-timers`, `journalctl`, `systemd-analyze calendar`, GNOME System Monitor, `systemd-cgtop`, `systemctl --user show`, and cgroup filesystem inspection."},
+        {"clause": "Each paragraph describes the fix approach", "satisfied": true, "evidence": "Fixes described: use user manager target(s), valid calendar expression plus AccuracySec, and add `CPUQuota=50%` with CPU controller availability."},
+        {"clause": "Does not merely preset a fixed example for concrete fix values", "satisfied": true, "evidence": "The text explains target choice, calendar syntax, and cgroup verification rather than only copying an example value."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "`bug_findings.md` has exactly three long paragraphs citing `sample.service.bak:12-13`, `sample.timer.bak:5-7`, and `sample.service.bak:5-10`, with symptoms, diagnosis commands, observations, and fixes for all three defect classes.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "systemd_report.md",
+      "task_says": "Hard constraints for main deliverable `systemd_report.md`: At least 4 paragraphs, each ≥ 80 characters. Suggested coverage: a summary of the symptoms of the three bugs; the fundamental differences between user-level and system-level systemd; design recommendations for cgroup `CPUQuota` / `MemoryHigh`; a timer-scheduling debug checklist.",
+      "spec_clauses": [
+        "At least 4 paragraphs, each ≥ 80 characters",
+        "Covers a summary of the symptoms of the three bugs",
+        "Covers fundamental differences between user-level and system-level systemd",
+        "Covers design recommendations for cgroup `CPUQuota` / `MemoryHigh`",
+        "Covers a timer-scheduling debug checklist"
+      ],
+      "clause_results": [
+        {"clause": "At least 4 paragraphs, each ≥ 80 characters", "satisfied": true, "evidence": "File has 4 nonempty paragraphs with lengths about 638, 494, 599, and 675 characters."},
+        {"clause": "Covers a summary of the symptoms of the three bugs", "satisfied": true, "evidence": "First paragraph summarizes no active timers, parser rejection, and unthrottled Python workload."},
+        {"clause": "Covers fundamental differences between user-level and system-level systemd", "satisfied": true, "evidence": "Second paragraph contrasts `multi-user.target` in the system manager with `default.target`/`timers.target` in the user manager and discusses user cgroup placement."},
+        {"clause": "Covers design recommendations for cgroup `CPUQuota` / `MemoryHigh`", "satisfied": true, "evidence": "Third paragraph recommends verifying `CPUQuota=50%` via `cpu.max` and using `MemoryHigh=` as throttling/backpressure before `MemoryMax=`."},
+        {"clause": "Covers a timer-scheduling debug checklist", "satisfied": true, "evidence": "Fourth paragraph lists `systemd-analyze calendar`, daemon-reload, status, list-timers, and journal checks."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "`systemd_report.md` contains 4 long paragraphs covering the requested symptom summary, user vs system systemd differences, CPUQuota/MemoryHigh recommendations, and a timer debug checklist.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "list_timers_before.txt",
+      "task_says": "`list_timers_before.txt` | Snapshot of the timer list and next-trigger times before the fix",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains a snapshot of `systemctl --user list-timers` or equivalent timer list before the fix",
+        "Shows next-trigger information before the fix"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 55 bytes."},
+        {"clause": "Contains a snapshot of `systemctl --user list-timers` or equivalent timer list before the fix", "satisfied": true, "evidence": "Content has timer-list headers and `0 timers listed.`"},
+        {"clause": "Shows next-trigger information before the fix", "satisfied": "partial", "evidence": "The `NEXT LEFT LAST PASSED UNIT ACTIVATES` header is present, but because the timer was invalid no actual next-trigger row exists."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.83,
+      "evidence_quote": "The file reads `NEXT LEFT LAST PASSED UNIT ACTIVATES` followed by `0 timers listed.`, which is a valid before-fix snapshot but has no concrete next-trigger row because the unit failed to load.",
+      "missing_or_wrong": "No actual timer row or next-trigger time is present; acceptable only as a symptom snapshot of the broken state.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "list_timers_after.txt",
+      "task_says": "`list_timers_after.txt` | Timer list captured again after the fix; must reflect changes in the NEXT/LAST fields",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains a timer list captured after the fix",
+        "Shows `sample.timer` / `sample.service`",
+        "Reflects changes in the NEXT/LAST fields"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 171 bytes."},
+        {"clause": "Contains a timer list captured after the fix", "satisfied": true, "evidence": "Content has timer-list headers and `1 timers listed.`"},
+        {"clause": "Shows `sample.timer` / `sample.service`", "satisfied": true, "evidence": "Row includes `sample.timer sample.service`."},
+        {"clause": "Reflects changes in the NEXT/LAST fields", "satisfied": "partial", "evidence": "LAST is populated (`Mon 2026-07-06 06:05:56 HKT 2min 33s ago`) but NEXT remains `n/a`, so only the LAST-side change is clearly shown."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.88,
+      "evidence_quote": "After-fix list shows `sample.timer sample.service` with `LAST Mon 2026-07-06 06:05:56 HKT`, but `NEXT` is `n/a` rather than a scheduled future elapse time.",
+      "missing_or_wrong": "NEXT field is still `n/a`; the required NEXT/LAST change is only partially evidenced.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "journal_timer_before.txt",
+      "task_says": "`journal_timer_before.txt` | Journal of the timer unit before the fix, used to diagnose why it did not fire",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains journal output for the timer unit before the fix",
+        "Provides diagnostic evidence for why the timer did not fire"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 272 bytes."},
+        {"clause": "Contains journal output for the timer unit before the fix", "satisfied": true, "evidence": "Lines are from `systemd[726]` referring to `/home/user/.config/systemd/user/sample.timer`."},
+        {"clause": "Provides diagnostic evidence for why the timer did not fire", "satisfied": true, "evidence": "Contains `Failed to parse calendar specification` and `Timer unit lacks value setting. Refusing.`"}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Journal states `/sample.timer:6: Failed to parse calendar specification, ignoring: *-*-* *:*:00/60` and `Timer unit lacks value setting. Refusing.`",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "journal_service_before.txt",
+      "task_says": "`journal_service_before.txt` | Journal of the service unit before the fix",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains journal output for `sample.service` before the fix",
+        "Shows service/workload behavior useful for diagnosis before the resource fix"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 5819 bytes."},
+        {"clause": "Contains journal output for `sample.service` before the fix", "satisfied": true, "evidence": "Includes `Started Sample CPU workload service for systemd monitoring.` and many `python3` workload iteration lines before the stop at 05:58:22."},
+        {"clause": "Shows service/workload behavior useful for diagnosis before the resource fix", "satisfied": true, "evidence": "Shows a long-running `workload.py started` process with hundreds of iterations and CPU time consumed, matching the unthrottled symptom."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Before-fix service journal shows `workload.py started` and iteration logs through iteration 550 before stopping with `Consumed 2min 41.423s CPU time.`",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "journal_after.txt",
+      "task_says": "`journal_after.txt` | Journal of the service unit after the fix; must contain evidence of at least one real service trigger and `workload.py` execution (e.g. a `service Started` line or a startup marker like `workload.py started`)",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains journal output for the service unit after the fix",
+        "Must contain evidence of at least one real service trigger",
+        "Must contain evidence of `workload.py` execution"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 7564 bytes."},
+        {"clause": "Contains journal output for the service unit after the fix", "satisfied": true, "evidence": "Contains service stop/start cycles dated 06:02 through 06:08 after the fixes were applied."},
+        {"clause": "Must contain evidence of at least one real service trigger", "satisfied": true, "evidence": "Contains multiple `Started Sample CPU workload service for systemd monitoring.` lines."},
+        {"clause": "Must contain evidence of `workload.py` execution", "satisfied": true, "evidence": "Contains multiple `workload.py started - PID /home/user/.config/systemd/user/workload.py` markers and iteration logs."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "After journal includes repeated `Started Sample CPU workload service for systemd monitoring.` and `workload.py started` entries at 06:02:19, 06:03:03, and 06:05:56.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "cpuquota_verify.txt",
+      "task_says": "`cpuquota_verify.txt` | Raw contents of `cpu.max` read directly from the service's cgroup path; must show the two numeric values representing the 50% ratio (e.g. `<quota> <period>`, such as `50000 100000`)",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains raw contents of `cpu.max` read directly from the service's cgroup path",
+        "Shows two numeric values representing a 50% ratio such as `50000 100000`",
+        "Does not merely show a unit property or textual claim"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 13 bytes."},
+        {"clause": "Contains raw contents of `cpu.max` read directly from the service's cgroup path", "satisfied": true, "evidence": "Content is exactly a cgroup-v2 `cpu.max` tuple; companion path file gives `/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/sample.service/cpu.max`."},
+        {"clause": "Shows two numeric values representing a 50% ratio such as `50000 100000`", "satisfied": true, "evidence": "File content is `50000 100000`."},
+        {"clause": "Does not merely show a unit property or textual claim", "satisfied": true, "evidence": "No prose or `CPUQuota` property text is present, only the raw numeric tuple."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "`cpuquota_verify.txt` contains exactly `50000 100000`, and chat shows it was obtained with `cat /sys/fs/cgroup.../sample.service/cpu.max`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "sample.service.bak",
+      "task_says": "`sample.service.bak` / `sample.timer.bak` | Backups of the unit files before modification, for diff auditing",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Is a backup of `sample.service` before modification",
+        "Preserves the pre-fix install/resource defects for diff auditing"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 271 bytes."},
+        {"clause": "Is a backup of `sample.service` before modification", "satisfied": true, "evidence": "Contains original service content without `CPUQuota=50%`."},
+        {"clause": "Preserves the pre-fix install/resource defects for diff auditing", "satisfied": true, "evidence": "Contains `[Install] WantedBy=multi-user.target` and no CPU resource-control directive."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Backup contains original `sample.service` with `ExecStart=/usr/bin/python3 ...`, no `CPUQuota`, and `[Install] WantedBy=multi-user.target`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "sample.timer.bak",
+      "task_says": "`sample.service.bak` / `sample.timer.bak` | Backups of the unit files before modification, for diff auditing",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Is a backup of `sample.timer` before modification",
+        "Preserves the pre-fix schedule/install defects for diff auditing"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists and is 178 bytes."},
+        {"clause": "Is a backup of `sample.timer` before modification", "satisfied": true, "evidence": "Contains original timer unit text."},
+        {"clause": "Preserves the pre-fix schedule/install defects for diff auditing", "satisfied": true, "evidence": "Contains `OnCalendar=*-*-* *:*:00/60` and `[Install] WantedBy=multi-user.target`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Backup contains original `sample.timer` with invalid `OnCalendar=*-*-* *:*:00/60` and `WantedBy=multi-user.target`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_system_monitor_processes.png",
+      "task_says": "`view_system_monitor_processes.png`: Processes view, showing `workload.py` / python processes running. Fixed file names; each ≥ 1024×600, ≥ 5 KB, with pairwise distinct md5. The evaluator runs OCR and window-level discrimination on the screenshots; pure-black images, an empty desktop, or a plain terminal dump do not count as GUI evidence.",
+      "spec_clauses": [
+        "File exists with fixed name under `/tmp_workspace/results/`",
+        "Image is ≥ 1024×600 and ≥ 5 KB",
+        "Image has pairwise distinct md5 from the other required screenshots",
+        "Is real GUI evidence, not pure-black, empty desktop, or plain terminal dump",
+        "Shows a Processes view",
+        "Shows `workload.py` / python process running"
+      ],
+      "clause_results": [
+        {"clause": "File exists with fixed name under `/tmp_workspace/results/`", "satisfied": true, "evidence": "PNG exists as `view_system_monitor_processes.png`."},
+        {"clause": "Image is ≥ 1024×600 and ≥ 5 KB", "satisfied": true, "evidence": "Pillow reports 1920×1080 and file size 1,468,261 bytes."},
+        {"clause": "Image has pairwise distinct md5 from the other required screenshots", "satisfied": true, "evidence": "MD5 `bb9d747e637e844ae029629ea39e98ff` is unique among the five screenshots."},
+        {"clause": "Is real GUI evidence, not pure-black, empty desktop, or plain terminal dump", "satisfied": true, "evidence": "Vision review saw a real Ubuntu GNOME desktop with GNOME System Monitor, not a mock or terminal-only dump."},
+        {"clause": "Shows a Processes view", "satisfied": true, "evidence": "GNOME System Monitor Processes tab/view is visible."},
+        {"clause": "Shows `workload.py` / python process running", "satisfied": true, "evidence": "Search box contains `workload.py` and filtered process list shows a running `python3` process with CPU and memory values."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Real GNOME System Monitor Processes screenshot shows search `workload.py` and a `python3` process (PID 2825) with CPU 18.35% and memory 188.4 MB; 1920×1080 and md5-unique.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_system_monitor_resources.png",
+      "task_says": "`view_system_monitor_resources.png`: Resources / CPU-curve view, illustrating high CPU usage before the fix when the throttle is not in effect. Fixed file names; each ≥ 1024×600, ≥ 5 KB, with pairwise distinct md5. The evaluator runs OCR and window-level discrimination on the screenshots; pure-black images, an empty desktop, or a plain terminal dump do not count as GUI evidence.",
+      "spec_clauses": [
+        "File exists with fixed name under `/tmp_workspace/results/`",
+        "Image is ≥ 1024×600 and ≥ 5 KB",
+        "Image has pairwise distinct md5 from the other required screenshots",
+        "Is real GUI evidence, not pure-black, empty desktop, or plain terminal dump",
+        "Shows a Resources / CPU-curve view",
+        "Illustrates high CPU usage before the fix when the throttle is not in effect"
+      ],
+      "clause_results": [
+        {"clause": "File exists with fixed name under `/tmp_workspace/results/`", "satisfied": true, "evidence": "PNG exists as `view_system_monitor_resources.png`."},
+        {"clause": "Image is ≥ 1024×600 and ≥ 5 KB", "satisfied": true, "evidence": "Pillow reports 1920×1080 and file size 1,510,247 bytes."},
+        {"clause": "Image has pairwise distinct md5 from the other required screenshots", "satisfied": true, "evidence": "MD5 `1e8e152cbc29c4573bc321d128c4ee28` is unique among the five screenshots."},
+        {"clause": "Is real GUI evidence, not pure-black, empty desktop, or plain terminal dump", "satisfied": true, "evidence": "Vision review saw a real GNOME System Monitor window on the desktop."},
+        {"clause": "Shows a Resources / CPU-curve view", "satisfied": true, "evidence": "GNOME System Monitor Resources tab is visible with per-core CPU timeline curves."},
+        {"clause": "Illustrates high CPU usage before the fix when the throttle is not in effect", "satisfied": "partial", "evidence": "CPU curves show high activity including one core around 77.5%, but the image itself does not explicitly tie the graph to the unthrottled `workload.py` before-fix state."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.92,
+      "evidence_quote": "Real GNOME System Monitor Resources screenshot has visible CPU time-series curves and high CPU activity (e.g. CPU3 about 77.5%); linkage to pre-fix workload is inferential rather than explicit.",
+      "missing_or_wrong": "Before-fix/unthrottled context is not directly labeled or tied to `workload.py` in the screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_systemd_cgtop.png",
+      "task_says": "`view_systemd_cgtop.png`: cgroup resource usage view, showing the target service's cgroup node and CPU%. Fixed file names; each ≥ 1024×600, ≥ 5 KB, with pairwise distinct md5. The evaluator runs OCR and window-level discrimination on the screenshots; pure-black images, an empty desktop, or a plain terminal dump do not count as GUI evidence.",
+      "spec_clauses": [
+        "File exists with fixed name under `/tmp_workspace/results/`",
+        "Image is ≥ 1024×600 and ≥ 5 KB",
+        "Image has pairwise distinct md5 from the other required screenshots",
+        "Is real GUI/window evidence rather than black/empty/fake",
+        "Shows a cgroup resource usage view such as `systemd-cgtop`",
+        "Shows the target service cgroup node",
+        "Shows CPU% for the target service"
+      ],
+      "clause_results": [
+        {"clause": "File exists with fixed name under `/tmp_workspace/results/`", "satisfied": true, "evidence": "PNG exists as `view_systemd_cgtop.png`."},
+        {"clause": "Image is ≥ 1024×600 and ≥ 5 KB", "satisfied": true, "evidence": "Pillow reports 1920×1080 and file size 683,880 bytes."},
+        {"clause": "Image has pairwise distinct md5 from the other required screenshots", "satisfied": true, "evidence": "MD5 `c0700dd9b13aa29b1913677b055f9a0c` is unique among the five screenshots."},
+        {"clause": "Is real GUI/window evidence rather than black/empty/fake", "satisfied": true, "evidence": "Vision review saw a real Ubuntu GNOME desktop with a terminal window, not a drawn mock."},
+        {"clause": "Shows a cgroup resource usage view such as `systemd-cgtop`", "satisfied": true, "evidence": "Terminal displays `systemd-cgtop` columns including Control Group, Tasks, CPU, Memory, Input/s, Output/s."},
+        {"clause": "Shows the target service cgroup node", "satisfied": true, "evidence": "Visible row includes `user.slice/user-1000.slice/user@1000.service/app.slice/sample.service`."},
+        {"clause": "Shows CPU% for the target service", "satisfied": true, "evidence": "Visible `sample.service` row shows about 80.7% CPU."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Real terminal screenshot of `systemd-cgtop` shows `.../app.slice/sample.service` with CPU around 80.7%; 1920×1080 and md5-unique.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_system_monitor_after_fix.png",
+      "task_says": "`view_system_monitor_after_fix.png`: Post-fix state in which `workload.py`'s CPU usage stays steadily below 50%. Fixed file names; each ≥ 1024×600, ≥ 5 KB, with pairwise distinct md5. The evaluator runs OCR and window-level discrimination on the screenshots; pure-black images, an empty desktop, or a plain terminal dump do not count as GUI evidence.",
+      "spec_clauses": [
+        "File exists with fixed name under `/tmp_workspace/results/`",
+        "Image is ≥ 1024×600 and ≥ 5 KB",
+        "Image has pairwise distinct md5 from the other required screenshots",
+        "Is real GUI evidence, not pure-black, empty desktop, plain terminal dump, or fake",
+        "Shows post-fix state",
+        "Shows `workload.py` CPU usage",
+        "Shows CPU usage stays steadily below 50%"
+      ],
+      "clause_results": [
+        {"clause": "File exists with fixed name under `/tmp_workspace/results/`", "satisfied": true, "evidence": "PNG exists as `view_system_monitor_after_fix.png`."},
+        {"clause": "Image is ≥ 1024×600 and ≥ 5 KB", "satisfied": true, "evidence": "Pillow reports 1920×1080 and file size 646,399 bytes."},
+        {"clause": "Image has pairwise distinct md5 from the other required screenshots", "satisfied": true, "evidence": "MD5 `40aa844454e0b0b26f5fac77ba212793` is unique among the five screenshots."},
+        {"clause": "Is real GUI evidence, not pure-black, empty desktop, plain terminal dump, or fake", "satisfied": true, "evidence": "Vision review saw a real GNOME System Monitor Processes view with a terminal behind it."},
+        {"clause": "Shows post-fix state", "satisfied": false, "evidence": "The visible background terminal title says `Desktop before Fix: sample.service unthrottled`, so the image itself is not credible post-fix evidence."},
+        {"clause": "Shows `workload.py` CPU usage", "satisfied": true, "evidence": "System Monitor is filtered for `workload.py` and shows a `python3` process with CPU about 12.56%."},
+        {"clause": "Shows CPU usage stays steadily below 50%", "satisfied": "partial", "evidence": "One instantaneous process CPU value is below 50%, but the screenshot does not show a sustained/steady history; background text also includes before-fix context and some values above 50%."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "The screenshot is real and shows a `python3` process around 12.56% CPU, but it is visibly titled as a before-fix/unthrottled desktop and does not demonstrate sustained post-fix CPU below 50%.",
+      "missing_or_wrong": "Critical post-fix-state clause is not satisfied; steady-below-50% clause is only partial.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cgtop_after_fix.png",
+      "task_says": "`view_cgtop_after_fix.png`: Post-fix cgroup view in which the target service's CPU usage is below 50%. Fixed file names; each ≥ 1024×600, ≥ 5 KB, with pairwise distinct md5. The evaluator runs OCR and window-level discrimination on the screenshots; pure-black images, an empty desktop, or a plain terminal dump do not count as GUI evidence.",
+      "spec_clauses": [
+        "File exists with fixed name under `/tmp_workspace/results/`",
+        "Image is ≥ 1024×600 and ≥ 5 KB",
+        "Image has pairwise distinct md5 from the other required screenshots",
+        "Is real GUI/window evidence rather than black/empty/fake",
+        "Shows a post-fix cgroup view",
+        "Shows target service cgroup CPU usage",
+        "Target service CPU usage is below 50%"
+      ],
+      "clause_results": [
+        {"clause": "File exists with fixed name under `/tmp_workspace/results/`", "satisfied": true, "evidence": "PNG exists as `view_cgtop_after_fix.png`."},
+        {"clause": "Image is ≥ 1024×600 and ≥ 5 KB", "satisfied": true, "evidence": "Pillow reports 1920×1080 and file size 679,318 bytes."},
+        {"clause": "Image has pairwise distinct md5 from the other required screenshots", "satisfied": true, "evidence": "MD5 `cc6acba9694b470b9e4b074b46586bea` is unique among the five screenshots."},
+        {"clause": "Is real GUI/window evidence rather than black/empty/fake", "satisfied": true, "evidence": "Vision review saw a real GNOME Terminal window with `systemd-cgtop`."},
+        {"clause": "Shows a post-fix cgroup view", "satisfied": false, "evidence": "The terminal title explicitly says `systemd-cgtop before fix: sample.service unthrottled`."},
+        {"clause": "Shows target service cgroup CPU usage", "satisfied": true, "evidence": "Visible `sample.service` cgroup row includes a CPU percentage."},
+        {"clause": "Target service CPU usage is below 50%", "satisfied": false, "evidence": "The visible `sample.service` row shows about 51.5% CPU, which is not below 50%."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "Real `systemd-cgtop` screenshot shows the target service row, but it is titled `before fix: ... unthrottled` and the visible CPU value is about 51.5%, not below 50%.",
+      "missing_or_wrong": "Critical post-fix-state clause is not satisfied; critical below-50% CPU clause is not satisfied.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.82,
+      "reason": "Core systemd objective is substantially achieved: `journal_after.txt` proves repeated service starts, `cpuquota_verify.txt` proves kernel `cpu.max` is `50000 100000`, and both backups/reports exist. However the two post-fix visual proof artifacts (`view_system_monitor_after_fix.png`, `view_cgtop_after_fix.png`) fail or only partially satisfy their critical post-fix/below-50% screenshot clauses."
+    },
+    "deliverable_correctness": {
+      "score": 0.7,
+      "reason": "Most text and CLI artifacts are correct (`bug_findings.md`, `systemd_report.md`, journals, backups, and cpuquota are strong), but two required screenshot deliverables are below 0.6 correctness: `view_system_monitor_after_fix.png` and `view_cgtop_after_fix.png`. Per rubric, any artifact below 0.6 caps this dimension at ≤0.7."
+    },
+    "deliverable_quality": {
+      "score": 0.92,
+      "reason": "All required files are present, readable, and parseable; PNGs are 1920×1080, >5KB, and md5-distinct. Quality is reduced because the after-fix screenshots have misleading before-fix titles and weak visual evidence for sustained below-50% CPU."
+    },
+    "evidence_authenticity": {
+      "score": 0.9,
+      "reason": "No prohibited fabrication patterns were found in agent commands beyond the benchmark prompt text; screenshots appear to be real GNOME desktop captures and CLI outputs are from `systemctl`, `journalctl`, `systemd-cgtop`, and `/sys/fs/cgroup`. The mismatch in after-fix screenshot titles creates ambiguity but not a clear hack signal."
+    },
+    "tool_use_correctness": {
+      "score": 0.88,
+      "reason": "The rollout used appropriate systemd, journal, cgroup, system monitor, `systemd-cgtop`, and real screenshot tools, and verified `cpu.max` directly. It did use direct cgroup subtree-control manipulation to make delegation available, which is defensible for the environment but somewhat outside the unit-file-only fix path."
+    },
+    "final_state_correctness": {
+      "score": 0.84,
+      "reason": "Final text evidence shows the fixed timer fired and the service cgroup has `cpu.max` set to `50000 100000`; `journal_after.txt` contains repeated `Started` and `workload.py started` entries. The final visual state is not fully correct because both post-fix screenshots fail to clearly show post-fix below-50% behavior."
+    },
+    "efficiency_robustness": {
+      "score": 0.86,
+      "reason": "The agent recovered from timer parse errors and missing cgroup `cpu.max`, diagnosed controller delegation, waited for timer firings, and verified final files. Some effort was spent on screenshots that were later mislabeled/reused with before-fix titles, lowering robustness."
+    },
+    "instruction_following": {
+      "score": 0.84,
+      "reason": "It created all named deliverables under results, wrote the required Markdown reports, captured real screenshots, and avoided forbidden gt access. It did not fully satisfy the explicit post-fix screenshot semantics for `view_system_monitor_after_fix.png` and `view_cgtop_after_fix.png`."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.7,
+  "summary": "The rollout successfully fixed and documented the systemd timer/service behavior in the textual and kernel evidence: the timer fired repeatedly and `cpu.max` contains the correct `50000 100000` quota. All required artifacts exist and appear authentic, but the two post-fix screenshots are materially wrong or ambiguous because they are labeled as before-fix/unthrottled and do not clearly show below-50% post-fix CPU, capping deliverable correctness."
+}
