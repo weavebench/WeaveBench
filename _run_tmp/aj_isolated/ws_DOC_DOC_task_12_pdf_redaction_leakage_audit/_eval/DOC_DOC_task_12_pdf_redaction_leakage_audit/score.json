@@ -1,0 +1,361 @@
+{
+  "artifact_checks": [
+    {
+      "id": "leak_findings.json",
+      "task_says": "Hard constraints on the primary deliverable `leak_findings.json`\n- Top-level keys all present: `extractors_agree`, `leak_token_classes`, `leaked_strings`, `per_employee`\n- `leak_token_classes` contains at least the three classes `SSN` / `Salary` / `Account`\n- `leaked_strings` has ≥ 12 distinct PII substrings after deduplication\n- `per_employee` is an array whose entries are of the form `{\"name\": \"<employee name>\", \"leaked\": [\"SSN: ...\", \"Salary: ...\", \"Account: ...\"]}`, correctly and completely attaching each of the 3 visible employees' three leaked SSN / Salary / Account substrings to the right person",
+      "spec_clauses": [
+        "Top-level keys all present: `extractors_agree`, `leak_token_classes`, `leaked_strings`, `per_employee`",
+        "`leak_token_classes` contains at least the three classes `SSN` / `Salary` / `Account`",
+        "`leaked_strings` has ≥ 12 distinct PII substrings after deduplication",
+        "`per_employee` is an array whose entries are of the form `{\"name\": \"<employee name>\", \"leaked\": [\"SSN: ...\", \"Salary: ...\", \"Account: ...\"]}`",
+        "correctly and completely attaching each of the 3 visible employees' three leaked SSN / Salary / Account substrings to the right person"
+      ],
+      "clause_results": [
+        {"clause": "Top-level keys all present: `extractors_agree`, `leak_token_classes`, `leaked_strings`, `per_employee`", "satisfied": false, "evidence": "No leak_findings.json exists in results/."},
+        {"clause": "`leak_token_classes` contains at least the three classes `SSN` / `Salary` / `Account`", "satisfied": false, "evidence": "No JSON artifact exists to inspect classes."},
+        {"clause": "`leaked_strings` has ≥ 12 distinct PII substrings after deduplication", "satisfied": false, "evidence": "No JSON artifact exists to count leaked_strings."},
+        {"clause": "`per_employee` is an array whose entries are of the form `{\"name\": \"<employee name>\", \"leaked\": [\"SSN: ...\", \"Salary: ...\", \"Account: ...\"]}`", "satisfied": false, "evidence": "No JSON artifact exists to inspect per_employee form."},
+        {"clause": "correctly and completely attaching each of the 3 visible employees' three leaked SSN / Salary / Account substrings to the right person", "satisfied": false, "evidence": "Although raw extractor files contain the values, the required mapping artifact was not produced."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `leak_findings.json` in chat.jsonl returned no evidence of a write or final claim.",
+      "missing_or_wrong": "All clauses unmet: primary JSON deliverable absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pdfinfo.txt",
+      "task_says": "`pdfinfo.txt` | Text dump of the original PDF's metadata, non-empty",
+      "spec_clauses": ["Text dump of the original PDF's metadata", "non-empty"],
+      "clause_results": [
+        {"clause": "Text dump of the original PDF's metadata", "satisfied": true, "evidence": "Contains pdfinfo-style fields: Title, Subject, Author, Creator, Producer, Pages, page size, file size, PDF version."},
+        {"clause": "non-empty", "satisfied": true, "evidence": "File is 620 bytes with multiple metadata lines."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pdfinfo.txt includes `Title: Personnel Compensation Roster`, `Subject: HR-ROSTER-2024-Q4`, `Pages: 1`, `Encrypted: no`, `File size: 1924 bytes`, `PDF version: 1.4`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "meta.json",
+      "task_says": "`meta.json` | All four fields present: `{\"pages\": <int>, \"producer\": \"<str>\", \"creator\": \"<str>\", \"title\": \"<str>\"}`",
+      "spec_clauses": ["JSON parses", "pages field present as int", "producer field present as str", "creator field present as str", "title field present as str"],
+      "clause_results": [
+        {"clause": "JSON parses", "satisfied": false, "evidence": "meta.json is absent."},
+        {"clause": "pages field present as int", "satisfied": false, "evidence": "No meta.json file."},
+        {"clause": "producer field present as str", "satisfied": false, "evidence": "No meta.json file."},
+        {"clause": "creator field present as str", "satisfied": false, "evidence": "No meta.json file."},
+        {"clause": "title field present as str", "satisfied": false, "evidence": "No meta.json file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `meta.json` in chat.jsonl returned no evidence of creation.",
+      "missing_or_wrong": "All clauses unmet: required JSON metadata file absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "leak_pdftotext.txt",
+      "task_says": "`leak_pdftotext.txt` | Output of the first independent text-extraction channel; contains the title `Personnel Compensation Roster` and several PII substrings",
+      "spec_clauses": ["Output of the first independent text-extraction channel", "contains the title `Personnel Compensation Roster`", "contains several PII substrings"],
+      "clause_results": [
+        {"clause": "Output of the first independent text-extraction channel", "satisfied": true, "evidence": "chat command ran `pdftotext -layout ... leak_pdftotext.txt`; file contains pdftotext output."},
+        {"clause": "contains the title `Personnel Compensation Roster`", "satisfied": true, "evidence": "First line is `Personnel Compensation Roster`."},
+        {"clause": "contains several PII substrings", "satisfied": true, "evidence": "Contains SSNs 412-77-9183, 583-21-4406, 297-08-6620; salaries; account numbers."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "leak_pdftotext.txt includes title and rows such as `SSN: 412-77-9183     Salary: $148,500   Account: 0094-558217`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "leak_mutool.txt",
+      "task_says": "`leak_mutool.txt` | Output of a second independent channel from a different implementation than `leak_pdftotext.txt`, non-empty",
+      "spec_clauses": ["Output of a second independent channel from a different implementation than `leak_pdftotext.txt`", "non-empty", "contains useful extraction evidence"],
+      "clause_results": [
+        {"clause": "Output of a second independent channel from a different implementation than `leak_pdftotext.txt`", "satisfied": true, "evidence": "chat command ran `mutool draw -F txt` to produce leak_mutool.txt, distinct from pdftotext."},
+        {"clause": "non-empty", "satisfied": true, "evidence": "File is 321 bytes."},
+        {"clause": "contains useful extraction evidence", "satisfied": true, "evidence": "Contains all three employees' SSN, Salary, and Account strings."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "leak_mutool.txt includes `Personnel Compensation Roster` and rows with SSN/Salary/Account for Eleanor, Marcus, and Priya.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "leak_qdf.pdf",
+      "task_says": "`leak_qdf.pdf` | Low-level structural copy of the original PDF (readable PDF form with object streams decompressed), > 1 KB",
+      "spec_clauses": ["Low-level structural copy of the original PDF", "readable PDF form with object streams decompressed", "> 1 KB"],
+      "clause_results": [
+        {"clause": "Low-level structural copy of the original PDF", "satisfied": true, "evidence": "chat command ran `qpdf --qdf --object-streams=disable` from the original personnel_redacted.pdf to leak_qdf.pdf."},
+        {"clause": "readable PDF form with object streams decompressed", "satisfied": true, "evidence": "The qpdf command used the requested QDF/decompression flags and produced a PDF artifact identified as PDF 1.4."},
+        {"clause": "> 1 KB", "satisfied": true, "evidence": "File size is 2662 bytes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "leak_qdf.pdf exists at 2662 bytes and was created by `qpdf --qdf --object-streams=disable`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pdfgrep_hits.txt",
+      "task_says": "`pdfgrep_hits.txt` | Hit output of a third-party independent text-search channel against the original PDF, non-empty",
+      "spec_clauses": ["Hit output of a third-party independent text-search channel against the original PDF", "non-empty", "hits show sensitive patterns"],
+      "clause_results": [
+        {"clause": "Hit output of a third-party independent text-search channel against the original PDF", "satisfied": true, "evidence": "chat command ran `pdfgrep -n` against the original personnel_redacted.pdf and wrote pdfgrep_hits.txt."},
+        {"clause": "non-empty", "satisfied": true, "evidence": "File contains 4 hit lines and is 227 bytes."},
+        {"clause": "hits show sensitive patterns", "satisfied": true, "evidence": "Hits include SSN, Salary, and Account strings for all three employees."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pdfgrep_hits.txt includes `1:  SSN: 412-77-9183     Salary: $148,500   Account: 0094-558217` and matching lines for the other employees.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "notes.md",
+      "task_says": "`notes.md` | ≥ 2 paragraphs briefly explaining the cross-comparison logic (intersection / union of the two channels, employee-name localization, PII classification rationale)",
+      "spec_clauses": ["≥ 2 paragraphs", "explains cross-comparison logic (intersection / union of the two channels)", "explains employee-name localization", "explains PII classification rationale"],
+      "clause_results": [
+        {"clause": "≥ 2 paragraphs", "satisfied": false, "evidence": "notes.md is absent."},
+        {"clause": "explains cross-comparison logic (intersection / union of the two channels)", "satisfied": false, "evidence": "No notes.md file."},
+        {"clause": "explains employee-name localization", "satisfied": false, "evidence": "No notes.md file."},
+        {"clause": "explains PII classification rationale", "satisfied": false, "evidence": "No notes.md file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `notes.md` in chat.jsonl returned no evidence of creation.",
+      "missing_or_wrong": "All clauses unmet: explanatory notes file absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "personnel_safe.pdf",
+      "task_says": "`/tmp_workspace/exec/redaction_project/personnel_safe.pdf` | New PDF exported after true-redaction repair (> 1 KB)",
+      "spec_clauses": ["New PDF exported after true-redaction repair", "> 1 KB", "after repair text has `[REDACTED]` and not original sensitive strings"],
+      "clause_results": [
+        {"clause": "New PDF exported after true-redaction repair", "satisfied": false, "evidence": "No personnel_safe.pdf exists under results/exec/redaction_project or results/redaction_project."},
+        {"clause": "> 1 KB", "satisfied": false, "evidence": "No file to measure."},
+        {"clause": "after repair text has `[REDACTED]` and not original sensitive strings", "satisfied": false, "evidence": "No repaired PDF exists for extraction verification."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `personnel_safe.pdf` returned no creation evidence.",
+      "missing_or_wrong": "All clauses unmet: repaired PDF absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "safe_pdftotext.txt",
+      "task_says": "`safe_pdftotext.txt` | Output of the first extraction channel after repair: **does not contain** any SSN (`\\d{3}-\\d{2}-\\d{4}`) / salary digits / bank-account digit strings; **still contains** the 3 employee names and the title `Personnel Compensation Roster`",
+      "spec_clauses": ["Output of the first extraction channel after repair", "does not contain any SSN (`\\d{3}-\\d{2}-\\d{4}`)", "does not contain salary digits", "does not contain bank-account digit strings", "still contains the 3 employee names", "still contains the title `Personnel Compensation Roster`"],
+      "clause_results": [
+        {"clause": "Output of the first extraction channel after repair", "satisfied": false, "evidence": "safe_pdftotext.txt is absent."},
+        {"clause": "does not contain any SSN (`\\d{3}-\\d{2}-\\d{4}`)", "satisfied": false, "evidence": "No file to verify."},
+        {"clause": "does not contain salary digits", "satisfied": false, "evidence": "No file to verify."},
+        {"clause": "does not contain bank-account digit strings", "satisfied": false, "evidence": "No file to verify."},
+        {"clause": "still contains the 3 employee names", "satisfied": false, "evidence": "No file to verify."},
+        {"clause": "still contains the title `Personnel Compensation Roster`", "satisfied": false, "evidence": "No file to verify."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `safe_pdftotext.txt` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: repaired extraction output absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "safe_mutool.txt",
+      "task_says": "`safe_mutool.txt` | Output of the second independent channel after repair, containing the `[REDACTED]` placeholder",
+      "spec_clauses": ["Output of the second independent channel after repair", "containing the `[REDACTED]` placeholder"],
+      "clause_results": [
+        {"clause": "Output of the second independent channel after repair", "satisfied": false, "evidence": "safe_mutool.txt is absent."},
+        {"clause": "containing the `[REDACTED]` placeholder", "satisfied": false, "evidence": "No file to inspect for placeholder."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `safe_mutool.txt` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: repaired second-channel extraction absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "safe_pdfgrep.txt",
+      "task_says": "`safe_pdfgrep.txt` | Text-search channel hits after repair — should only contain `[REDACTED]` or be empty",
+      "spec_clauses": ["Text-search channel hits after repair", "should only contain `[REDACTED]` or be empty"],
+      "clause_results": [
+        {"clause": "Text-search channel hits after repair", "satisfied": false, "evidence": "safe_pdfgrep.txt is absent."},
+        {"clause": "should only contain `[REDACTED]` or be empty", "satisfied": false, "evidence": "No file to verify."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `safe_pdfgrep.txt` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: repaired text-search verification absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "safe_render-1.png",
+      "task_says": "`safe_render-1.png` | Page raster render of the first page of the repaired PDF (≥ 120 dpi)",
+      "spec_clauses": ["PNG file exists", "Page raster render of the first page of the repaired PDF", "≥ 120 dpi"],
+      "clause_results": [
+        {"clause": "PNG file exists", "satisfied": false, "evidence": "safe_render-1.png is absent."},
+        {"clause": "Page raster render of the first page of the repaired PDF", "satisfied": false, "evidence": "No repaired render artifact exists."},
+        {"clause": "≥ 120 dpi", "satisfied": false, "evidence": "No image to measure."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `safe_render-1.png` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: repaired raster render absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "redaction_report.md",
+      "task_says": "`redaction_report.md` | ≥ 25 non-empty lines, with the six markdown header sections `Summary` / `Root cause` / `Evidence` / `Fix` / `Verification` / `Recommendation`",
+      "spec_clauses": ["≥ 25 non-empty lines", "has `Summary` header", "has `Root cause` header", "has `Evidence` header", "has `Fix` header", "has `Verification` header", "has `Recommendation` header"],
+      "clause_results": [
+        {"clause": "≥ 25 non-empty lines", "satisfied": false, "evidence": "redaction_report.md is absent."},
+        {"clause": "has `Summary` header", "satisfied": false, "evidence": "No report file."},
+        {"clause": "has `Root cause` header", "satisfied": false, "evidence": "No report file."},
+        {"clause": "has `Evidence` header", "satisfied": false, "evidence": "No report file."},
+        {"clause": "has `Fix` header", "satisfied": false, "evidence": "No report file."},
+        {"clause": "has `Verification` header", "satisfied": false, "evidence": "No report file."},
+        {"clause": "has `Recommendation` header", "satisfied": false, "evidence": "No report file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `redaction_report.md` returned no write evidence; final assistant messages were refusals.",
+      "missing_or_wrong": "All clauses unmet: markdown report absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_initial_render.png",
+      "task_says": "`view_01_initial_render.png` — Full-page screenshot of the original PDF opened in a PDF reader; the image contains the reader's window chrome (title bar / toolbar) + the title + at least 6 visible black rectangular bars",
+      "spec_clauses": ["Full-page screenshot of the original PDF opened in a PDF reader", "contains the reader's window chrome (title bar / toolbar)", "contains the title", "contains at least 6 visible black rectangular bars"],
+      "clause_results": [
+        {"clause": "Full-page screenshot of the original PDF opened in a PDF reader", "satisfied": true, "evidence": "Image inspection shows a desktop screenshot with PDF reader windows displaying the original Personnel Compensation Roster PDF page."},
+        {"clause": "contains the reader's window chrome (title bar / toolbar)", "satisfied": true, "evidence": "Okular/Document Viewer titlebars and toolbar controls are visible."},
+        {"clause": "contains the title", "satisfied": true, "evidence": "The document title `Personnel Compensation Roster` is clearly visible on the page and titlebar."},
+        {"clause": "contains at least 6 visible black rectangular bars", "satisfied": true, "evidence": "Vision inspection counted 9 visible black rectangular redaction bars on the main PDF page."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Vision inspection: PDF viewer windows show `Personnel Compensation Roster`, Document ID, three employee rows, and 9 black redaction boxes with viewer chrome visible.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_zoom_bar.png",
+      "task_says": "`view_02_zoom_bar.png` — Close-up focused on any single row of black bars zoomed to ≥ 300%, with the window chrome or status bar showing clear magnification",
+      "spec_clauses": ["Close-up focused on any single row of black bars", "zoomed to ≥ 300%", "window chrome or status bar showing clear magnification"],
+      "clause_results": [
+        {"clause": "Close-up focused on any single row of black bars", "satisfied": false, "evidence": "view_02_zoom_bar.png is absent."},
+        {"clause": "zoomed to ≥ 300%", "satisfied": false, "evidence": "No image to inspect for zoom."},
+        {"clause": "window chrome or status bar showing clear magnification", "satisfied": false, "evidence": "No image to inspect for magnification UI."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `view_02_zoom_bar.png` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: required zoom screenshot absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_draw_loaded.png",
+      "task_says": "`view_03_draw_loaded.png` — Full-window screenshot of the PDF opened in a vector document editor in \"per-object editable layer\" form; contains the editor's main window (title bar + left/right sidebars + central canvas) + 9 black rectangle objects",
+      "spec_clauses": ["Full-window screenshot of the PDF opened in a vector document editor", "in `per-object editable layer` form", "contains the editor's main window (title bar + left/right sidebars + central canvas)", "contains 9 black rectangle objects"],
+      "clause_results": [
+        {"clause": "Full-window screenshot of the PDF opened in a vector document editor", "satisfied": false, "evidence": "view_03_draw_loaded.png is absent."},
+        {"clause": "in `per-object editable layer` form", "satisfied": false, "evidence": "No vector-editor screenshot exists."},
+        {"clause": "contains the editor's main window (title bar + left/right sidebars + central canvas)", "satisfied": false, "evidence": "No image to inspect."},
+        {"clause": "contains 9 black rectangle objects", "satisfied": false, "evidence": "No image to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `view_03_draw_loaded.png` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: vector-editor loaded screenshot absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_draw_after_edit.png",
+      "task_says": "`view_04_draw_after_edit.png` — Full-window screenshot after completing the true redaction (rewriting PII text-object contents to the literal `[REDACTED]` and deleting the corresponding black mask rectangles), with multiple `[REDACTED]` strings — not black bars — readable on the canvas",
+      "spec_clauses": ["Full-window screenshot after completing the true redaction", "rewriting PII text-object contents to literal `[REDACTED]`", "deleting the corresponding black mask rectangles", "multiple `[REDACTED]` strings — not black bars — readable on the canvas"],
+      "clause_results": [
+        {"clause": "Full-window screenshot after completing the true redaction", "satisfied": false, "evidence": "view_04_draw_after_edit.png is absent."},
+        {"clause": "rewriting PII text-object contents to literal `[REDACTED]`", "satisfied": false, "evidence": "No after-edit screenshot or repaired PDF exists."},
+        {"clause": "deleting the corresponding black mask rectangles", "satisfied": false, "evidence": "No after-edit screenshot exists to verify deletion."},
+        {"clause": "multiple `[REDACTED]` strings — not black bars — readable on the canvas", "satisfied": false, "evidence": "No image exists; no `[REDACTED]` render evidence."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `view_04_draw_after_edit.png` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: after-edit proof screenshot absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_safe_in_okular.png",
+      "task_says": "`view_05_safe_in_okular.png` — Full-window screenshot of `personnel_safe.pdf` opened in a PDF reader; the image contains the reader's main window + visible `[REDACTED]` text",
+      "spec_clauses": ["Full-window screenshot of `personnel_safe.pdf` opened in a PDF reader", "contains the reader's main window", "visible `[REDACTED]` text"],
+      "clause_results": [
+        {"clause": "Full-window screenshot of `personnel_safe.pdf` opened in a PDF reader", "satisfied": false, "evidence": "view_05_safe_in_okular.png is absent and personnel_safe.pdf is absent."},
+        {"clause": "contains the reader's main window", "satisfied": false, "evidence": "No image to inspect."},
+        {"clause": "visible `[REDACTED]` text", "satisfied": false, "evidence": "No image to inspect; no safe PDF evidence."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/. Grep for `view_05_safe_in_okular.png` returned no write evidence.",
+      "missing_or_wrong": "All clauses unmet: safe PDF viewer screenshot absent.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.3, "reason": "The rollout completed only the original-leak extraction evidence artifacts (pdfinfo, pdftotext, mutool, qdf, pdfgrep, and view_01_initial_render). It missed the primary leak_findings.json plus all repair/safe-PDF/report/vector-editor deliverables."},
+    "deliverable_correctness": {"score": 0.315789, "reason": "Mean per-artifact correctness is 6/19: pdfinfo.txt, leak_pdftotext.txt, leak_mutool.txt, leak_qdf.pdf, pdfgrep_hits.txt, and view_01_initial_render.png are correct; the other 13 required artifacts are absent."},
+    "deliverable_quality": {"score": 0.35, "reason": "Files that exist are parseable and useful, but most required files are missing, including all JSON/report/safe verification artifacts and 4 of 5 specified screenshots."},
+    "evidence_authenticity": {"score": 0.85, "reason": "The existing extraction evidence appears genuine and was produced with standard tools; fabrication grep found no Image.new/ImageDraw, np.random.seed, mock, LD_PRELOAD, or gt reads. Authenticity is not perfect because the final outcome is incomplete and lacks the required structured report/repair evidence."},
+    "tool_use_correctness": {"score": 0.55, "reason": "The agent used appropriate PDF tools for the initial audit (pdftotext, mutool, qpdf, pdfgrep, pdfinfo, PDF viewers), but did not complete repair/export/verification and attempted password-fed sudo chmod rather than resolving staging cleanly."},
+    "final_state_correctness": {"score": 0.25, "reason": "Final state has original leak proof but not the requested repaired personnel_safe.pdf, safe extraction outputs, report, meta JSON, or required vector-editor/safe screenshots. The final assistant messages were refusals."},
+    "efficiency_robustness": {"score": 0.35, "reason": "The agent recovered from initial permission and pdfgrep issues enough to create some initial artifacts, but then stalled/refused before the majority of deliverables and did not robustly finish the workflow."},
+    "instruction_following": {"score": 0.3, "reason": "It followed parts of the audit procedure but failed explicit deliverable requirements: primary JSON, notes, meta, true-redacted PDF, safe verifications, report, and four screenshot deliverables are missing."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.315789,
+  "summary": "The rollout successfully demonstrated that the original visually redacted PDF leaks SSNs, salaries, and account numbers through multiple extraction/search channels, and it produced one valid initial viewer screenshot. However, it omitted the primary leak_findings.json and nearly all downstream deliverables: meta/notes/report, true-redacted personnel_safe.pdf, safe verification outputs, repair render, and required vector-editor/safe screenshots. No hack pattern was found; the failure is severe incompleteness rather than fabrication."
+}
