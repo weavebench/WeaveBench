@@ -1,0 +1,384 @@
+{
+  "artifact_checks": [
+    {
+      "id": "svg_analysis.json",
+      "task_says": "`svg_analysis.json`: Statistics of print-sensitive issue elements in the original `/tmp_workspace/poster_rgb.svg`: number of objects containing semi-transparency (`opacity` < 1.0 or `fill-opacity` < 1.0), number of hairline paths with stroke width < 0.25pt, number of text nodes not converted to outlines (`<text>` / `<tspan>`), number of objects whose `fill` or `stroke` uses RGB/HEX (non-CMYK). Schema: {\"transparent_objects\": <int>, \"hairline_paths\": <int>, \"text_nodes\": <int>, \"rgb_color_objects\": <int>}",
+      "spec_clauses": [
+        "File exists under results and parses as JSON",
+        "Schema contains transparent_objects, hairline_paths, text_nodes, rgb_color_objects as integers",
+        "transparent_objects equals count of original SVG objects with opacity < 1.0 or fill-opacity < 1.0",
+        "hairline_paths equals count of original SVG paths/stroked objects with stroke width < 0.25pt",
+        "text_nodes equals count of original SVG <text> / <tspan> nodes not converted to outlines",
+        "rgb_color_objects counts objects whose fill or stroke uses RGB/HEX non-CMYK"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and parses as JSON", "satisfied": true, "evidence": "Read file successfully as JSON."},
+        {"clause": "Schema contains transparent_objects, hairline_paths, text_nodes, rgb_color_objects as integers", "satisfied": true, "evidence": "JSON has all four required keys with integer values."},
+        {"clause": "transparent_objects equals count of original SVG objects with opacity < 1.0 or fill-opacity < 1.0", "satisfied": true, "evidence": "Value is 7, matching expected.json and independent regex count on poster_rgb.svg."},
+        {"clause": "hairline_paths equals count of original SVG paths/stroked objects with stroke width < 0.25pt", "satisfied": true, "evidence": "Value is 5, matching expected.json and observed original stroke widths 0.1, 0.15, 0.2, 0.08, 0.12 px/pt-equivalent below threshold."},
+        {"clause": "text_nodes equals count of original SVG <text> / <tspan> nodes not converted to outlines", "satisfied": true, "evidence": "Value is 11, matching expected.json and regex count of 5 <text> plus 6 <tspan>."},
+        {"clause": "rgb_color_objects counts objects whose fill or stroke uses RGB/HEX non-CMYK", "satisfied": true, "evidence": "Value is 14 and is positive as expected; round1 log itemizes 14 HEX fill/stroke objects."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "svg_analysis.json contains {transparent_objects:7, hairline_paths:5, text_nodes:11, rgb_color_objects:14}; expected.json confirms 7/5/11 and rgb count >0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "preflight_round1.log",
+      "task_says": "`preflight_round1.log`: Full log of the first prepress preflight round (based on a draft PDF exported from the original SVG); must contain lines reporting the discovered Warning / Error messages.",
+      "spec_clauses": [
+        "File exists under results and is non-empty",
+        "Log is based on a draft PDF exported from the original SVG",
+        "Contains first-round preflight information such as PDF info/font inventory",
+        "Must contain lines reporting discovered Warning / Error messages",
+        "Warning/Error messages cover transparency, hairlines, live text, and RGB/HEX color issues"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and is non-empty", "satisfied": true, "evidence": "preflight_round1.log is 2719 bytes and readable."},
+        {"clause": "Log is based on a draft PDF exported from the original SVG", "satisfied": true, "evidence": "Log records Inkscape export command for /tmp_workspace/poster_rgb.svg to poster_round1_draft.pdf."},
+        {"clause": "Contains first-round preflight information such as PDF info/font inventory", "satisfied": true, "evidence": "Includes pdfinfo fields, page size, PDF version 1.5, file size, and pdffonts inventory."},
+        {"clause": "Must contain lines reporting discovered Warning / Error messages", "satisfied": true, "evidence": "Has section 'Discovered Warning / Error messages' with ERROR/WARNING lines."},
+        {"clause": "Warning/Error messages cover transparency, hairlines, live text, and RGB/HEX color issues", "satisfied": true, "evidence": "Reports 7 transparency errors, 5 hairline warnings, 11 live text/tspan errors, and 14 RGB/HEX warnings."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Log includes 'ERROR: Live transparency found in 7 SVG objects', 'WARNING: Hairline strokes below 0.25 pt found in 5 objects', 'ERROR: Live text/tspan nodes found: 11', and RGB/HEX warnings with details.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fix_verification.txt",
+      "task_says": "`fix_verification.txt`: Review result for the fixed SVG; must clearly demonstrate: `transparent_objects = 0`, `hairline_paths = 0`, and all text nodes converted to outlines (`<text>` / `<tspan>` count equals 0).",
+      "spec_clauses": [
+        "File exists under results and is readable",
+        "Clearly demonstrates transparent_objects = 0",
+        "Clearly demonstrates hairline_paths = 0",
+        "Clearly demonstrates <text> count equals 0",
+        "Clearly demonstrates <tspan> count equals 0",
+        "States that text nodes were converted to outlines/paths"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and is readable", "satisfied": true, "evidence": "fix_verification.txt is 776 bytes and readable."},
+        {"clause": "Clearly demonstrates transparent_objects = 0", "satisfied": true, "evidence": "Line reads 'transparent_objects = 0'."},
+        {"clause": "Clearly demonstrates hairline_paths = 0", "satisfied": true, "evidence": "Line reads 'hairline_paths = 0'."},
+        {"clause": "Clearly demonstrates <text> count equals 0", "satisfied": true, "evidence": "Line reads '<text> count = 0'."},
+        {"clause": "Clearly demonstrates <tspan> count equals 0", "satisfied": true, "evidence": "Line reads '<tspan> count = 0'."},
+        {"clause": "States that text nodes were converted to outlines/paths", "satisfied": true, "evidence": "PASS line says all live text converted to path outlines."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "fix_verification.txt explicitly says transparent_objects = 0, hairline_paths = 0, <text> count = 0, <tspan> count = 0, and PASS for text converted to path outlines.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "poster_fixed.pdf",
+      "task_says": "`poster_fixed.pdf`: PDF exported after fixes; must meet the print-deliverable requirements of \"text converted to paths, fonts embedded\".",
+      "spec_clauses": [
+        "File exists under results",
+        "PDF is valid/readable and exported after fixes",
+        "File size is substantial enough for poster_fixed.pdf (grading criterion ≥ 50KB)",
+        "Text converted to paths / no live text fonts required",
+        "Fonts are embedded if any fonts remain"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results", "satisfied": true, "evidence": "poster_fixed.pdf exists."},
+        {"clause": "PDF is valid/readable and exported after fixes", "satisfied": true, "evidence": "pdfinfo reads the file: Creator Inkscape, 1 page, page size 446.25 x 631.5 pts."},
+        {"clause": "File size is substantial enough for poster_fixed.pdf (grading criterion ≥ 50KB)", "satisfied": true, "evidence": "pdfinfo/file listing shows 68973 bytes, above 50KB."},
+        {"clause": "Text converted to paths / no live text fonts required", "satisfied": true, "evidence": "pdffonts output has only headers and no font rows, consistent with text converted to paths."},
+        {"clause": "Fonts are embedded if any fonts remain", "satisfied": true, "evidence": "No fonts remain in pdffonts output; therefore no unembedded fonts are present."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.95,
+      "evidence_quote": "pdfinfo reads poster_fixed.pdf (68973 bytes, one page); pdffonts reports no font entries, supporting text-as-paths/no unembedded fonts. Minor caveat: this intermediate PDF is version 1.4, not itself PDF/X-1a, but the spec reserves PDF/X/CMYK finality for poster_cmyk.pdf.",
+      "missing_or_wrong": "Minor: poster_fixed.pdf is PDF 1.4 intermediate rather than PDF/X-1a; not explicitly forbidden for this deliverable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "poster_cmyk.pdf",
+      "task_says": "`poster_cmyk.pdf`: Final print-ready PDF after color space conversion based on `poster_fixed.pdf`. Color working space must be DeviceCMYK, using `/tmp_workspace/USWebCoatedSWOP.icc` as the target CMYK profile, with prepress-grade rendering settings.",
+      "spec_clauses": [
+        "File exists under results and is a valid PDF",
+        "Final PDF is based on poster_fixed.pdf",
+        "PDF version is suitable for PDF/X-1a / expected version ≤ 1.3",
+        "Color working space is DeviceCMYK",
+        "Uses /tmp_workspace/USWebCoatedSWOP.icc as target CMYK profile",
+        "Uses prepress-grade rendering/conversion settings"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and is a valid PDF", "satisfied": true, "evidence": "poster_cmyk.pdf exists, pdfinfo reads it, file size 208412 bytes."},
+        {"clause": "Final PDF is based on poster_fixed.pdf", "satisfied": true, "evidence": "preflight_round2.log records Ghostscript command taking /tmp_workspace/results/poster_fixed.pdf as input."},
+        {"clause": "PDF version is suitable for PDF/X-1a / expected version ≤ 1.3", "satisfied": true, "evidence": "pdfinfo shows PDF version: 1.3."},
+        {"clause": "Color working space is DeviceCMYK", "satisfied": true, "evidence": "preflight log records -sProcessColorModel=DeviceCMYK and grep of PDF finds /ColorSpace/DeviceCMYK."},
+        {"clause": "Uses /tmp_workspace/USWebCoatedSWOP.icc as target CMYK profile", "satisfied": true, "evidence": "preflight log and PDF text include -sOutputICCProfile=/tmp_workspace/USWebCoatedSWOP.icc and Info(USWebCoatedSWOP.icc target profile...)."},
+        {"clause": "Uses prepress-grade rendering/conversion settings", "satisfied": true, "evidence": "Ghostscript command includes -dPDFX, -dPDFSETTINGS=/prepress, -dEmbedAllFonts=true, -sColorConversionStrategy=CMYK, and OutputIntent /S/GTS_PDFX."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.95,
+      "evidence_quote": "pdfinfo shows PDF version 1.3; preflight_round2.log records gs -dPDFX -dPDFSETTINGS=/prepress -sProcessColorModel=DeviceCMYK -sOutputICCProfile=/tmp_workspace/USWebCoatedSWOP.icc; PDF contains /OutputIntents and /ColorSpace/DeviceCMYK. Minor uncertainty remains because this evaluation did not run a dedicated PDF/X conformance validator.",
+      "missing_or_wrong": "Minor: no independent veraPDF/pdfx validator result, only Ghostscript/pdfinfo/string evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "preflight_round2.log",
+      "task_says": "`preflight_round2.log`: Summary log of the second preflight round; must cover: PDF version and page dimensions, per-page ink coverage (C/M/Y/K), and the color-space inventory of embedded images.",
+      "spec_clauses": [
+        "File exists under results and is readable",
+        "Covers PDF version",
+        "Covers page dimensions",
+        "Covers per-page ink coverage C/M/Y/K",
+        "Covers color-space inventory of embedded images",
+        "Includes pass/fail or equivalent preflight interpretation"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and is readable", "satisfied": true, "evidence": "preflight_round2.log is 1960 bytes and readable."},
+        {"clause": "Covers PDF version", "satisfied": true, "evidence": "Log states PDF version: 1.3."},
+        {"clause": "Covers page dimensions", "satisfied": true, "evidence": "Log states Page size: 446.25 x 631.5 pts."},
+        {"clause": "Covers per-page ink coverage C/M/Y/K", "satisfied": true, "evidence": "Log includes inkcov line 0.94653 0.89014 0.94653 0.14890 CMYK OK and parsed percentages."},
+        {"clause": "Covers color-space inventory of embedded images", "satisfied": true, "evidence": "Log includes pdfimages-style inventory with page 1 image 0 color cmyk."},
+        {"clause": "Includes pass/fail or equivalent preflight interpretation", "satisfied": true, "evidence": "Log includes PASS for no unembedded fonts, ink limit, image color, and CMYK OutputIntent/settings."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Round 2 log covers PDF version 1.3, page size 446.25 x 631.5 pts, inkcov C/M/Y/K and total, embedded image inventory with cmyk, and PASS statements.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "ink_coverage.json",
+      "task_says": "`ink_coverage.json`: Parsed ink coverage results, with the schema: {\"cyan\": <float>, \"magenta\": <float>, \"yellow\": <float>, \"black\": <float>, \"total\": <float>, \"safe\": <bool>} where `total` is the sum of C+M+Y+K; `safe` indicates whether it is ≤ 300% (the print-safe threshold).",
+      "spec_clauses": [
+        "File exists and parses as JSON",
+        "Schema contains cyan, magenta, yellow, black, total floats and safe bool",
+        "total equals sum of C+M+Y+K",
+        "safe indicates whether total ≤ 300%",
+        "Values correspond to preflight inkcov results"
+      ],
+      "clause_results": [
+        {"clause": "File exists and parses as JSON", "satisfied": true, "evidence": "ink_coverage.json read successfully as JSON."},
+        {"clause": "Schema contains cyan, magenta, yellow, black, total floats and safe bool", "satisfied": true, "evidence": "Has cyan 94.653, magenta 89.014, yellow 94.653, black 14.89, total 293.21, safe true."},
+        {"clause": "total equals sum of C+M+Y+K", "satisfied": true, "evidence": "94.653 + 89.014 + 94.653 + 14.89 = 293.21."},
+        {"clause": "safe indicates whether total ≤ 300%", "satisfied": true, "evidence": "total is 293.21 and safe is true; expected max threshold is 300."},
+        {"clause": "Values correspond to preflight inkcov results", "satisfied": true, "evidence": "preflight_round2.log lists Parsed C/M/Y/K/Total = 94.6530/89.0140/94.6530/14.8900/293.2100%."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "ink_coverage.json values match round2 log and total 293.21 <= 300 with safe:true.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "color_check.txt",
+      "task_says": "`color_check.txt`: Verification result for the color spaces of all embedded images in `poster_cmyk.pdf`; must prove all are CMYK or Gray, with no residual RGB.",
+      "spec_clauses": [
+        "File exists and is readable",
+        "Identifies embedded image color spaces in poster_cmyk.pdf",
+        "Proves all embedded images are CMYK or Gray",
+        "Proves no residual RGB remains",
+        "Includes supporting inventory/output"
+      ],
+      "clause_results": [
+        {"clause": "File exists and is readable", "satisfied": true, "evidence": "color_check.txt is 499 bytes and readable."},
+        {"clause": "Identifies embedded image color spaces in poster_cmyk.pdf", "satisfied": true, "evidence": "Lists page 1 image 0: cmyk."},
+        {"clause": "Proves all embedded images are CMYK or Gray", "satisfied": true, "evidence": "Result line says all embedded images are CMYK or Gray; inventory shows the only image is cmyk."},
+        {"clause": "Proves no residual RGB remains", "satisfied": true, "evidence": "Line states Residual RGB embedded images: 0."},
+        {"clause": "Includes supporting inventory/output", "satisfied": true, "evidence": "Includes pdfimages -list output with color cmyk, comp 4."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "color_check.txt says page 1 image 0 is cmyk (PASS), residual RGB embedded images: 0, and includes pdfimages inventory.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "summary.md",
+      "task_says": "`summary.md`: Final summary of the prepress pipeline; must contain at least: List of issues discovered in Round 1 preflight (from `svg_analysis.json`); Summary of fix operations (transparency <int>, hairlines <int>, text node groups <int>); Round 2 preflight item-by-item PASS / FAIL; Ink coverage values (from `ink_coverage.json`); Color space conversion confirmation.",
+      "spec_clauses": [
+        "File exists under results and is readable Markdown/text",
+        "Lists Round 1 issues from svg_analysis.json",
+        "Summarizes fix operations with transparency, hairlines, and text node group counts",
+        "Contains Round 2 preflight item-by-item PASS/FAIL",
+        "Contains ink coverage values from ink_coverage.json",
+        "Confirms color space conversion"
+      ],
+      "clause_results": [
+        {"clause": "File exists under results and is readable Markdown/text", "satisfied": true, "evidence": "summary.md is 1294 bytes and readable."},
+        {"clause": "Lists Round 1 issues from svg_analysis.json", "satisfied": true, "evidence": "Round 1 Issues section lists 7 transparent, 5 hairlines, 11 live text/tspan, 14 RGB/HEX."},
+        {"clause": "Summarizes fix operations with transparency, hairlines, and text node group counts", "satisfied": true, "evidence": "Fix Operations section lists transparency normalized 7, hairlines raised 5, text nodes converted 11."},
+        {"clause": "Contains Round 2 preflight item-by-item PASS/FAIL", "satisfied": true, "evidence": "Round 2 Preflight section has PASS items for PDF version/page dimensions, text/fonts, DeviceCMYK, image color spaces, and ink coverage."},
+        {"clause": "Contains ink coverage values from ink_coverage.json", "satisfied": true, "evidence": "Ink Coverage section lists C 94.6530, M 89.0140, Y 94.6530, K 14.8900, total 293.2100, safe true."},
+        {"clause": "Confirms color space conversion", "satisfied": true, "evidence": "Color Space Conversion section states DeviceCMYK processing, CMYK strategy, target ICC profile, and no RGB images."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "summary.md covers all required sections with counts, PASS items, ink values, and CMYK/ICC confirmation.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_inkscape_overview.png",
+      "task_says": "`view_inkscape_overview.png`: Shows the original poster opened in the vector editor at \"fit page\" zoom, with the full poster content and editor main UI visible.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "Shows original poster opened in a vector editor/Inkscape",
+        "Shows fit page zoom or equivalent full-page overview",
+        "Full poster content is visible",
+        "Editor main UI is visible and recognizable"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "PNG is 1920x1080 and image tool viewed it."},
+        {"clause": "Shows original poster opened in a vector editor/Inkscape", "satisfied": true, "evidence": "Screenshot shows Inkscape UI with poster SVG open and poster design visible."},
+        {"clause": "Shows fit page zoom or equivalent full-page overview", "satisfied": "partial", "evidence": "View is an overview, but image tool observed about 96% zoom rather than clearly fit-page."},
+        {"clause": "Full poster content is visible", "satisfied": "partial", "evidence": "Poster is mostly visible, but the large title/left/top content appears clipped or outside the page boundary."},
+        {"clause": "Editor main UI is visible and recognizable", "satisfied": true, "evidence": "Menu bar, toolbars, rulers, canvas, side panels, bottom palette/status bar are visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.8,
+      "evidence_quote": "Image shows Inkscape and the Summer Festival poster with main UI, but the page is not cleanly fit-page and some title/content appears clipped, so full-poster/fit-page clauses are only partial.",
+      "missing_or_wrong": "Fit page zoom not clearly shown; full poster content partially clipped/overflowing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_fill_stroke_panel.png",
+      "task_says": "`view_fill_stroke_panel.png`: Shows the fill/stroke properties panel state after fixing opacity and stroke width, with corrected values such as opacity = 1.0 and stroke-width ≥ 0.3pt visible.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "Shows vector editor with fill/stroke properties panel",
+        "Panel/view is after fixing opacity and stroke width",
+        "Corrected opacity = 1.0 / 100% is visible",
+        "Corrected stroke-width ≥ 0.3pt is visible",
+        "Values are clearly tied to the selected/fixed object"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "PNG is 1920x1080 and image tool viewed it."},
+        {"clause": "Shows vector editor with fill/stroke properties panel", "satisfied": true, "evidence": "Inkscape is open with Fill and Stroke dialog visible on the right."},
+        {"clause": "Panel/view is after fixing opacity and stroke width", "satisfied": true, "evidence": "Selected line in fixed poster view shows corrected settings; screenshot was captured after fixed SVG actions in chat."},
+        {"clause": "Corrected opacity = 1.0 / 100% is visible", "satisfied": true, "evidence": "Fill and Stroke panel bottom shows Opacity (%) = 100.0."},
+        {"clause": "Corrected stroke-width ≥ 0.3pt is visible", "satisfied": "partial", "evidence": "Bottom status bar shows stroke width around 0.400, satisfying magnitude, but the Stroke style tab is not open and the unit is not clearly visible as pt."},
+        {"clause": "Values are clearly tied to the selected/fixed object", "satisfied": "partial", "evidence": "A thin horizontal line is selected, but the panel is on Fill tab with 'Paint is undefined'; stroke width evidence is in status bar rather than the properties panel itself."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.83,
+      "evidence_quote": "Fill/Stroke dialog shows opacity 100.0%; status bar shows stroke width approximately 0.400 for a selected line. Stroke style tab/units are not clearly displayed, so width proof is weaker than ideal.",
+      "missing_or_wrong": "Stroke width ≥0.3pt is not shown directly in Stroke style panel with explicit pt units; selected-object linkage is partial.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_xml_editor_no_text.png",
+      "task_says": "`view_xml_editor_no_text.png`: Shows the XML / node tree view of the fixed SVG, with no `<text>` / `<tspan>` nodes remaining in the tree (text has been converted to outlines).",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "Shows fixed SVG in vector editor",
+        "Shows XML/node tree view/editor",
+        "Visible tree contains no <text> nodes",
+        "Visible tree contains no <tspan> nodes",
+        "Visual evidence convincingly proves no text/tspan nodes remain in the tree"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "PNG is 1920x1080 and downsampled image was viewed."},
+        {"clause": "Shows fixed SVG in vector editor", "satisfied": true, "evidence": "Window shows poster_fixed.svg in Inkscape."},
+        {"clause": "Shows XML/node tree view/editor", "satisfied": true, "evidence": "XML Editor panel/tree is visible on the right."},
+        {"clause": "Visible tree contains no <text> nodes", "satisfied": true, "evidence": "Visible tree entries include lines and outline_group elements, no <text> entries in the visible portion."},
+        {"clause": "Visible tree contains no <tspan> nodes", "satisfied": true, "evidence": "Visible tree has no <tspan> entries in the visible portion."},
+        {"clause": "Visual evidence convincingly proves no text/tspan nodes remain in the tree", "satisfied": "partial", "evidence": "Only a limited, not fully expanded/scrolled portion of the XML tree is visible; file inspection independently shows 0 text/tspan, but screenshot alone does not prove all nodes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.92,
+      "evidence_quote": "Screenshot shows Inkscape XML Editor for poster_fixed.svg with visible line/outline_group nodes and no visible text/tspan; however the tree is not exhaustively expanded, so visual proof is partial. Independent SVG inspection confirms 0 <text> and 0 <tspan>.",
+      "missing_or_wrong": "Screenshot alone does not fully prove the entire XML tree lacks text/tspan nodes; only visible section is shown.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_pdf_export_dialog.png",
+      "task_says": "`view_pdf_export_dialog.png`: Shows the settings dialog when exporting PDF from the vector editor, with key options such as \"convert text to path\" and \"embed fonts\" checked.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "Shows PDF export/settings dialog from vector editor",
+        "Convert text to paths option is visible and checked",
+        "Embed fonts option is visible and checked",
+        "Dialog settings are clearly recognizable as PDF export settings"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "PNG is 1920x1080 and downsampled image was viewed."},
+        {"clause": "Shows PDF export/settings dialog from vector editor", "satisfied": true, "evidence": "Inkscape Portable Document Format dialog is open over the poster."},
+        {"clause": "Convert text to paths option is visible and checked", "satisfied": true, "evidence": "Radio option 'Convert text to paths' is visibly selected."},
+        {"clause": "Embed fonts option is visible and checked", "satisfied": false, "evidence": "'Embed fonts' is visible but not selected; it appears mutually exclusive with convert text to paths in this dialog."},
+        {"clause": "Dialog settings are clearly recognizable as PDF export settings", "satisfied": true, "evidence": "Dialog shows PDF version, text output options, rasterization, page size, and OK/Cancel."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.8,
+      "evidence_quote": "PDF export dialog is clear and 'Convert text to paths' is checked, but 'Embed fonts' is explicitly unselected. Since the final PDF has no fonts, the workflow is defensible, but this screenshot does not meet that exact visual clause.",
+      "missing_or_wrong": "Embed fonts is not checked in the screenshot; PDF version in dialog is 1.5 rather than final 1.3, though version was not explicitly required for this screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_inkscape_doc_props_cmyk.png",
+      "task_says": "`view_inkscape_doc_props_cmyk.png`: Shows the Document Properties view after opening `poster_cmyk.pdf`, with the page having an embedded ICC profile visible.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "Shows poster_cmyk.pdf opened in Inkscape/vector editor",
+        "Shows Document Properties view",
+        "Shows page/document color/ICC profile area",
+        "Embedded/linked ICC profile is visible"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "PNG is 1920x1080 and downsampled image was viewed."},
+        {"clause": "Shows poster_cmyk.pdf opened in Inkscape/vector editor", "satisfied": true, "evidence": "Window title shows poster_cmyk.pdf - Inkscape and poster page is visible."},
+        {"clause": "Shows Document Properties view", "satisfied": true, "evidence": "Document Properties panel is open on the right."},
+        {"clause": "Shows page/document color/ICC profile area", "satisfied": true, "evidence": "Color tab is selected with Linked Color Profiles and Available Color Profiles controls."},
+        {"clause": "Embedded/linked ICC profile is visible", "satisfied": true, "evidence": "Linked Color Profiles lists Artifex-CMYK-SWOP-Profile, consistent with embedded/linked CMYK SWOP profile."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Screenshot shows poster_cmyk.pdf in Inkscape Document Properties > Color with Linked Color Profiles entry 'Artifex-CMYK-SWOP-Profile'. Minor caveat: UI label is linked profile rather than a detailed embedded ICC metadata view.",
+      "missing_or_wrong": "Minor: ICC profile is shown as a linked color profile, not detailed embedded ICC metadata; poster page is partly covered by panel.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.92, "reason": "All required deliverables exist and the core diagnose→fix→CMYK→preflight loop is complete. Minor gaps are visual evidence issues in view_inkscape_overview.png and view_pdf_export_dialog.png."},
+    "deliverable_correctness": {"score": 0.94, "reason": "Mean artifact correctness is high: core data/PDF/log artifacts are correct; only screenshot artifacts have partial clauses, especially view_pdf_export_dialog.png where Embed fonts is not checked and view_inkscape_overview.png fit-page/full-content evidence is partial."},
+    "deliverable_quality": {"score": 0.94, "reason": "All required files are present, parseable/viewable, PDFs are readable with pdfinfo, and images are valid 1920x1080 PNGs. Quality deductions are for weaker screenshot composition, not broken files."},
+    "evidence_authenticity": {"score": 0.96, "reason": "chat.jsonl shows real computer actions and gnome-screenshot capture commands; grep found no Image.new/ImageDraw/np.random/LD_PRELOAD/gt-read cheat signals. Evidence aligns across logs, PDFs, and file inspection."},
+    "tool_use_correctness": {"score": 0.93, "reason": "Agent used appropriate CLI tools (Inkscape, Ghostscript, pdfinfo, pdffonts, pdfimages/inkcov) and real GUI/computer plus gnome-screenshot for screenshots. Minor issue: screenshot proof could have been clearer in XML/export dialogs."},
+    "final_state_correctness": {"score": 0.93, "reason": "Final poster_cmyk.pdf is PDF 1.3, DeviceCMYK with SWOP OutputIntent evidence, ink total 293.21% safe, and embedded image inventory has no RGB. Some PDF/X conformance is inferred from Ghostscript settings rather than independently validated."},
+    "efficiency_robustness": {"score": 0.87, "reason": "The rollout recovered from screenshot/display issues and produced all outputs, but the chat shows many GUI attempts around export dialog/document properties and the final screenshot evidence still has avoidable shortcomings."},
+    "instruction_following": {"score": 0.9, "reason": "Explicit deliverable names and results location were respected, and real screenshots were captured. Deductions: view_pdf_export_dialog.png does not show Embed fonts checked as requested, and overview/xml screenshots do not fully prove the requested visual clauses."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.92375,
+  "summary": "The rollout produced every required deliverable and the core prepress pipeline is substantially correct: issue counts match expected values, fixed SVG/PDF evidence supports text-to-path conversion, final PDF is PDF 1.3 DeviceCMYK with SWOP/OutputIntent evidence, ink coverage is safe, and embedded images are CMYK. The main strict deductions are screenshot-specific: overview is not a clean fit-page/full-content view, XML tree proof is not exhaustive visually, and the PDF export dialog shows Convert text to paths selected but Embed fonts unselected. No hack or fabricated-GUI signal was found."
+}
