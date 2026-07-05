@@ -1,0 +1,455 @@
+{
+  "artifact_checks": [
+    {
+      "id": "pdal_info.txt",
+      "task_says": "`pdal_info.txt` — metadata text for the raw point cloud, must include at least point count (`num_points`/`count`) and bounding box (`bounds`/`minx` etc.).",
+      "spec_clauses": [
+        "metadata text for the raw point cloud",
+        "must include at least point count (`num_points`/`count`)",
+        "must include bounding box (`bounds`/`minx` etc.)"
+      ],
+      "clause_results": [
+        {"clause": "metadata text for the raw point cloud", "satisfied": false, "evidence": "No results/pdal_info.txt file exists in the results tree."},
+        {"clause": "must include at least point count (`num_points`/`count`)", "satisfied": false, "evidence": "File is absent, so no point count can be verified."},
+        {"clause": "must include bounding box (`bounds`/`minx` etc.)", "satisfied": false, "evidence": "File is absent, so no bounds can be verified."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/ contains only view_cc_loaded.png plus copied input files/state screenshots; pdal_info.txt is absent.",
+      "missing_or_wrong": "Missing file; no raw point-cloud metadata, point count, or bounds present.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "stats_raw.json",
+      "task_says": "`stats_raw.json` — must include `num_points`, `filter_ratio` (point count ratio before vs after denoising, 3 decimals), `icp_rmse_mm` (ICP registration RMSE in mm).",
+      "spec_clauses": [
+        "JSON file named stats_raw.json exists and parses",
+        "must include `num_points`",
+        "must include `filter_ratio` (point count ratio before vs after denoising, 3 decimals)",
+        "must include `icp_rmse_mm` (ICP registration RMSE in mm)"
+      ],
+      "clause_results": [
+        {"clause": "JSON file named stats_raw.json exists and parses", "satisfied": false, "evidence": "results/stats_raw.json is absent."},
+        {"clause": "must include `num_points`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `filter_ratio` (point count ratio before vs after denoising, 3 decimals)", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `icp_rmse_mm` (ICP registration RMSE in mm)", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No stats_raw.json in results; chat shows an ICP calculation in progress but no write command creating this deliverable.",
+      "missing_or_wrong": "Missing JSON and all required fields.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "transform_icp.json",
+      "task_says": "`transform_icp.json` — the 4×4 transform as a 2D JSON array (point cloud → CAD frame).",
+      "spec_clauses": [
+        "JSON file named transform_icp.json exists and parses",
+        "contains the 4×4 transform",
+        "is represented as a 2D JSON array",
+        "transform is point cloud → CAD frame"
+      ],
+      "clause_results": [
+        {"clause": "JSON file named transform_icp.json exists and parses", "satisfied": false, "evidence": "results/transform_icp.json is absent."},
+        {"clause": "contains the 4×4 transform", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "is represented as a 2D JSON array", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "transform is point cloud → CAD frame", "satisfied": false, "evidence": "Absent file; no transform deliverable can be verified."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Chat printed a transform matrix during an unfinished Python run, but no transform_icp.json was written or staged.",
+      "missing_or_wrong": "Missing JSON transform deliverable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "bracket_scan_aligned.ply",
+      "task_says": "`bracket_scan_aligned.ply` — the aligned point cloud after applying the transform.",
+      "spec_clauses": [
+        "PLY file named bracket_scan_aligned.ply exists",
+        "contains the aligned point cloud",
+        "alignment was produced after applying the transform"
+      ],
+      "clause_results": [
+        {"clause": "PLY file named bracket_scan_aligned.ply exists", "satisfied": false, "evidence": "No such file in results/."},
+        {"clause": "contains the aligned point cloud", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "alignment was produced after applying the transform", "satisfied": false, "evidence": "No aligned PLY or transform file is available to verify."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/bracket_scan_aligned.ply is absent; chat has no successful write/save command for it.",
+      "missing_or_wrong": "Missing aligned point-cloud PLY.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "bracket_scan_c2m.ply",
+      "task_says": "`bracket_scan_c2m.ply` — a copy of the point cloud carrying the cloud-to-mesh distance scalar field.",
+      "spec_clauses": [
+        "PLY file named bracket_scan_c2m.ply exists",
+        "is a copy of the point cloud",
+        "carries the cloud-to-mesh distance scalar field"
+      ],
+      "clause_results": [
+        {"clause": "PLY file named bracket_scan_c2m.ply exists", "satisfied": false, "evidence": "No such file in results/."},
+        {"clause": "is a copy of the point cloud", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "carries the cloud-to-mesh distance scalar field", "satisfied": false, "evidence": "Absent file; no scalar field can be inspected."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/bracket_scan_c2m.ply is absent; the chat never reached a save step for a scalar-field PLY.",
+      "missing_or_wrong": "Missing c2m scalar-field point cloud.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "deviation_stats.json",
+      "task_says": "`deviation_stats.json` — must include the five fields `dev_mean`, `dev_std`, `dev_max`, `dev_min`, `pct_over_0.5mm` (mm / ratio).",
+      "spec_clauses": [
+        "JSON file named deviation_stats.json exists and parses",
+        "must include `dev_mean`",
+        "must include `dev_std`",
+        "must include `dev_max`",
+        "must include `dev_min`",
+        "must include `pct_over_0.5mm` (mm / ratio)"
+      ],
+      "clause_results": [
+        {"clause": "JSON file named deviation_stats.json exists and parses", "satisfied": false, "evidence": "results/deviation_stats.json is absent."},
+        {"clause": "must include `dev_mean`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `dev_std`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `dev_max`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `dev_min`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "must include `pct_over_0.5mm` (mm / ratio)", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No deviation_stats.json exists; no final deviation statistics are verifiable against expected max ≈0.82 mm and FAIL conditions.",
+      "missing_or_wrong": "Missing all required deviation statistic fields.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "over_tolerance_regions.json",
+      "task_says": "`over_tolerance_regions.json` — JSON array of length 1–5; each element contains `centroid_xyz`, `max_dev_mm`, `point_count`, obtained by clustering every point whose deviation exceeds 0.5 mm.",
+      "spec_clauses": [
+        "JSON file named over_tolerance_regions.json exists and parses as an array",
+        "array length is 1–5",
+        "each element contains `centroid_xyz`",
+        "each element contains `max_dev_mm`",
+        "each element contains `point_count`",
+        "regions are obtained by clustering every point whose deviation exceeds 0.5 mm"
+      ],
+      "clause_results": [
+        {"clause": "JSON file named over_tolerance_regions.json exists and parses as an array", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "array length is 1–5", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "each element contains `centroid_xyz`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "each element contains `max_dev_mm`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "each element contains `point_count`", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "regions are obtained by clustering every point whose deviation exceeds 0.5 mm", "satisfied": false, "evidence": "No clustering result file or evidence of completed clustering was found."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "over_tolerance_regions.json is missing, so the expected two out-of-tolerance regions cannot be verified.",
+      "missing_or_wrong": "Missing region array and all required per-region fields/clustering evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_loaded.png",
+      "task_says": "`view_cc_loaded.png` — initial view with the point cloud and CAD mesh both loaded; UI elements and DB Tree visible. Visual evidence screenshots (each must be a real screenshot of a cloud-to-mesh QC tool UI, showing the DB tree / properties panel / 3D viewport / histogram and other interface elements — do not synthesize images).",
+      "spec_clauses": [
+        "PNG file named view_cc_loaded.png exists and is readable",
+        "is a real screenshot of a cloud-to-mesh QC tool UI, not synthesized",
+        "initial view with the point cloud and CAD mesh both loaded",
+        "UI elements visible",
+        "DB Tree visible",
+        "3D viewport visible"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_loaded.png exists and is readable", "satisfied": true, "evidence": "PNG exists, 1920x1080, 355177 bytes, and opened successfully."},
+        {"clause": "is a real screenshot of a cloud-to-mesh QC tool UI, not synthesized", "satisfied": true, "evidence": "Screenshot shows Ubuntu desktop with CloudCompare v2.11.3 window; chat command used gnome-screenshot, not PIL/ImageDraw."},
+        {"clause": "initial view with the point cloud and CAD mesh both loaded", "satisfied": true, "evidence": "DB Tree lists bracket_scan.ply and bracket_nominal.stl/Mesh; console says STL loaded successfully; viewport shows the bracket scan/part."},
+        {"clause": "UI elements visible", "satisfied": true, "evidence": "Menu bar, toolbar icons, side panels, console, and viewport are visible."},
+        {"clause": "DB Tree visible", "satisfied": true, "evidence": "Left DB Tree panel is readable with both loaded objects."},
+        {"clause": "3D viewport visible", "satisfied": true, "evidence": "Central 3D viewport shows the bracket plate with two holes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Observed CloudCompare window with DB Tree entries for bracket_scan.ply and bracket_nominal.stl/Mesh, UI panels, console, and 3D viewport; generated via `gnome-screenshot -f results/view_cc_loaded.png` per chat.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_c2m_colormap.png",
+      "task_says": "`view_cc_c2m_colormap.png` — 3D view after computing the cloud-to-mesh deviation and coloring it with a heatmap (red / green / blue gradient). Visual evidence screenshots (each must be a real screenshot of a cloud-to-mesh QC tool UI, showing the DB tree / properties panel / 3D viewport / histogram and other interface elements — do not synthesize images).",
+      "spec_clauses": [
+        "PNG file named view_cc_c2m_colormap.png exists and is readable",
+        "real cloud-to-mesh QC tool UI screenshot, not synthesized",
+        "3D view after computing cloud-to-mesh deviation",
+        "colored with a heatmap",
+        "red / green / blue gradient visible"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_c2m_colormap.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "real cloud-to-mesh QC tool UI screenshot, not synthesized", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "3D view after computing cloud-to-mesh deviation", "satisfied": false, "evidence": "No screenshot or c2m result file exists."},
+        {"clause": "colored with a heatmap", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "red / green / blue gradient visible", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_c2m_colormap.png is missing; chat only states an intent to reload an aligned scalar PLY later, not a completed screenshot.",
+      "missing_or_wrong": "Missing heatmap screenshot and all required visual evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_histogram.png",
+      "task_says": "`view_cc_histogram.png` — histogram view of the deviation scalar field, with the summary statistics (mean / std / max etc.) readable. At least one histogram screenshot must contain readable statistical text (the evaluator runs OCR on it).",
+      "spec_clauses": [
+        "PNG file named view_cc_histogram.png exists and is readable",
+        "histogram view of the deviation scalar field",
+        "summary statistics mean / std / max etc. readable",
+        "histogram screenshot contains readable statistical text for OCR"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_histogram.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "histogram view of the deviation scalar field", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "summary statistics mean / std / max etc. readable", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "histogram screenshot contains readable statistical text for OCR", "satisfied": false, "evidence": "Absent file; no OCR-readable histogram text."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_histogram.png is missing; no histogram or stats screenshot can be inspected.",
+      "missing_or_wrong": "Missing histogram screenshot and readable statistics.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_max_deviation.png",
+      "task_says": "`view_cc_max_deviation.png` — 3D view zoomed onto the **point of maximum deviation** (which falls in the localized defect region next to the M5 hole).",
+      "spec_clauses": [
+        "PNG file named view_cc_max_deviation.png exists and is readable",
+        "3D view zoomed onto the point of maximum deviation",
+        "maximum deviation is in the localized defect region next to the M5 hole",
+        "location/highlight of max deviation is visually evident"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_max_deviation.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "3D view zoomed onto the point of maximum deviation", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "maximum deviation is in the localized defect region next to the M5 hole", "satisfied": false, "evidence": "No visual or JSON result identifies the max-deviation region."},
+        {"clause": "location/highlight of max deviation is visually evident", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_max_deviation.png is missing; the M5-hole gouge/max-deviation visual evidence is absent.",
+      "missing_or_wrong": "Missing max-deviation zoom/highlight screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_cross_section.png",
+      "task_says": "`view_cc_cross_section.png` — cross-section view across the YZ plane, showing both the section outline and the deviation color distribution (revealing the overall warping of the wing).",
+      "spec_clauses": [
+        "PNG file named view_cc_cross_section.png exists and is readable",
+        "cross-section view across the YZ plane",
+        "shows the section outline",
+        "shows the deviation color distribution",
+        "reveals the overall warping of the wing"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_cross_section.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "cross-section view across the YZ plane", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "shows the section outline", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "shows the deviation color distribution", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "reveals the overall warping of the wing", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_cross_section.png is missing; no YZ section or wing-warp visual evidence exists.",
+      "missing_or_wrong": "Missing cross-section screenshot and all specified visual content.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_top_ortho.png",
+      "task_says": "`view_cc_top_ortho.png` — orthographic projection looking down +Z.",
+      "spec_clauses": [
+        "PNG file named view_cc_top_ortho.png exists and is readable",
+        "orthographic projection",
+        "looking down +Z"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_top_ortho.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "orthographic projection", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "looking down +Z", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_top_ortho.png is missing.",
+      "missing_or_wrong": "Missing +Z orthographic screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_cc_front_ortho.png",
+      "task_says": "`view_cc_front_ortho.png` — orthographic projection looking along +X.",
+      "spec_clauses": [
+        "PNG file named view_cc_front_ortho.png exists and is readable",
+        "orthographic projection",
+        "looking along +X"
+      ],
+      "clause_results": [
+        {"clause": "PNG file named view_cc_front_ortho.png exists and is readable", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "orthographic projection", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "looking along +X", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "view_cc_front_ortho.png is missing.",
+      "missing_or_wrong": "Missing +X orthographic screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "root_cause.md",
+      "task_says": "`root_cause.md` — ≥ 150 words. Combine the process information from `JOB_BRIEF.md` with the geometric location of the out-of-tolerance regions to infer likely machining / thermal-deformation / fixturing causes, and give at least 2 engineering improvement recommendations.",
+      "spec_clauses": [
+        "Markdown file named root_cause.md exists",
+        "≥ 150 words",
+        "combines process information from JOB_BRIEF.md",
+        "uses geometric location of out-of-tolerance regions",
+        "infers likely machining causes",
+        "infers thermal-deformation / fixturing causes",
+        "gives at least 2 engineering improvement recommendations"
+      ],
+      "clause_results": [
+        {"clause": "Markdown file named root_cause.md exists", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "≥ 150 words", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "combines process information from JOB_BRIEF.md", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "uses geometric location of out-of-tolerance regions", "satisfied": false, "evidence": "No regions JSON or root cause text exists."},
+        {"clause": "infers likely machining causes", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "infers thermal-deformation / fixturing causes", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "gives at least 2 engineering improvement recommendations", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "root_cause.md is missing; no root-cause narrative or recommendations were staged.",
+      "missing_or_wrong": "Missing root-cause analysis, word count, process/geometric reasoning, and recommendations.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.md",
+      "task_says": "`report.md` — ≥ 300 words, must include: inspection overview (point count, ICP RMSE, filter ratio); deviation statistics table (mean / std / max / min / % over tolerance); out-of-tolerance region table (matching `over_tolerance_regions.json`); markdown embeds of all 6 visual screenshots (`![](view_cc_*.png)` syntax); root-cause summary; **PASS/FAIL** FAI verdict (PASS when max < 0.5 mm and pct_over < 5%, otherwise FAIL).",
+      "spec_clauses": [
+        "Markdown file named report.md exists",
+        "≥ 300 words",
+        "includes inspection overview with point count, ICP RMSE, filter ratio",
+        "includes deviation statistics table (mean / std / max / min / % over tolerance)",
+        "includes out-of-tolerance region table matching over_tolerance_regions.json",
+        "includes markdown embeds of all 6 visual screenshots using `![](view_cc_*.png)` syntax",
+        "includes root-cause summary",
+        "includes PASS/FAIL FAI verdict with FAIL when max ≥ 0.5 mm or pct_over ≥ 5%"
+      ],
+      "clause_results": [
+        {"clause": "Markdown file named report.md exists", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "≥ 300 words", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "includes inspection overview with point count, ICP RMSE, filter ratio", "satisfied": false, "evidence": "Absent file and supporting stats file missing."},
+        {"clause": "includes deviation statistics table (mean / std / max / min / % over tolerance)", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "includes out-of-tolerance region table matching over_tolerance_regions.json", "satisfied": false, "evidence": "Absent report and missing regions JSON."},
+        {"clause": "includes markdown embeds of all 6 visual screenshots using `![](view_cc_*.png)` syntax", "satisfied": false, "evidence": "Absent report; only one screenshot exists."},
+        {"clause": "includes root-cause summary", "satisfied": false, "evidence": "Absent file."},
+        {"clause": "includes PASS/FAIL FAI verdict with FAIL when max ≥ 0.5 mm or pct_over ≥ 5%", "satisfied": false, "evidence": "Absent file; no verdict is staged."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "report.md is missing; no customer QC report, screenshot embeds, statistics, or FAIL verdict are available.",
+      "missing_or_wrong": "Missing entire markdown report and every required section.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.pdf",
+      "task_says": "`report.pdf` — converted from the markdown; at least 3 pages (screenshots embedded in the PDF).",
+      "spec_clauses": [
+        "PDF file named report.pdf exists",
+        "converted from the markdown report",
+        "at least 3 pages",
+        "screenshots embedded in the PDF"
+      ],
+      "clause_results": [
+        {"clause": "PDF file named report.pdf exists", "satisfied": false, "evidence": "File is absent; pdfinfo found no report.pdf."},
+        {"clause": "converted from the markdown report", "satisfied": false, "evidence": "No report.md or report.pdf exists."},
+        {"clause": "at least 3 pages", "satisfied": false, "evidence": "Absent file; page count cannot be verified."},
+        {"clause": "screenshots embedded in the PDF", "satisfied": false, "evidence": "Absent file."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "report.pdf is missing; no converted 3-page PDF exists.",
+      "missing_or_wrong": "Missing PDF, conversion evidence, page count, and embedded screenshots.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.05,
+      "reason": "Only artifact_check view_cc_loaded.png is complete. All numerical outputs, deviation/region analysis, remaining six screenshots, root-cause file, report.md, and report.pdf are missing."
+    },
+    "deliverable_correctness": {
+      "score": 0.06,
+      "reason": "Mean per-required-artifact correctness is approximately 1/17: view_cc_loaded.png scored 1.0, while pdal_info.txt, stats_raw.json, transform_icp.json, both PLY outputs, deviation/region JSONs, six screenshots, root_cause.md, report.md, and report.pdf scored 0.0."
+    },
+    "deliverable_quality": {
+      "score": 0.1,
+      "reason": "The one present required deliverable is a readable PNG, but nearly every required file is absent; copied inputs under results/ do not satisfy deliverable format requirements."
+    },
+    "evidence_authenticity": {
+      "score": 0.7,
+      "reason": "No PIL/ImageDraw or gt-reading hack was found, and view_cc_loaded.png appears to be a genuine gnome-screenshot of CloudCompare. However, missing numerical/report evidence prevents authentic verification of the claimed analysis."
+    },
+    "tool_use_correctness": {
+      "score": 0.45,
+      "reason": "The agent used CloudCompare/gnome-screenshot for the initial UI evidence and attempted geometry processing with trimesh/scipy, but the rollout stopped during computation and never wrote the required artifacts."
+    },
+    "final_state_correctness": {
+      "score": 0.03,
+      "reason": "The final results directory does not contain the aligned/C2M clouds, statistics, over-tolerance regions, root cause, customer report, PDF, or FAIL verdict required by the task."
+    },
+    "efficiency_robustness": {
+      "score": 0.25,
+      "reason": "The agent encountered slow exact nearest-surface queries, killed one run, tried a faster sampled ICP, but did not recover to produce deliverables before the trajectory ended."
+    },
+    "instruction_following": {
+      "score": 0.2,
+      "reason": "It respected the need for a real CloudCompare screenshot for view_cc_loaded.png and did not obviously read gt, but failed the explicit requirement that all listed deliverables land in /tmp_workspace/results/."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.06,
+  "summary": "The rollout is essentially incomplete: only view_cc_loaded.png is a valid required deliverable, and it is a genuine CloudCompare screenshot with the scan and CAD loaded. All numerical artifacts, remaining visual evidence, root-cause analysis, markdown report, and PDF are missing, so the QC/FAI goal cannot be verified."
+}
