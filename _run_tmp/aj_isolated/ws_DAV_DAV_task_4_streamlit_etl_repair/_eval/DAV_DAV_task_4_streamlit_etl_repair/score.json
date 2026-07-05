@@ -1,0 +1,476 @@
+{
+  "artifact_checks": [
+    {
+      "id": "task.md",
+      "task_says": "(task md not found at /mnt/nas_nfs/home/wanli/wen/WeaveBench/cache/tasks/claudecode/DAV/DAV_task_4_streamlit_etl_repair.md)",
+      "spec_clauses": [
+        "task.md should contain the authoritative task spec and required deliverable list for DAV_task_4_streamlit_etl_repair"
+      ],
+      "clause_results": [
+        {
+          "clause": "task.md should contain the authoritative task spec and required deliverable list for DAV_task_4_streamlit_etl_repair",
+          "satisfied": false,
+          "evidence": "Opening task.md yielded only a missing-task placeholder, so exact deliverable language was unavailable. Evaluation below uses the observed rollout trajectory and result names as validation anchors."
+        }
+      ],
+      "exists": true,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "task.md content: '(task md not found at /mnt/nas_nfs/home/wanli/wen/WeaveBench/cache/tasks/claudecode/DAV/DAV_task_4_streamlit_etl_repair.md)'",
+      "missing_or_wrong": "Authoritative task spec is not present/readable in staging, preventing verbatim clause extraction from task.md.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "etl_pipeline.py",
+      "task_says": "Inferred from trajectory/todos: repair the ETL pipeline, locate/fix five bugs, rebuild monthly_revenue, category_share, and region_summary from sales.db instead of preserving anomalies.",
+      "spec_clauses": [
+        "ETL source file exists and is valid Python",
+        "monthly_revenue must aggregate orders by the correct order month without the observed '-1 day' month shift",
+        "monthly_revenue values must be normal positive monthly sums, not odd/even sign-flipped values",
+        "category_share must include all categories and compute percentages against the true grand total, not filter out categories with HAVING COUNT(*) > 50",
+        "region_summary must be rebuilt from orders without inserting the hardcoded legacy Total row 485000.00 / 950",
+        "pipeline must operate on the intended populated sales.db/raw orders and produce non-empty aggregates"
+      ],
+      "clause_results": [
+        {
+          "clause": "ETL source file exists and is valid Python",
+          "satisfied": true,
+          "evidence": "results/etl_pipeline.py exists and python3 -m py_compile passed."
+        },
+        {
+          "clause": "monthly_revenue must aggregate orders by the correct order month without the observed '-1 day' month shift",
+          "satisfied": false,
+          "evidence": "Line 24 still uses strftime('%Y-%m', datetime(order_date, '-1 day'))."
+        },
+        {
+          "clause": "monthly_revenue values must be normal positive monthly sums, not odd/even sign-flipped values",
+          "satisfied": false,
+          "evidence": "Lines 31-41 still flip odd months negative and reset revenue_acc, preserving the original bug."
+        },
+        {
+          "clause": "category_share must include all categories and compute percentages against the true grand total, not filter out categories with HAVING COUNT(*) > 50",
+          "satisfied": false,
+          "evidence": "Line 59 still has HAVING COUNT(*) > 50 and percentages are computed only over filtered rows."
+        },
+        {
+          "clause": "region_summary must be rebuilt from orders without inserting the hardcoded legacy Total row 485000.00 / 950",
+          "satisfied": false,
+          "evidence": "Lines 95-100 still insert ('Total', 485000.00, 950)."
+        },
+        {
+          "clause": "pipeline must operate on the intended populated sales.db/raw orders and produce non-empty aggregates",
+          "satisfied": false,
+          "evidence": "Staged sales.db orders table has count 0; monthly_revenue and category_share have count 0; region_summary has only the legacy Total row."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.17,
+      "evidence_quote": "The file is syntactically valid but still contains the exact original anomalies: datetime(order_date, '-1 day'), odd-month revenue negation, HAVING COUNT(*) > 50, and hardcoded legacy_total = 485000.00 / legacy_count = 950.",
+      "missing_or_wrong": "All substantive ETL repair clauses are unmet; only existence/syntax is satisfied.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "sales_dashboard.py",
+      "task_says": "Inferred from trajectory/todos: repair the Streamlit dashboard/cache behavior and show the corrected ETL outputs in the Sales Operations Dashboard.",
+      "spec_clauses": [
+        "dashboard source file exists and is valid Python",
+        "dashboard should connect to the repaired/staged database robustly rather than a fixed /tmp_workspace/sales.db path",
+        "dashboard cache should not keep stale 1-hour data after ETL rebuilds",
+        "dashboard should display meaningful monthly revenue, category share, and region summary data after fixes",
+        "dashboard should no longer surface the legacy Total-row mismatch warning caused by wrong region_summary data"
+      ],
+      "clause_results": [
+        {
+          "clause": "dashboard source file exists and is valid Python",
+          "satisfied": true,
+          "evidence": "results/sales_dashboard.py exists and python3 -m py_compile passed."
+        },
+        {
+          "clause": "dashboard should connect to the repaired/staged database robustly rather than a fixed /tmp_workspace/sales.db path",
+          "satisfied": false,
+          "evidence": "Line 7 still hardcodes DB_PATH = '/tmp_workspace/sales.db'."
+        },
+        {
+          "clause": "dashboard cache should not keep stale 1-hour data after ETL rebuilds",
+          "satisfied": false,
+          "evidence": "Line 12 still uses @st.cache_data(ttl=3600) with no invalidation tied to DB mtime or rebuild."
+        },
+        {
+          "clause": "dashboard should display meaningful monthly revenue, category share, and region summary data after fixes",
+          "satisfied": false,
+          "evidence": "Underlying staged database/CSVs are empty except a hardcoded Total row, so the dashboard cannot display meaningful fixed data."
+        },
+        {
+          "clause": "dashboard should no longer surface the legacy Total-row mismatch warning caused by wrong region_summary data",
+          "satisfied": false,
+          "evidence": "The code still reads a Total row and warns when non_total differs; the ETL still inserts only Total=485000 with no real region rows."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.2,
+      "evidence_quote": "sales_dashboard.py is parseable but appears unchanged: hardcoded /tmp_workspace/sales.db, @st.cache_data(ttl=3600), and warning logic around the legacy Total row remain.",
+      "missing_or_wrong": "Robust DB path, cache invalidation, meaningful fixed data display, and corrected Total-row behavior are all unmet.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "sales.db",
+      "task_says": "Inferred from trajectory/todos: regenerate/finalize sales.db so repaired aggregate tables are correct and populated from raw orders.",
+      "spec_clauses": [
+        "sales.db exists and is a readable SQLite database",
+        "orders table should contain source order rows for aggregation",
+        "monthly_revenue table should contain rebuilt monthly rows",
+        "category_share table should contain rebuilt category rows",
+        "region_summary table should contain real region rows and totals consistent with orders"
+      ],
+      "clause_results": [
+        {
+          "clause": "sales.db exists and is a readable SQLite database",
+          "satisfied": true,
+          "evidence": "sqlite3 inspection succeeded and listed orders, monthly_revenue, category_share, region_summary."
+        },
+        {
+          "clause": "orders table should contain source order rows for aggregation",
+          "satisfied": false,
+          "evidence": "orders count is 0."
+        },
+        {
+          "clause": "monthly_revenue table should contain rebuilt monthly rows",
+          "satisfied": false,
+          "evidence": "monthly_revenue count is 0."
+        },
+        {
+          "clause": "category_share table should contain rebuilt category rows",
+          "satisfied": false,
+          "evidence": "category_share count is 0."
+        },
+        {
+          "clause": "region_summary table should contain real region rows and totals consistent with orders",
+          "satisfied": false,
+          "evidence": "region_summary count is 1 with only ('Total', 485000.0, 950), inconsistent with orders count 0."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.2,
+      "evidence_quote": "Database opens, but source orders and two aggregate tables are empty; region_summary contains only the hardcoded legacy Total row.",
+      "missing_or_wrong": "No raw orders, no rebuilt monthly/category data, and no valid regional aggregation.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "etl_out/monthly_revenue.csv",
+      "task_says": "Inferred from trajectory/todos: export rebuilt monthly_revenue.csv from the fixed ETL outputs.",
+      "spec_clauses": [
+        "CSV exists and has the monthly_revenue schema",
+        "CSV contains non-empty monthly rows",
+        "revenue values reflect corrected monthly sums from orders"
+      ],
+      "clause_results": [
+        {
+          "clause": "CSV exists and has the monthly_revenue schema",
+          "satisfied": true,
+          "evidence": "File exists with header 'month,revenue'."
+        },
+        {
+          "clause": "CSV contains non-empty monthly rows",
+          "satisfied": false,
+          "evidence": "File contains only the header line."
+        },
+        {
+          "clause": "revenue values reflect corrected monthly sums from orders",
+          "satisfied": false,
+          "evidence": "No data rows are available to verify corrected revenue values."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.33,
+      "evidence_quote": "category of evidence: cat monthly_revenue.csv returned only 'month,revenue'.",
+      "missing_or_wrong": "Missing all monthly data rows and corrected revenue values.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "etl_out/category_share.csv",
+      "task_says": "Inferred from trajectory/todos: export rebuilt category_share.csv from the fixed ETL outputs.",
+      "spec_clauses": [
+        "CSV exists and has the category_share schema",
+        "CSV contains non-empty category rows",
+        "pct values are computed against the true total and sum appropriately"
+      ],
+      "clause_results": [
+        {
+          "clause": "CSV exists and has the category_share schema",
+          "satisfied": true,
+          "evidence": "File exists with header 'category,total_amount,pct'."
+        },
+        {
+          "clause": "CSV contains non-empty category rows",
+          "satisfied": false,
+          "evidence": "File contains only the header line."
+        },
+        {
+          "clause": "pct values are computed against the true total and sum appropriately",
+          "satisfied": false,
+          "evidence": "No category rows or pct values are present."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.33,
+      "evidence_quote": "cat category_share.csv returned only 'category,total_amount,pct'.",
+      "missing_or_wrong": "Missing all category rows and percentages.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "etl_out/region_summary.csv",
+      "task_says": "Inferred from trajectory/todos: export rebuilt region_summary.csv from the fixed ETL outputs.",
+      "spec_clauses": [
+        "CSV exists and has the region_summary schema",
+        "CSV contains real region rows from orders",
+        "CSV should not contain the old hardcoded legacy Total row as the only data",
+        "amount/order_count totals are consistent with source orders"
+      ],
+      "clause_results": [
+        {
+          "clause": "CSV exists and has the region_summary schema",
+          "satisfied": true,
+          "evidence": "File exists with header 'region,amount,order_count'."
+        },
+        {
+          "clause": "CSV contains real region rows from orders",
+          "satisfied": false,
+          "evidence": "The only row is Total, not a real region."
+        },
+        {
+          "clause": "CSV should not contain the old hardcoded legacy Total row as the only data",
+          "satisfied": false,
+          "evidence": "File contains exactly 'Total,485000.0,950' after the header."
+        },
+        {
+          "clause": "amount/order_count totals are consistent with source orders",
+          "satisfied": false,
+          "evidence": "orders table count is 0, but CSV reports Total order_count 950 and amount 485000.0."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.25,
+      "evidence_quote": "region_summary.csv has header plus a single stale row: Total,485000.0,950.",
+      "missing_or_wrong": "No real region rows; stale legacy Total row remains; values inconsistent with orders table.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "etl_run.log",
+      "task_says": "Inferred from trajectory/todos: provide an ETL run log demonstrating a successful fixed rebuild.",
+      "spec_clauses": [
+        "log file exists and is readable",
+        "log shows ETL completed without traceback",
+        "log corresponds to a meaningful corrected rebuild with populated outputs"
+      ],
+      "clause_results": [
+        {
+          "clause": "log file exists and is readable",
+          "satisfied": true,
+          "evidence": "etl_run.log exists and was read successfully."
+        },
+        {
+          "clause": "log shows ETL completed without traceback",
+          "satisfied": true,
+          "evidence": "Log says Rebuilding monthly_revenue/category_share/region_summary and ETL complete."
+        },
+        {
+          "clause": "log corresponds to a meaningful corrected rebuild with populated outputs",
+          "satisfied": false,
+          "evidence": "Despite 'ETL complete', exported outputs and SQLite aggregates are empty/stale, and the source orders table has count 0."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.67,
+      "evidence_quote": "Log is clean but shallow: 'ETL complete.' while outputs are empty or legacy-only.",
+      "missing_or_wrong": "Does not demonstrate a corrected rebuild or populated outputs.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "_screenshots/screenshot_0001_action.png",
+      "task_says": "Inferred from trajectory/todos: capture dashboard/anomaly or post-fix Streamlit evidence screenshots.",
+      "spec_clauses": [
+        "PNG screenshot exists and is viewable",
+        "screenshot shows the Streamlit Sales Operations Dashboard",
+        "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state"
+      ],
+      "clause_results": [
+        {
+          "clause": "PNG screenshot exists and is viewable",
+          "satisfied": true,
+          "evidence": "Image view succeeded."
+        },
+        {
+          "clause": "screenshot shows the Streamlit Sales Operations Dashboard",
+          "satisfied": false,
+          "evidence": "Image shows only an idle Ubuntu desktop with wallpaper and no app window."
+        },
+        {
+          "clause": "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state",
+          "satisfied": false,
+          "evidence": "No browser, dashboard, charts, tables, or error message is visible."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.33,
+      "evidence_quote": "Vision inspection: Ubuntu desktop only; no Streamlit app or evidence.",
+      "missing_or_wrong": "Does not show the requested dashboard or validation evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "_screenshots/screenshot_0002_wait.png",
+      "task_says": "Inferred from trajectory/todos: capture dashboard/anomaly or post-fix Streamlit evidence screenshots.",
+      "spec_clauses": [
+        "PNG screenshot exists and is viewable",
+        "screenshot shows the Streamlit Sales Operations Dashboard",
+        "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state"
+      ],
+      "clause_results": [
+        {
+          "clause": "PNG screenshot exists and is viewable",
+          "satisfied": true,
+          "evidence": "Image view succeeded."
+        },
+        {
+          "clause": "screenshot shows the Streamlit Sales Operations Dashboard",
+          "satisfied": false,
+          "evidence": "Image shows Chrome new tab page, not Streamlit."
+        },
+        {
+          "clause": "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state",
+          "satisfied": false,
+          "evidence": "No dashboard content, charts, tables, sidebar, or Streamlit errors are visible; only a Chrome update notification."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.33,
+      "evidence_quote": "Vision inspection: Chrome new tab page only; no Sales Operations Dashboard.",
+      "missing_or_wrong": "Does not show the requested dashboard or validation evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "_screenshots/screenshot_0003_scroll.png",
+      "task_says": "Inferred from trajectory/todos: capture dashboard/anomaly or post-fix Streamlit evidence screenshots.",
+      "spec_clauses": [
+        "PNG screenshot exists and is viewable",
+        "screenshot shows the Streamlit Sales Operations Dashboard",
+        "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state"
+      ],
+      "clause_results": [
+        {
+          "clause": "PNG screenshot exists and is viewable",
+          "satisfied": true,
+          "evidence": "Image view succeeded."
+        },
+        {
+          "clause": "screenshot shows the Streamlit Sales Operations Dashboard",
+          "satisfied": false,
+          "evidence": "Image shows Chrome at 127.0.0.1:8501 with ERR_CONNECTION_REFUSED, not the dashboard."
+        },
+        {
+          "clause": "screenshot shows relevant charts/tables/errors/evidence needed to validate ETL/dashboard state",
+          "satisfied": "partial",
+          "evidence": "It shows a relevant failure state (local server refused connection), but not the dashboard or fixed evidence."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Vision inspection: Chrome error page says 'This site can't be reached' and '127.0.0.1 refused to connect.'",
+      "missing_or_wrong": "Dashboard is not loaded; only connection failure evidence is present.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "repair_report.md",
+      "task_says": "Inferred from trajectory/todos: write reports after fixing and verifying the ETL/dashboard repair.",
+      "spec_clauses": [
+        "A repair/report deliverable should exist if the task required reports",
+        "Report should identify the found bugs and fixes",
+        "Report should include verification evidence/invariants"
+      ],
+      "clause_results": [
+        {
+          "clause": "A repair/report deliverable should exist if the task required reports",
+          "satisfied": false,
+          "evidence": "No .md/.txt report file is present in results; result tree contains code, db, csv/log, screenshots only."
+        },
+        {
+          "clause": "Report should identify the found bugs and fixes",
+          "satisfied": false,
+          "evidence": "No report exists."
+        },
+        {
+          "clause": "Report should include verification evidence/invariants",
+          "satisfied": false,
+          "evidence": "No report exists."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "find results -maxdepth 4 listed no report.md/README/notes text deliverable; chat todo explicitly included 'write reports'.",
+      "missing_or_wrong": "Missing report deliverable and all report content.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.12,
+      "reason": "The rollout did not repair the ETL or dashboard: etl_pipeline.py keeps all observed bugs, sales.db/orders and aggregate outputs are empty/stale, and screenshots do not show a working Streamlit app. See artifact checks etl_pipeline.py, sales.db, etl_out/*.csv, and _screenshots/screenshot_0003_scroll.png."
+    },
+    "deliverable_correctness": {
+      "score": 0.27,
+      "reason": "Most files exist but are substantively wrong. Code remains buggy, CSV/database content is empty or legacy-only, and dashboard screenshots are not dashboard evidence. Mean artifact correctness is low, driven by etl_pipeline.py=0.17, sales_dashboard.py=0.20, sales.db=0.20, and repair_report.md=0.0."
+    },
+    "deliverable_quality": {
+      "score": 0.48,
+      "reason": "Files are mostly present and parseable/viewable (Python compiles, SQLite opens, PNGs view), but content quality is poor: task.md is not a real spec, report is missing, CSVs are empty, and screenshots are irrelevant or show connection failure."
+    },
+    "evidence_authenticity": {
+      "score": 0.75,
+      "reason": "No PIL/ImageDraw, np.random.seed, /tmp_workspace/gt, LD_PRELOAD, mock-service, or similar hack strings were found in parsed chat tool/text content. However, evidence is weak because the screenshots/log do not actually substantiate a successful repair."
+    },
+    "tool_use_correctness": {
+      "score": 0.35,
+      "reason": "The agent used reasonable tools initially (read files, inspect browser, run ETL), but it did not complete diagnosis/repair and used sudo/password attempts to overcome permissions. It stopped after discovering empty orders and left broken outputs."
+    },
+    "final_state_correctness": {
+      "score": 0.1,
+      "reason": "Final state is not the requested repaired dashboard/ETL: source orders count is 0, aggregates are empty/stale, app is not reachable in screenshot_0003_scroll.png, and code remains unchanged with original bugs."
+    },
+    "efficiency_robustness": {
+      "score": 0.25,
+      "reason": "The rollout encountered permission/read-only database issues and then a deeper empty-source-data problem but did not recover by finding/restoring input data or implementing fixes; it nevertheless staged outputs."
+    },
+    "instruction_following": {
+      "score": 0.25,
+      "reason": "It partially followed by producing some expected-named artifacts and a log, but failed the core repair/verification instructions and did not provide a report despite its own plan to write reports."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.27,
+  "summary": "The staged rollout is largely unsuccessful: the ETL and dashboard files appear essentially unchanged, the database has zero orders, monthly/category outputs are empty, and region_summary only contains the hardcoded legacy Total row. Screenshots do not show a working Streamlit dashboard; one shows ERR_CONNECTION_REFUSED. No clear hack/fabrication pattern was found, but the deliverables do not substantively satisfy the inferred repair task."
+}
