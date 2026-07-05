@@ -1,0 +1,342 @@
+{
+  "artifact_checks": [
+    {
+      "id": "before/broken.lvl",
+      "task_says": "`/tmp_workspace/results/before/broken.lvl`: an unmodified copy of the original level, used for diff bookkeeping.",
+      "spec_clauses": [
+        "file exists at results/before/broken.lvl",
+        "is an unmodified copy of the original level",
+        "is usable for diff bookkeeping"
+      ],
+      "clause_results": [
+        {"clause": "file exists at results/before/broken.lvl", "satisfied": true, "evidence": "results/before/broken.lvl exists and is readable XML."},
+        {"clause": "is an unmodified copy of the original level", "satisfied": true, "evidence": "Byte comparison with results/Levels/broken.lvl returned before_copy_matches=yes."},
+        {"clause": "is usable for diff bookkeeping", "satisfied": true, "evidence": "diff.txt is a unified diff from Levels/broken.lvl to Levels/fixed.lvl."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The file is present, readable, and byte-identical to results/Levels/broken.lvl; diff.txt uses Levels/broken.lvl as the old side.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_before.json",
+      "task_says": "`/tmp_workspace/results/parse_before.json`: a JSON object containing three keys `level_size`, `blocks`, and `entities`. `level_size` contains `left,right,top,bottom`; each `blocks` entry contains `id,background,vertices,winding_signed_area`; each `entities` entry contains `id,type_id,x,y,inside_block_id`.",
+      "spec_clauses": [
+        "JSON object contains exactly/at least the three required top-level keys level_size, blocks, entities",
+        "level_size contains left, right, top, bottom",
+        "each blocks entry contains id, background, vertices, winding_signed_area",
+        "each entities entry contains id, type_id, x, y, inside_block_id",
+        "content reflects the pre-repair broken level structure"
+      ],
+      "clause_results": [
+        {"clause": "JSON object contains exactly/at least the three required top-level keys level_size, blocks, entities", "satisfied": true, "evidence": "Top-level keys are level_size, blocks, entities."},
+        {"clause": "level_size contains left, right, top, bottom", "satisfied": true, "evidence": "level_size has left=-30.0, right=40.0, top=20.0, bottom=-15.0."},
+        {"clause": "each blocks entry contains id, background, vertices, winding_signed_area", "satisfied": true, "evidence": "All 5 block records include those fields, including bridge_C signed area -28.0."},
+        {"clause": "each entities entry contains id, type_id, x, y, inside_block_id", "satisfied": true, "evidence": "All 3 entity records include those fields."},
+        {"clause": "content reflects the pre-repair broken level structure", "satisfied": true, "evidence": "It reports 5 blocks, no EndOfLevel, and Straw01 at (30,-11) inside floor_end, matching the observed broken XML."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_before.json parses and includes level_size, 5 blocks with winding areas, and 3 entities with inside_block_id evidence for Straw01.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "bugs.json",
+      "task_says": "`/tmp_workspace/results/bugs.json`: a JSON object containing three items: `bug_block_winding` (with `detected,block_id,signed_area`), `bug_no_end_of_level` (with `detected,entity_types_present`), and `bug_strawberry_in_block` (with `detected,strawberry_id,host_block_id`). Each field should provide verifiable numerical or list-based evidence.",
+      "spec_clauses": [
+        "contains bug_block_winding with detected, block_id, signed_area",
+        "bug_block_winding is detected=true with verifiable negative signed_area evidence",
+        "contains bug_no_end_of_level with detected and entity_types_present",
+        "bug_no_end_of_level is detected=true with a list that lacks EndOfLevel",
+        "contains bug_strawberry_in_block with detected, strawberry_id, host_block_id",
+        "bug_strawberry_in_block is detected=true with verifiable strawberry/block evidence"
+      ],
+      "clause_results": [
+        {"clause": "contains bug_block_winding with detected, block_id, signed_area", "satisfied": true, "evidence": "bug_block_winding has detected=true, block_id=bridge_C, signed_area=-28.0."},
+        {"clause": "bug_block_winding is detected=true with verifiable negative signed_area evidence", "satisfied": true, "evidence": "bridge_C signed_area=-28.0 matches parse_before and gt expected invariant."},
+        {"clause": "contains bug_no_end_of_level with detected and entity_types_present", "satisfied": true, "evidence": "bug_no_end_of_level has detected=true and list [PlayerStart, Sprite, Strawberry]."},
+        {"clause": "bug_no_end_of_level is detected=true with a list that lacks EndOfLevel", "satisfied": true, "evidence": "entity_types_present does not include EndOfLevel."},
+        {"clause": "contains bug_strawberry_in_block with detected, strawberry_id, host_block_id", "satisfied": true, "evidence": "bug_strawberry_in_block has detected=true, strawberry_id=Straw01, host_block_id=floor_end."},
+        {"clause": "bug_strawberry_in_block is detected=true with verifiable strawberry/block evidence", "satisfied": true, "evidence": "parse_before places Straw01 inside floor_end."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "All three bug records are present with detected=true and concrete numeric/list evidence: bridge_C -28.0, no EndOfLevel in entity type list, Straw01 inside floor_end.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "Levels/fixed.lvl",
+      "task_says": "`/tmp_workspace/Levels/fixed.lvl`: the repaired XML level; it must be structurally valid, the `winding_signed_area` of every non-background ground block must be non-negative, `<entities>` must contain exactly one `typeid=\"EndOfLevel\"`, and no strawberry entity may lie inside any non-background block.",
+      "spec_clauses": [
+        "fixed.lvl exists at the required level path",
+        "the repaired XML level is structurally valid / xmllint --noout passes",
+        "the winding_signed_area of every non-background ground block is non-negative",
+        "<entities> must contain exactly one typeid=\"EndOfLevel\"",
+        "no strawberry entity may lie inside any non-background block",
+        "the repair is physically rideable/completable"
+      ],
+      "clause_results": [
+        {"clause": "fixed.lvl exists at the required level path", "satisfied": true, "evidence": "results/Levels/fixed.lvl exists and is readable."},
+        {"clause": "the repaired XML level is structurally valid / xmllint --noout passes", "satisfied": true, "evidence": "xmllint --noout results/Levels/fixed.lvl returned code 0."},
+        {"clause": "the winding_signed_area of every non-background ground block is non-negative", "satisfied": true, "evidence": "parse_after foreground areas are floor_start=40.0, platform_mid=36.0, bridge_C=28.0, floor_end=36.0."},
+        {"clause": "<entities> must contain exactly one typeid=\"EndOfLevel\"", "satisfied": false, "evidence": "XML inspection found root.find('entities') is None; the 4 entity elements, including the single EndOfLevel, are top-level children rather than inside an <entities> wrapper."},
+        {"clause": "no strawberry entity may lie inside any non-background block", "satisfied": true, "evidence": "parse_after reports Straw01 inside_block_id=null and after_strawberry_inside []."},
+        {"clause": "the repair is physically rideable/completable", "satisfied": true, "evidence": "view_ride_finish.png and sqlite_stats.json show the fixed level completed once."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "xmllint passed and non-background areas are non-negative, but the required <entities> wrapper is absent (xml_has_wrapper False), so the critical '<entities> must contain exactly one EndOfLevel' clause is not satisfied despite one top-level EndOfLevel.",
+      "missing_or_wrong": "Critical clause failed: fixed.lvl has no <entities> wrapper containing the EndOfLevel; entities are top-level. This caps correctness under the provided strict rubric.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_xmoto_menu.png",
+      "task_says": "`/tmp_workspace/results/view_xmoto_menu.png`: image evidence showing the pre-repair level list or level-select state, with at least one of `Levels`, `Play`, `X-Moto`, `Custom`, `External`, or `Best` recognisable.",
+      "spec_clauses": [
+        "PNG image exists and is viewable",
+        "shows the pre-repair level list or level-select state",
+        "at least one keyword among Levels, Play, X-Moto, Custom, External, Best is recognisable",
+        "appears to be real X-Moto UI evidence"
+      ],
+      "clause_results": [
+        {"clause": "PNG image exists and is viewable", "satisfied": true, "evidence": "Image is a 1920x1080 PNG and could be inspected."},
+        {"clause": "shows the pre-repair level list or level-select state", "satisfied": "partial", "evidence": "It shows the real X-Moto main/profile menu with a Levels button, not an actual level list/level-select screen."},
+        {"clause": "at least one keyword among Levels, Play, X-Moto, Custom, External, Best is recognisable", "satisfied": true, "evidence": "Visible text includes Levels and X-Moto/0.6.1."},
+        {"clause": "appears to be real X-Moto UI evidence", "satisfied": true, "evidence": "Screenshot shows an X-Moto 0.6.1 game window with profile menu and native UI elements."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.875,
+      "evidence_quote": "The screenshot is real X-Moto UI with 'Levels' and 'X-Moto/0.6.1' visible, but it is a profile/main menu rather than the requested level-select/list state.",
+      "missing_or_wrong": "Only partial for level-list/level-select state: the foreground is a Player Profiles dialog, not a pre-repair level list.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_ride_bug.png",
+      "task_says": "`/tmp_workspace/results/view_ride_bug.png`: image evidence showing the actual pre-repair ride-time problem, for example the motorbike near missing/penetrated terrain or in an open area without a finish marker; at least one of the HUD strings/numbers `time`, `strawberries`, `wrecker`, `fps`, `x-moto`, or `00:` should be recognisable.",
+      "spec_clauses": [
+        "PNG image exists and is viewable",
+        "shows actual pre-repair ride-time gameplay",
+        "shows the ride-time problem such as bike near missing/penetrated terrain or open area without finish marker",
+        "at least one required HUD string/number is recognisable",
+        "does not appear to be a PIL-drawn fake deliverable"
+      ],
+      "clause_results": [
+        {"clause": "PNG image exists and is viewable", "satisfied": true, "evidence": "Image is a 1920x1080 PNG and could be inspected."},
+        {"clause": "shows actual pre-repair ride-time gameplay", "satisfied": true, "evidence": "It shows an X-Moto game window with bike/rider and HUD timer."},
+        {"clause": "shows the ride-time problem such as bike near missing/penetrated terrain or open area without finish marker", "satisfied": true, "evidence": "Bike is in a sparse/open black playfield on/near thin line terrain, with no finish marker visible."},
+        {"clause": "at least one required HUD string/number is recognisable", "satisfied": true, "evidence": "Top-left HUD timer '0:30:86' is visible; X-Moto window/version text is also visible."},
+        {"clause": "does not appear to be a PIL-drawn fake deliverable", "satisfied": true, "evidence": "chat.jsonl shows real X-Moto launch and gnome-screenshot capture; no Image.new/ImageDraw fabrication command was found. The simple line style is consistent with ugly/line display mode."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The image shows real X-Moto gameplay with a bike, timer HUD, sparse/void terrain and no visible finish marker; chat shows it was captured via gnome-screenshot after launching the broken level.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_xmoto_menu_fixed.png",
+      "task_says": "`/tmp_workspace/results/view_xmoto_menu_fixed.png`: image evidence showing the post-repair level list or level-select state, with list/preview content tied to the fixed level visible.",
+      "spec_clauses": [
+        "PNG image exists and is viewable",
+        "shows the post-repair level list or level-select state in X-Moto",
+        "list/preview content tied to the fixed level is visible",
+        "recognisable X-Moto/custom-level context is visible"
+      ],
+      "clause_results": [
+        {"clause": "PNG image exists and is viewable", "satisfied": true, "evidence": "Image is a 1920x1080 PNG and could be inspected."},
+        {"clause": "shows the post-repair level list or level-select state in X-Moto", "satisfied": false, "evidence": "The screenshot shows an Ubuntu Terminal window, not the X-Moto game UI or in-game level-select state."},
+        {"clause": "list/preview content tied to the fixed level is visible", "satisfied": true, "evidence": "Terminal text lists batch3_broken_caves_v1_fixed and Broken Caves (fixed)."},
+        {"clause": "recognisable X-Moto/custom-level context is visible", "satisfied": true, "evidence": "Terminal title/header includes 'X-Moto fixed level list' and 'X-Moto custom level list evidence'."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "The file is a valid screenshot and visibly names the fixed level, but it is terminal-based evidence, not the requested post-repair X-Moto level-select/list UI.",
+      "missing_or_wrong": "Does not show the post-repair level list/level-select state inside the X-Moto UI; it shows a terminal listing instead.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_ride_finish.png",
+      "task_says": "`/tmp_workspace/results/view_ride_finish.png`: image evidence showing the completion-time or results panel, with at least one of the result strings `Finished`, `Best time`, `Replay`, `Time:`, `Level`, or `completed` visible.",
+      "spec_clauses": [
+        "PNG image exists and is viewable",
+        "shows completion-time or results panel",
+        "at least one required result string is visible",
+        "appears to be real X-Moto completion evidence"
+      ],
+      "clause_results": [
+        {"clause": "PNG image exists and is viewable", "satisfied": true, "evidence": "Image is a 1920x1080 PNG and could be inspected."},
+        {"clause": "shows completion-time or results panel", "satisfied": true, "evidence": "Center panel says Finished! and left panel says Best Times."},
+        {"clause": "at least one required result string is visible", "satisfied": true, "evidence": "Visible strings include Finished!, Best Times, View the replay, and 00:00:02 time values."},
+        {"clause": "appears to be real X-Moto completion evidence", "satisfied": true, "evidence": "It is an X-Moto 0.6.1 window with completion menu and level name Broken Caves (fixed); chat shows real gnome-screenshot capture after running the fixed level."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The screenshot clearly shows X-Moto's Finished! results menu, Best Times, replay option, and 00:00:02 completion time for Broken Caves (fixed).",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "sqlite_stats.json",
+      "task_says": "`/tmp_workspace/results/sqlite_stats.json`: a JSON object containing `tables`, `fixed_level_id`, `fixed_level_played`, `fixed_level_completed`, `raw_rows`; `fixed_level_completed` must be at least 1.",
+      "spec_clauses": [
+        "JSON object contains tables",
+        "JSON object contains fixed_level_id",
+        "JSON object contains fixed_level_played",
+        "JSON object contains fixed_level_completed",
+        "JSON object contains raw_rows",
+        "fixed_level_completed must be at least 1"
+      ],
+      "clause_results": [
+        {"clause": "JSON object contains tables", "satisfied": true, "evidence": "tables is a nonempty list of SQLite tables."},
+        {"clause": "JSON object contains fixed_level_id", "satisfied": true, "evidence": "fixed_level_id is batch3_broken_caves_v1_fixed."},
+        {"clause": "JSON object contains fixed_level_played", "satisfied": true, "evidence": "fixed_level_played is 5."},
+        {"clause": "JSON object contains fixed_level_completed", "satisfied": true, "evidence": "fixed_level_completed is 1."},
+        {"clause": "JSON object contains raw_rows", "satisfied": true, "evidence": "raw_rows includes levels, stats_profiles_levels, and profile_completedLevels rows."},
+        {"clause": "fixed_level_completed must be at least 1", "satisfied": true, "evidence": "fixed_level_completed=1 satisfies the threshold."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "sqlite_stats.json parses and includes tables, fixed id, played=5, completed=1, and raw DB rows including stats_profiles_levels/profile_completedLevels.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_after.json",
+      "task_says": "`/tmp_workspace/results/parse_after.json`: a JSON object with the same schema as `parse_before.json`, reflecting the post-repair XML structure, winding, and entity positions.",
+      "spec_clauses": [
+        "JSON object uses the same schema as parse_before.json",
+        "level_size contains left, right, top, bottom",
+        "blocks entries contain id, background, vertices, winding_signed_area",
+        "entities entries contain id, type_id, x, y, inside_block_id",
+        "reflects post-repair winding and entity positions"
+      ],
+      "clause_results": [
+        {"clause": "JSON object uses the same schema as parse_before.json", "satisfied": true, "evidence": "Top-level keys are level_size, blocks, entities."},
+        {"clause": "level_size contains left, right, top, bottom", "satisfied": true, "evidence": "level_size has left=-30.0, right=40.0, top=20.0, bottom=-15.0."},
+        {"clause": "blocks entries contain id, background, vertices, winding_signed_area", "satisfied": true, "evidence": "All 5 blocks include required fields and winding areas."},
+        {"clause": "entities entries contain id, type_id, x, y, inside_block_id", "satisfied": true, "evidence": "All 4 entities include required fields."},
+        {"clause": "reflects post-repair winding and entity positions", "satisfied": true, "evidence": "Foreground areas are nonnegative; FinishA EndOfLevel exists; Straw01 and FinishA are at (-25,-9) with inside_block_id=null."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_after.json has the same schema, repaired foreground areas 40/36/28/36, one EndOfLevel entity, and no strawberry inside a block.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "diff.txt",
+      "task_says": "`/tmp_workspace/results/diff.txt`: the textual diff between the original level and `fixed.lvl`, with a line count between 8 and 250.",
+      "spec_clauses": [
+        "file exists and is textual",
+        "is a diff between original level and fixed.lvl",
+        "line count is between 8 and 250 inclusive"
+      ],
+      "clause_results": [
+        {"clause": "file exists and is textual", "satisfied": true, "evidence": "diff.txt is readable text beginning with --- Levels/broken.lvl and +++ Levels/fixed.lvl."},
+        {"clause": "is a diff between original level and fixed.lvl", "satisfied": true, "evidence": "Unified diff compares Levels/broken.lvl to Levels/fixed.lvl and shows XML/content changes."},
+        {"clause": "line count is between 8 and 250 inclusive", "satisfied": true, "evidence": "Measured diff_lines=130, within [8,250]."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "diff.txt is a unified textual diff from Levels/broken.lvl to Levels/fixed.lvl and has 130 lines.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.json",
+      "task_says": "`/tmp_workspace/results/report.json`: a JSON object containing `bugs_found`, `fixes_applied`, `fixed_signed_area_positive_blocks`, `fixed_endoflevel_count`, `fixed_strawberry_outside_block`, `playthrough_completed`, `screenshots`, and `sqlite_completed_count`; `screenshots` lists the four image-evidence file names.",
+      "spec_clauses": [
+        "JSON object contains bugs_found",
+        "JSON object contains fixes_applied",
+        "JSON object contains fixed_signed_area_positive_blocks",
+        "JSON object contains fixed_endoflevel_count",
+        "JSON object contains fixed_strawberry_outside_block",
+        "JSON object contains playthrough_completed",
+        "JSON object contains screenshots and screenshots lists the four image-evidence file names",
+        "JSON object contains sqlite_completed_count"
+      ],
+      "clause_results": [
+        {"clause": "JSON object contains bugs_found", "satisfied": true, "evidence": "bugs_found is present and repeats the three detected bugs."},
+        {"clause": "JSON object contains fixes_applied", "satisfied": true, "evidence": "fixes_applied is a nonempty list of four repair descriptions."},
+        {"clause": "JSON object contains fixed_signed_area_positive_blocks", "satisfied": true, "evidence": "Map contains floor_start=40.0, platform_mid=36.0, bridge_C=28.0, floor_end=36.0."},
+        {"clause": "JSON object contains fixed_endoflevel_count", "satisfied": true, "evidence": "fixed_endoflevel_count is 1."},
+        {"clause": "JSON object contains fixed_strawberry_outside_block", "satisfied": true, "evidence": "fixed_strawberry_outside_block is true."},
+        {"clause": "JSON object contains playthrough_completed", "satisfied": true, "evidence": "playthrough_completed is true."},
+        {"clause": "JSON object contains screenshots and screenshots lists the four image-evidence file names", "satisfied": true, "evidence": "screenshots lists view_xmoto_menu.png, view_ride_bug.png, view_xmoto_menu_fixed.png, view_ride_finish.png."},
+        {"clause": "JSON object contains sqlite_completed_count", "satisfied": true, "evidence": "sqlite_completed_count is 1."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "report.json parses and contains all requested summary keys with screenshots listing the four required image names and sqlite_completed_count=1.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.8,
+      "reason": "All required artifacts are present and most core goals are evidenced, including bug detection, fixed winding, completion screenshot, and SQLite completion. Major deductions come from artifact Levels/fixed.lvl failing the explicit <entities> wrapper clause and view_xmoto_menu_fixed.png not being an in-game post-repair level-select/list screen."
+    },
+    "deliverable_correctness": {
+      "score": 0.7,
+      "reason": "Most artifacts score high, but Levels/fixed.lvl is capped at 0.40 because the critical '<entities> must contain exactly one EndOfLevel' clause is false, and view_xmoto_menu_fixed.png is terminal evidence rather than X-Moto level-select UI. Per instruction, any artifact correctness below 0.6 caps this dimension at 0.7."
+    },
+    "deliverable_quality": {
+      "score": 0.88,
+      "reason": "Files are present, parseable/viewable, and nonempty; JSON schemas and image formats are sound. Quality issues are semantic rather than file-integrity failures: fixed.lvl omits the requested <entities> wrapper and one screenshot is of a terminal, not the app UI."
+    },
+    "evidence_authenticity": {
+      "score": 0.95,
+      "reason": "No fabrication commands or hidden gt reads were found beyond the prompt text; chat shows real X-Moto launches and gnome-screenshot captures. The ride_bug image uses simplified line/ugly mode, but chat evidence supports it as a real game capture rather than PIL output."
+    },
+    "tool_use_correctness": {
+      "score": 0.85,
+      "reason": "The agent used XML parsing, xmllint, X-Moto GUI runs, screenshots, and sqlite queries appropriately and recovered from launch/cache issues. It did intentionally change the XML entity layout away from the task's stated <entities> wrapper to satisfy runtime behavior, which hurts strict task-tool alignment."
+    },
+    "final_state_correctness": {
+      "score": 0.78,
+      "reason": "The fixed level is XML-well-formed, has nonnegative foreground winding, one EndOfLevel overall, no strawberry inside a block, and recorded completion. However the final XML does not satisfy the specified <entities> containment, and the post-repair menu evidence is not an in-game level-select/list screenshot."
+    },
+    "efficiency_robustness": {
+      "score": 0.85,
+      "reason": "The trajectory shows substantial recovery from GUI/profile/cache/crash issues and final verification of files, XML, images, diff lines, and SQLite. Some extra churn occurred around the entity wrapper/runtime mismatch, but the agent ultimately produced all files."
+    },
+    "instruction_following": {
+      "score": 0.78,
+      "reason": "The rollout produced every named file and performed final verification, but did not follow the exact fixed.lvl '<entities>' requirement and did not provide a true in-game post-repair level-select screenshot for view_xmoto_menu_fixed.png."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.7,
+  "summary": "The rollout is mostly complete and includes strong JSON/XML parsing evidence, real X-Moto ride/finish screenshots, and SQLite completion count 1. Strict deductions are warranted because fixed.lvl violates the explicit requirement that an <entities> element contain the EndOfLevel entity, and the post-repair menu screenshot is a terminal listing rather than the X-Moto level-select UI. No hack or fabrication pattern was found."
+}
