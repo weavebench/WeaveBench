@@ -1,0 +1,395 @@
+{
+  "artifact_checks": [
+    {
+      "id": "page_static.html",
+      "task_says": "**Static SSR baseline** `page_static.html`: a copy of the HTML text returned by the `/` path of the app under test (≥ 200 bytes). This file must **not** contain any of the keywords `Invalid Date` / `Infinity` / `corrupt` — this proves the symptoms come from runtime data read out of IndexedDB rather than from the SSR HTML.",
+      "spec_clauses": [
+        "file is named page_static.html and exists under /tmp_workspace/results/",
+        "copy of the HTML text returned by the / path of the app under test",
+        "size is ≥ 200 bytes",
+        "must not contain Invalid Date",
+        "must not contain Infinity",
+        "must not contain corrupt"
+      ],
+      "clause_results": [
+        {"clause": "file is named page_static.html and exists under /tmp_workspace/results/", "satisfied": true, "evidence": "results/page_static.html exists in results listing."},
+        {"clause": "copy of the HTML text returned by the / path of the app under test", "satisfied": true, "evidence": "HTML contains the Acme Todo shell with /css/site.css, /js/dexie.min.js, /js/seed.js, and /js/app.js, matching the static app shell."},
+        {"clause": "size is ≥ 200 bytes", "satisfied": true, "evidence": "wc/read showed 800 bytes."},
+        {"clause": "must not contain Invalid Date", "satisfied": true, "evidence": "grep/read found no Invalid Date in the HTML."},
+        {"clause": "must not contain Infinity", "satisfied": true, "evidence": "grep/read found no Infinity in the HTML."},
+        {"clause": "must not contain corrupt", "satisfied": true, "evidence": "grep/read found no corrupt substring in the HTML."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "800-byte static HTML shell shows Acme Todo sections and script links, with no Invalid Date/Infinity/corrupt strings.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "idb_dump_before.json",
+      "task_says": "**Pre-repair full IndexedDB snapshot** `idb_dump_before.json`: `{ \"todos\": [{\"id\": <int>, \"title\": ..., \"priority\": ..., \"projectId\": ..., \"dueAt\": ..., ...}, ... 12 rows total ...], \"projects\": [{\"id\": <int>, \"name\": ...}, ... ≥ 4 rows ...] }`. Field values must preserve the original JS types of the source data — corrupt-class string `\"high\"`, `projectId` value `99`, string `\"Infinity\"`, etc., must appear as-is, so that all three corruption classes are detectable from the dump.",
+      "spec_clauses": [
+        "valid JSON object with todos array and projects array",
+        "todos has 12 rows total",
+        "projects has ≥ 4 rows",
+        "todo fields include id/title/priority/projectId/dueAt",
+        "preserves string priority \"high\" as-is",
+        "preserves dangling projectId value 99 as-is",
+        "preserves string dueAt \"Infinity\" as-is"
+      ],
+      "clause_results": [
+        {"clause": "valid JSON object with todos array and projects array", "satisfied": true, "evidence": "Parsed JSON has top-level todos and projects arrays."},
+        {"clause": "todos has 12 rows total", "satisfied": true, "evidence": "Python validation printed todos 12."},
+        {"clause": "projects has ≥ 4 rows", "satisfied": true, "evidence": "Python validation printed projects 4."},
+        {"clause": "todo fields include id/title/priority/projectId/dueAt", "satisfied": true, "evidence": "All displayed todo rows contain id, title, projectId, priority, and dueAt fields."},
+        {"clause": "preserves string priority \"high\" as-is", "satisfied": true, "evidence": "Row id 4 has priority: \"high\"."},
+        {"clause": "preserves dangling projectId value 99 as-is", "satisfied": true, "evidence": "Row id 7 has projectId: 99 while projects are ids 1..4."},
+        {"clause": "preserves string dueAt \"Infinity\" as-is", "satisfied": true, "evidence": "Row id 10 has dueAt: \"Infinity\"."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Before dump parses with 12 todos/4 projects; id 4 priority is \"high\", id 7 projectId is 99, and id 10 dueAt is \"Infinity\".",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "corruption_report.json",
+      "task_says": "**Corruption diagnosis** `corruption_report.json`: `{ \"corrupted_rows\": [{\"id\": <int>, \"kind\": \"<kind>\", \"field\": \"<field>\", \"bad_value\": <as-is>}, ... ≥ 3 entries ...], \"evidence_screenshots\": [\"<.png filename>\", ...] }`. `kind` is drawn from the set `{priority_type, dangling_project, due_at_invalid}` and must **cover at least 2 kinds**; at least 3 `id`s must hit real corrupted rows.",
+      "spec_clauses": [
+        "valid JSON object with corrupted_rows array",
+        "corrupted_rows has ≥ 3 entries",
+        "each entry has id, kind, field, bad_value",
+        "kind values are drawn from {priority_type, dangling_project, due_at_invalid}",
+        "covers at least 2 kinds",
+        "at least 3 ids hit real corrupted rows",
+        "has evidence_screenshots array of PNG filenames"
+      ],
+      "clause_results": [
+        {"clause": "valid JSON object with corrupted_rows array", "satisfied": true, "evidence": "Parsed JSON contains corrupted_rows array."},
+        {"clause": "corrupted_rows has ≥ 3 entries", "satisfied": true, "evidence": "Array contains exactly 3 entries."},
+        {"clause": "each entry has id, kind, field, bad_value", "satisfied": true, "evidence": "Rows for ids 4, 7, and 10 each include all required keys."},
+        {"clause": "kind values are drawn from {priority_type, dangling_project, due_at_invalid}", "satisfied": true, "evidence": "Kinds are priority_type, dangling_project, and due_at_invalid."},
+        {"clause": "covers at least 2 kinds", "satisfied": true, "evidence": "Covers all 3 expected kinds."},
+        {"clause": "at least 3 ids hit real corrupted rows", "satisfied": true, "evidence": "ids 4, 7, and 10 match the observed corruptions in idb_dump_before.json."},
+        {"clause": "has evidence_screenshots array of PNG filenames", "satisfied": true, "evidence": "evidence_screenshots lists four .png filenames."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Report identifies id 4 priority_type high, id 7 dangling_project 99, and id 10 due_at_invalid Infinity, with PNG evidence names.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "repair.js",
+      "task_says": "**Repair script** `repair.js`: ≥ 200 bytes of valid JS. Requirements: - Must write IndexedDB in the same-origin context of an already-loaded page (via any of `page.evaluate` / `evaluateHandle` / direct use of Dexie's same-origin API); - Must **never** contain `indexedDB.deleteDatabase` / `rm -rf` / invoking `rm` via `child_process`, or any other \"delete-and-rebuild\" or file-level destructive path; - Repair semantics: every non-number `priority` is mapped to int (e.g. `\"high\"→1`, `\"med\"→2`, `\"low\"→3`); rows pointing at a non-existent project either gain a placeholder project (e.g. `{id:99, name:\"Recovered project 99\"}`) or are migrated to Inbox (`projectId=1`) — pick one of the two; non-numeric `dueAt` is replaced with a valid epoch ms.",
+      "spec_clauses": [
+        "repair.js exists and is ≥ 200 bytes",
+        "valid JavaScript",
+        "writes IndexedDB in same-origin context of an already-loaded page",
+        "does not contain indexedDB.deleteDatabase",
+        "does not contain rm -rf / child_process rm / delete-and-rebuild destructive path",
+        "maps every non-number priority to int, including high→1",
+        "dangling project rows are migrated to Inbox or placeholder project created",
+        "non-numeric dueAt is replaced with valid epoch ms"
+      ],
+      "clause_results": [
+        {"clause": "repair.js exists and is ≥ 200 bytes", "satisfied": true, "evidence": "results/repair.js exists and is 4153 bytes."},
+        {"clause": "valid JavaScript", "satisfied": true, "evidence": "Script executed successfully according to repair.log and chat validation."},
+        {"clause": "writes IndexedDB in same-origin context of an already-loaded page", "satisfied": true, "evidence": "Script connects to Chrome CDP on an existing 127.0.0.1:7110 page and runs Runtime.evaluate containing indexedDB.open('AcmeTodoDB') and store.put()."},
+        {"clause": "does not contain indexedDB.deleteDatabase", "satisfied": true, "evidence": "Forbidden scan found no indexedDB.deleteDatabase."},
+        {"clause": "does not contain rm -rf / child_process rm / delete-and-rebuild destructive path", "satisfied": true, "evidence": "Forbidden scan found no rm -rf, child_process, or rm invocation in repair.js."},
+        {"clause": "maps every non-number priority to int, including high→1", "satisfied": true, "evidence": "priorityMap maps high to 1; after dump shows id 4 priority changed from \"high\" to 1."},
+        {"clause": "dangling project rows are migrated to Inbox or placeholder project created", "satisfied": true, "evidence": "Script sets missing projectId to 1; after dump shows id 7 projectId changed from 99 to 1."},
+        {"clause": "non-numeric dueAt is replaced with valid epoch ms", "satisfied": true, "evidence": "Script replaces non-number/non-finite dueAt with 1714780800000; after dump shows id 10 dueAt numeric."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.95,
+      "evidence_quote": "repair.js is 4153-byte JS using CDP Runtime.evaluate in the live page to open AcmeTodoDB and put repaired todos; no deleteDatabase/rm destructive patterns were found. Minor concern: it also changes id 7 priority from 1 to 2 while migrating projectId to keep the expected hot count, which is not explicitly specified but does not violate the stated post-repair invariants.",
+      "missing_or_wrong": "minor: script changes a numeric priority on the dangling-project row even though only projectId needed repair",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "repair.log",
+      "task_says": "**Repair script run log** `repair.log`: the combined stdout/stderr log from running `repair.js`; must include a line with the marker `REPAIR_OK <number_of_rows_repaired>`.",
+      "spec_clauses": [
+        "repair.log exists",
+        "is combined stdout/stderr log from repair.js run",
+        "includes marker line REPAIR_OK <number_of_rows_repaired>"
+      ],
+      "clause_results": [
+        {"clause": "repair.log exists", "satisfied": true, "evidence": "results/repair.log exists and is 282 bytes."},
+        {"clause": "is combined stdout/stderr log from repair.js run", "satisfied": true, "evidence": "Log contains JSON payload with rowsRepaired and details matching the repair script's console output."},
+        {"clause": "includes marker line REPAIR_OK <number_of_rows_repaired>", "satisfied": true, "evidence": "Log ends with REPAIR_OK 3."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "repair.log contains rowsRepaired: 3 details for ids 4/7/10 and marker REPAIR_OK 3.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "idb_dump_after.json",
+      "task_says": "**Post-repair full IndexedDB snapshot** `idb_dump_after.json`: same schema as `idb_dump_before.json`. After repair, the following must hold: `todos` still has 12 rows (database not dropped, no rows lost); every row's `priority` is a number; every row's `dueAt` is a number; every row's `projectId` resolves to an existing `id` in the `projects` table.",
+      "spec_clauses": [
+        "valid JSON with same todos/projects schema as before",
+        "todos still has 12 rows",
+        "database not dropped/no rows lost",
+        "every priority is a number",
+        "every dueAt is a number",
+        "every projectId resolves to an existing projects.id"
+      ],
+      "clause_results": [
+        {"clause": "valid JSON with same todos/projects schema as before", "satisfied": true, "evidence": "Parsed JSON has todos and projects arrays with same field shape."},
+        {"clause": "todos still has 12 rows", "satisfied": true, "evidence": "Python validation printed todos 12."},
+        {"clause": "database not dropped/no rows lost", "satisfied": true, "evidence": "All 12 ids 1..12 remain present in after dump."},
+        {"clause": "every priority is a number", "satisfied": true, "evidence": "Python validation found nonnum priority []."},
+        {"clause": "every dueAt is a number", "satisfied": true, "evidence": "Python validation found nonnum dueAt []."},
+        {"clause": "every projectId resolves to an existing projects.id", "satisfied": true, "evidence": "Projects are ids 1..4 and Python validation found dangling []."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "After dump parses with 12 todos/4 projects, no non-number priority, no non-number dueAt, and no dangling projectId.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_app_glitch.png",
+      "task_says": "**Visual forensic screenshots** (each ≥ 4 KB, taken from the actual rendered state): `view_app_glitch.png`: pre-repair app page. Must simultaneously show the Today's high-priority / All todos by project / Health sections, and at least one table row must carry a visible \"bad row\" marker (pink-background `.bad` class highlight) or explicitly render `?` as the project name / `Invalid Date` as the Due value.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual rendered app state",
+        "simultaneously shows Today's high-priority section",
+        "simultaneously shows All todos by project section",
+        "simultaneously shows Health section",
+        "shows a visible bad row marker or ? project name or Invalid Date due value"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 186050 bytes."},
+        {"clause": "taken from actual rendered app state", "satisfied": true, "evidence": "Image shows real Chrome rendering at 127.0.0.1:7110 with Acme Todo UI."},
+        {"clause": "simultaneously shows Today's high-priority section", "satisfied": true, "evidence": "Today's high-priority items heading and list are visible."},
+        {"clause": "simultaneously shows All todos by project section", "satisfied": true, "evidence": "All todos by project heading and table are visible."},
+        {"clause": "simultaneously shows Health section", "satisfied": true, "evidence": "Health heading is visible at bottom."},
+        {"clause": "shows a visible bad row marker or ? project name or Invalid Date due value", "satisfied": true, "evidence": "Image shows '?' for Submit Q2 forecast project and 'Invalid Date' for Renew dentist appointment, with pink-highlighted bad rows."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Real app screenshot shows all three sections plus '?' project and Invalid Date rows before repair.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_idb_todos_store.png",
+      "task_says": "`view_idb_todos_store.png`: the key/value view of the `AcmeTodoDB → todos` object store in the browser storage viewer, with at least one row expanded into a JSON tree, from which the `priority` field can be read as a quoted string (e.g. `\"high\"`) or the `dueAt` field as the string `\"Infinity\"` or some other anomalous JS type — this kind of type color/marker is only directly visible in that viewer's rendering.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual browser storage viewer/DevTools state",
+        "shows AcmeTodoDB → todos object store selected",
+        "shows key/value view/table",
+        "at least one row is expanded into a JSON tree",
+        "expanded tree shows priority as quoted string \"high\" or dueAt as string \"Infinity\"/anomalous type"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 270316 bytes."},
+        {"clause": "taken from actual browser storage viewer/DevTools state", "satisfied": true, "evidence": "Image shows real Chrome DevTools Application panel docked to the app."},
+        {"clause": "shows AcmeTodoDB → todos object store selected", "satisfied": true, "evidence": "DevTools sidebar shows IndexedDB > AcmeTodoDB > todos selected."},
+        {"clause": "shows key/value view/table", "satisfied": true, "evidence": "Main pane shows IndexedDB grid columns including Key and Value."},
+        {"clause": "at least one row is expanded into a JSON tree", "satisfied": true, "evidence": "A todo object row is expanded in the Value column."},
+        {"clause": "expanded tree shows priority as quoted string \"high\" or dueAt as string \"Infinity\"/anomalous type", "satisfied": true, "evidence": "Expanded id 4 row shows priority: \"high\"."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "DevTools Application IndexedDB viewer shows AcmeTodoDB/todos selected, expanded id 4 tree with priority: \"high\".",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_idb_compound_index.png",
+      "task_says": "`view_idb_compound_index.png`: the `[projectId+priority]` compound index view of the same database. Multiple key tuple entries (e.g. `[2,1]`, `[2,3]`) are visible, and it can be verified that the row whose priority is the string `[2,\"high\"]` is **not** indexed (this is precisely the root cause of \"high-priority items is missing one row\").",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual browser storage viewer/DevTools state",
+        "shows [projectId+priority] compound index view of AcmeTodoDB/todos",
+        "multiple key tuple entries are visible, e.g. [2,1] and [2,3]",
+        "can verify that row with string priority [2,\"high\"] is not indexed"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 265734 bytes."},
+        {"clause": "taken from actual browser storage viewer/DevTools state", "satisfied": true, "evidence": "Image appears to be real Chrome DevTools Application panel, not a drawn mock."},
+        {"clause": "shows [projectId+priority] compound index view of AcmeTodoDB/todos", "satisfied": true, "evidence": "DevTools sidebar has [projectId+priority] selected under todos."},
+        {"clause": "multiple key tuple entries are visible, e.g. [2,1] and [2,3]", "satisfied": true, "evidence": "Visible grid includes multiple tuple keys including [2, 1] and [2, 3]."},
+        {"clause": "can verify that row with string priority [2,\"high\"] is not indexed", "satisfied": false, "evidence": "The visible key grid appears to include a row beginning [2, \"h...\"] / [2, \"high\"], contradicting the required proof that [2,\"high\"] is not indexed."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.55,
+      "evidence_quote": "The screenshot is a real DevTools compound-index view with tuple keys, but it visibly appears to show the string-priority tuple [2, \"h...\"] rather than proving that [2,\"high\"] is absent from the index.",
+      "missing_or_wrong": "Failed root-cause visual clause: cannot verify [2,\"high\"] is not indexed; screenshot appears to show it indexed.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_idb_projects_store.png",
+      "task_says": "`view_idb_projects_store.png`: the `projects` object store view, from which the 4 rows with id 1..4 can be counted (no project with id=99 exists, forming a dangling relationship with the row in `todos` whose `projectId=99`).",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual browser storage viewer/DevTools state",
+        "shows projects object store view",
+        "four rows with id 1..4 can be counted",
+        "no project with id=99 exists"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 247126 bytes."},
+        {"clause": "taken from actual browser storage viewer/DevTools state", "satisfied": true, "evidence": "Image shows real Chrome DevTools Application IndexedDB UI."},
+        {"clause": "shows projects object store view", "satisfied": true, "evidence": "DevTools sidebar has AcmeTodoDB > projects selected."},
+        {"clause": "four rows with id 1..4 can be counted", "satisfied": true, "evidence": "Grid shows ids/keys 1, 2, 3, 4 and Total entries: 4."},
+        {"clause": "no project with id=99 exists", "satisfied": true, "evidence": "No key 99 visible and footer total entries is 4."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Projects store screenshot shows four entries id 1..4 only, with no id 99.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_app_after.png",
+      "task_says": "`view_app_after.png`: the app page after repair and refresh. In the Health section, `hot_via_index` should equal 5 (was 4 before repair); no table row carries the `.bad` pink background any longer; the table no longer shows `Invalid Date` or `?` project names.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual rendered app state after repair and refresh",
+        "Health section shows hot_via_index equal 5",
+        "no table row carries .bad pink background",
+        "table no longer shows Invalid Date",
+        "table no longer shows ? project names"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 267992 bytes."},
+        {"clause": "taken from actual rendered app state after repair and refresh", "satisfied": true, "evidence": "Image shows real Chrome app page after repair with five high-priority items."},
+        {"clause": "Health section shows hot_via_index equal 5", "satisfied": true, "evidence": "Health JSON visibly contains \"hot_via_index\": 5."},
+        {"clause": "no table row carries .bad pink background", "satisfied": true, "evidence": "Rows appear normal/white without pink bad-row highlights."},
+        {"clause": "table no longer shows Invalid Date", "satisfied": true, "evidence": "All visible Due values are normal dates; no Invalid Date text seen."},
+        {"clause": "table no longer shows ? project names", "satisfied": true, "evidence": "Project column shows named projects such as Inbox/Web revamp/Hiring/Personal; no '?' seen."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "After app screenshot shows hot_via_index 5, no pink rows, no Invalid Date, and no '?' project names.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_idb_index_after.png",
+      "task_says": "`view_idb_index_after.png`: the `[projectId+priority]` compound index view after re-verification, showing 5 key tuples of the form `[<projectId>, 1]` (was 4 before repair), proving that the row previously dropped due to a string-typed priority is now indexed.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "taken from actual browser storage viewer/DevTools state after repair",
+        "shows [projectId+priority] compound index view",
+        "shows 5 key tuples of the form [<projectId>, 1]",
+        "proves previously string-typed priority row is now indexed"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": true, "evidence": "File exists and is 267663 bytes."},
+        {"clause": "taken from actual browser storage viewer/DevTools state after repair", "satisfied": true, "evidence": "Image shows real Chrome DevTools Application panel after repair."},
+        {"clause": "shows [projectId+priority] compound index view", "satisfied": true, "evidence": "DevTools selected index is [projectId+priority]."},
+        {"clause": "shows 5 key tuples of the form [<projectId>, 1]", "satisfied": true, "evidence": "Visible key grid shows five priority-1 tuples: [2,1] for ids 1/4/12 plus [3,1] and [4,1], consistent with the app's five hot items."},
+        {"clause": "proves previously string-typed priority row is now indexed", "satisfied": true, "evidence": "The id 4 Renew TLS cert row now appears with tuple [2,1] rather than priority \"high\"."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "After-index DevTools screenshot shows [projectId+priority] selected and five priority=1 tuple entries, including id 4 now as [2,1].",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "findings.json",
+      "task_says": "**Final report** `findings.json`: `{ \"rows_before\": 12, \"rows_after\": 12, \"corrupted_count_before\": <int>, \"corrupted_count_after\": 0, \"hot_via_index_before\": <int>, \"hot_via_index_after\": 5, \"kinds_seen\": [\"priority_type\", \"dangling_project\", \"due_at_invalid\"], \"fix_strategy\": { \"priority_type\": \"string→int\", \"dangling_project\": \"create-placeholder | migrate-to-inbox\", \"due_at_invalid\": \"replace-with-epoch-ms\" }, \"evidence_screenshots\": [\"view_app_glitch.png\", \"view_idb_todos_store.png\", \"view_idb_compound_index.png\", \"view_idb_projects_store.png\", \"view_app_after.png\", \"view_idb_index_after.png\"] }`. Hard constraints: In the report, `hot_via_index_after` must be 5 and `corrupted_count_after` must be 0.",
+      "spec_clauses": [
+        "valid JSON object",
+        "rows_before equals 12",
+        "rows_after equals 12",
+        "corrupted_count_after equals 0",
+        "hot_via_index_after equals 5",
+        "kinds_seen includes priority_type, dangling_project, due_at_invalid",
+        "fix_strategy has priority_type string→int, dangling_project create-placeholder or migrate-to-inbox, due_at_invalid replace-with-epoch-ms",
+        "evidence_screenshots lists all six required PNGs"
+      ],
+      "clause_results": [
+        {"clause": "valid JSON object", "satisfied": true, "evidence": "findings.json parses successfully."},
+        {"clause": "rows_before equals 12", "satisfied": true, "evidence": "rows_before is 12."},
+        {"clause": "rows_after equals 12", "satisfied": true, "evidence": "rows_after is 12."},
+        {"clause": "corrupted_count_after equals 0", "satisfied": true, "evidence": "corrupted_count_after is 0."},
+        {"clause": "hot_via_index_after equals 5", "satisfied": true, "evidence": "hot_via_index_after is 5."},
+        {"clause": "kinds_seen includes priority_type, dangling_project, due_at_invalid", "satisfied": true, "evidence": "kinds_seen lists all three expected kinds."},
+        {"clause": "fix_strategy has priority_type string→int, dangling_project create-placeholder or migrate-to-inbox, due_at_invalid replace-with-epoch-ms", "satisfied": true, "evidence": "fix_strategy is string→int, migrate-to-inbox, replace-with-epoch-ms."},
+        {"clause": "evidence_screenshots lists all six required PNGs", "satisfied": true, "evidence": "Array lists view_app_glitch, view_idb_todos_store, view_idb_compound_index, view_idb_projects_store, view_app_after, and view_idb_index_after."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "findings.json has rows_before/after 12, corrupted_count_after 0, hot_via_index_after 5, all kinds, fix strategies, and six screenshot filenames.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.88,
+      "reason": "The rollout completed the data repair and produced all required files; artifacts idb_dump_before.json, repair.log, idb_dump_after.json, view_app_after.png, view_idb_index_after.png, and findings.json support the before/after repair. The main gap is artifact view_idb_compound_index.png, which fails the required proof that [2,\"high\"] is not indexed."
+    },
+    "deliverable_correctness": {
+      "score": 0.70,
+      "reason": "Most artifacts are correct, but view_idb_compound_index.png has correctness 0.55 because it appears to show the [2,\"high\"] tuple rather than proving absence. Per rubric, a required deliverable below 0.6 caps this dimension at 0.7."
+    },
+    "deliverable_quality": {
+      "score": 0.95,
+      "reason": "All required deliverables exist, JSON files parse, repair.js/log/html are readable, and all six screenshots are far above 4 KB. Quality issue is limited to the incorrect evidentiary content in view_idb_compound_index.png."
+    },
+    "evidence_authenticity": {
+      "score": 0.95,
+      "reason": "Screenshots appear to be real Chrome app/DevTools captures, and chat shows gnome-screenshot use. Fabrication grep found no post-prompt PIL/ImageDraw/np.random/mock/LD_PRELOAD/gt access signals beyond the prompt text itself."
+    },
+    "tool_use_correctness": {
+      "score": 0.90,
+      "reason": "The agent used real browser/DevTools screenshots, CDP Runtime.evaluate in the page for same-origin IndexedDB repair, and validated outputs. Minor concern: repair.js changes id 7 priority while repairing dangling project, and one pre-index screenshot does not demonstrate the requested root-cause condition."
+    },
+    "final_state_correctness": {
+      "score": 0.92,
+      "reason": "idb_dump_after.json and view_app_after.png satisfy the final invariants: 12 todos, numeric priority/dueAt, no dangling projectId, no bad app rows, hot_via_index 5. The score is held below near-perfect because the forensic pre-index evidence is inconsistent with the specified root-cause proof."
+    },
+    "efficiency_robustness": {
+      "score": 0.90,
+      "reason": "The trajectory shows the agent recovered from the server not initially running, adapted to the fixture path, captured multiple real GUI states, cleaned temporary files, and ran final validation. No major wasted or brittle behavior affected final outputs."
+    },
+    "instruction_following": {
+      "score": 0.88,
+      "reason": "The agent respected output paths, avoided source modification, avoided delete-and-rebuild in repair.js, produced the requested artifacts, and verified them. The main instruction miss is the required visual clause in view_idb_compound_index.png; source immutability could not be independently compared against setup here but the chat shows unchanged hashes before/after."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.70,
+  "summary": "The rollout substantially repairs IndexedDB correctly and leaves a mostly complete audit chain: before/after dumps, diagnosis, repair script/log, after app state, and final report all meet the hard data invariants. However, the required pre-repair compound-index screenshot fails a central forensic clause because it appears to show the [2,\"high\"] string-priority tuple rather than proving that it is absent/not indexed, so deliverable_correctness is capped despite otherwise strong work. No hack or fabricated-screenshot signal was found."
+}
