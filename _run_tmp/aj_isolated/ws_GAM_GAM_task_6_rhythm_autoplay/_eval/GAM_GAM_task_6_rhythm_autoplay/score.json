@@ -1,0 +1,364 @@
+{
+  "artifact_checks": [
+    {
+      "id": "schedule_easy.csv",
+      "task_says": "`schedule_easy.csv`: the keypress schedule derived from `easy.beatmap`. Columns must be `step,target_ms,lane,key`, with at least 15 rows.",
+      "spec_clauses": [
+        "file is named `schedule_easy.csv` and is present under `/tmp_workspace/results/`",
+        "keypress schedule is derived from `easy.beatmap`",
+        "columns must be exactly `step,target_ms,lane,key`",
+        "contains at least 15 rows"
+      ],
+      "clause_results": [
+        {"clause": "file is named `schedule_easy.csv` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/schedule_easy.csv exists and is 279 bytes."},
+        {"clause": "keypress schedule is derived from `easy.beatmap`", "satisfied": true, "evidence": "20 parsed beatmap note rows match the schedule target_ms/lane sequence exactly."},
+        {"clause": "columns must be exactly `step,target_ms,lane,key`", "satisfied": true, "evidence": "CSV header is `step,target_ms,lane,key`."},
+        {"clause": "contains at least 15 rows", "satisfied": true, "evidence": "CSV has 20 data rows."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Header is `step,target_ms,lane,key`; 20 rows; parsed non-comment easy.beatmap notes match schedule rows.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "screen_calibration.json",
+      "task_says": "`screen_calibration.json`: the screen-coordinate calibration result derived from the actual game-window rendering, with a structure like {\"window_x\":..., \"window_y\":..., \"lanes\": [{\"idx\":0,\"x_px\":...}, ..., {\"idx\":3,\"x_px\":...}], \"judge_line_y_px\":...}, and must contain `x_px` for all 4 lanes plus `judge_line_y_px`.",
+      "spec_clauses": [
+        "file is named `screen_calibration.json` and is present under `/tmp_workspace/results/`",
+        "JSON parses and has a structure including `window_x`, `window_y`, `lanes`, and `judge_line_y_px`",
+        "contains `x_px` for all 4 lanes with lane idx 0 through 3",
+        "contains `judge_line_y_px`",
+        "calibration result is derived from the actual game-window rendering"
+      ],
+      "clause_results": [
+        {"clause": "file is named `screen_calibration.json` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/screen_calibration.json exists and is 585 bytes."},
+        {"clause": "JSON parses and has a structure including `window_x`, `window_y`, `lanes`, and `judge_line_y_px`", "satisfied": true, "evidence": "JSON has window_x=760, window_y=252, lanes array, and judge_line_y_px=652."},
+        {"clause": "contains `x_px` for all 4 lanes with lane idx 0 through 3", "satisfied": true, "evidence": "lanes contain idx/x_px pairs: 0/800.0, 1/880.0, 2/960.0, 3/1040.0."},
+        {"clause": "contains `judge_line_y_px`", "satisfied": true, "evidence": "judge_line_y_px is present with value 652."},
+        {"clause": "calibration result is derived from the actual game-window rendering", "satisfied": "partial", "evidence": "The method string and screenshots indicate real gnome-screenshot pixels, and chat shows live window/screenshot work; however the final JSON was manually overwritten with fixed numeric values, so derivation is not fully independently verifiable from the artifact alone."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "JSON parses with four lane centers and judge_line_y_px; method claims detection from real gnome-screenshot pixels, but final file was written manually after calibration attempts.",
+      "missing_or_wrong": "Partial: derivation from actual rendering is plausible but not fully evidenced by the JSON itself because fixed values were manually written in the final artifact.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "inject_loop.py",
+      "task_says": "`inject_loop.py`: a script that \"fires the right key on time according to the schedule\". It must use the real calibrated coordinates from `screen_calibration.json` — hard-coded pixel positions are not allowed. It must not pull in any rhythm-game-bot / third-party autoplay framework; only stdlib plus system-level tools are permitted.",
+      "spec_clauses": [
+        "file is named `inject_loop.py` and is present under `/tmp_workspace/results/`",
+        "script fires the right key on time according to the schedule",
+        "script reads and uses calibrated coordinates from `screen_calibration.json`",
+        "hard-coded pixel positions are not allowed",
+        "does not use rhythm-game-bot or third-party autoplay framework",
+        "uses only stdlib plus system-level tools"
+      ],
+      "clause_results": [
+        {"clause": "file is named `inject_loop.py` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/inject_loop.py exists and is 3356 bytes; py_compile succeeded in chat."},
+        {"clause": "script fires the right key on time according to the schedule", "satisfied": true, "evidence": "load_schedule reads CSV rows; loop waits until target_ms plus offsets and calls `xdotool key <key>`. Logs show 20 easy and 30 medium injected steps."},
+        {"clause": "script reads and uses calibrated coordinates from `screen_calibration.json`", "satisfied": true, "evidence": "It loads args.calibration JSON and focus_from_calibration computes focus_x from lane x_px values and focus_y from judge_line_y_px."},
+        {"clause": "hard-coded pixel positions are not allowed", "satisfied": true, "evidence": "No numeric lane center or judge-line pixel constants are used for focusing; coordinates come from calibration JSON."},
+        {"clause": "does not use rhythm-game-bot or third-party autoplay framework", "satisfied": true, "evidence": "Imports are argparse, csv, json, subprocess, sys, time, pathlib only."},
+        {"clause": "uses only stdlib plus system-level tools", "satisfied": true, "evidence": "Uses Python stdlib and xdotool subprocess calls."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Script parses schedule/calibration, focuses via computed calibrated coordinates, then uses xdotool key calls at monotonic-clock target times.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "game_easy.log",
+      "task_says": "`game_easy.log` / `game_medium.log`: runtime logs from the two game runs (easy / medium).",
+      "spec_clauses": [
+        "file is named `game_easy.log` and is present under `/tmp_workspace/results/`",
+        "is a runtime log from the easy game run",
+        "contains concrete runtime evidence such as launch/inject output and game hit/score output"
+      ],
+      "clause_results": [
+        {"clause": "file is named `game_easy.log` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/game_easy.log exists and is 3805 bytes."},
+        {"clause": "is a runtime log from the easy game run", "satisfied": true, "evidence": "Log starts `stage=easy`, launches easy.beatmap, and references easy score/raw hit files."},
+        {"clause": "contains concrete runtime evidence such as launch/inject output and game hit/score output", "satisfied": true, "evidence": "Contains launch command, inject command, 20 inject_loop steps, raw game hit log, and score JSON."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "game_easy.log includes stage=easy, launch/inject commands, injected steps 1-20, raw hit rows, and score JSON with 20 hits/0 miss.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "game_medium.log",
+      "task_says": "`game_easy.log` / `game_medium.log`: runtime logs from the two game runs (easy / medium).",
+      "spec_clauses": [
+        "file is named `game_medium.log` and is present under `/tmp_workspace/results/`",
+        "is a runtime log from the medium game run",
+        "contains concrete runtime evidence such as launch/inject output and game hit/score output"
+      ],
+      "clause_results": [
+        {"clause": "file is named `game_medium.log` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/game_medium.log exists and is 4608 bytes."},
+        {"clause": "is a runtime log from the medium game run", "satisfied": true, "evidence": "Log starts `stage=medium`, launches medium.beatmap, and references medium score/raw hit files."},
+        {"clause": "contains concrete runtime evidence such as launch/inject output and game hit/score output", "satisfied": true, "evidence": "Contains launch command, inject command, 30 inject_loop steps, raw game hit log, and score JSON."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "game_medium.log includes stage=medium, launch/inject commands, injected steps 1-30, raw hit rows, and score JSON with 30 hits/0 miss.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "hits_easy.csv",
+      "task_says": "`hits_easy.csv` / `hits_medium.csv`: per-hit details extracted from the corresponding game logs. Columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`. The easy hit rate must be ≥ 90% and the medium hit rate must be ≥ 75%.",
+      "spec_clauses": [
+        "file is named `hits_easy.csv` and is present under `/tmp_workspace/results/`",
+        "contains per-hit details extracted from the corresponding easy game log",
+        "columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`",
+        "easy hit rate is ≥ 90%"
+      ],
+      "clause_results": [
+        {"clause": "file is named `hits_easy.csv` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/hits_easy.csv exists and is 566 bytes."},
+        {"clause": "contains per-hit details extracted from the corresponding easy game log", "satisfied": true, "evidence": "20 rows correspond to the 20 raw hit rows in game_easy.log with matching target_ms/lane and BAD judgments."},
+        {"clause": "columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`", "satisfied": true, "evidence": "CSV header exactly matches required columns."},
+        {"clause": "easy hit rate is ≥ 90%", "satisfied": true, "evidence": "20/20 rows have hit_or_miss=HIT, hit rate 100%."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "hits_easy.csv has required header, 20 rows, all HIT, reasons all BAD; hit rate is 100%.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "hits_medium.csv",
+      "task_says": "`hits_easy.csv` / `hits_medium.csv`: per-hit details extracted from the corresponding game logs. Columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`. The easy hit rate must be ≥ 90% and the medium hit rate must be ≥ 75%.",
+      "spec_clauses": [
+        "file is named `hits_medium.csv` and is present under `/tmp_workspace/results/`",
+        "contains per-hit details extracted from the corresponding medium game log",
+        "columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`",
+        "medium hit rate is ≥ 75%"
+      ],
+      "clause_results": [
+        {"clause": "file is named `hits_medium.csv` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/hits_medium.csv exists and is 821 bytes."},
+        {"clause": "contains per-hit details extracted from the corresponding medium game log", "satisfied": true, "evidence": "30 rows correspond to the 30 raw hit rows in game_medium.log with matching target_ms/lane and BAD judgments."},
+        {"clause": "columns are `step,target_ms,actual_ms,lane,hit_or_miss,reason`", "satisfied": true, "evidence": "CSV header exactly matches required columns."},
+        {"clause": "medium hit rate is ≥ 75%", "satisfied": true, "evidence": "30/30 rows have hit_or_miss=HIT, hit rate 100%."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "hits_medium.csv has required header, 30 rows, all HIT, reasons all BAD; hit rate is 100%.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_start.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_start.png`: visual evidence at game start, showing the 4 lanes, the title, and the scoreboard;",
+      "spec_clauses": [
+        "file is named `view_game_start.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence at game start",
+        "shows the 4 lanes",
+        "shows the title",
+        "shows the scoreboard"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_start.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_start.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,656,110 bytes."},
+        {"clause": "is visual evidence at game start", "satisfied": true, "evidence": "Visible HUD time is about 324 ms and hits=0, consistent with start."},
+        {"clause": "shows the 4 lanes", "satisfied": true, "evidence": "Image shows four vertical lanes with d/f/j/k labels."},
+        {"clause": "shows the title", "satisfied": true, "evidence": "Window title bar shows RHYTHM_EASY_1_98995."},
+        {"clause": "shows the scoreboard", "satisfied": "partial", "evidence": "Only small debug/status text such as t=... and hits=0 is visible; no clear full scoreboard with score/combo is shown."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9167,
+      "evidence_quote": "Real desktop screenshot shows pygame window with title bar, four lanes, key labels, one note, and bottom HUD hits=0; scoreboard is minimal/debug-like.",
+      "missing_or_wrong": "Partial: scoreboard is only minimal hit/time HUD, not a clear score/combo board.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_step1.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_step1.png` / `view_game_step2.png` / `view_game_step3.png`: visual evidence at different points during play, showing changes in metrics like hit / score / combo;",
+      "spec_clauses": [
+        "file is named `view_game_step1.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence during play",
+        "is at a different point during play from start/other step screenshots",
+        "shows changes in metrics like hit / score / combo"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_step1.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_step1.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,656,306 bytes."},
+        {"clause": "is visual evidence during play", "satisfied": true, "evidence": "Screenshot shows falling notes in active lanes."},
+        {"clause": "is at a different point during play from start/other step screenshots", "satisfied": true, "evidence": "HUD time is about 3108 ms, distinct from start and later steps."},
+        {"clause": "shows changes in metrics like hit / score / combo", "satisfied": "partial", "evidence": "Hit count is visible as hits=4, changed from start; score/combo are not clearly visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Screenshot shows active 4-lane gameplay around 3.1s with hits=4 and notes visible; no explicit score/combo is legible.",
+      "missing_or_wrong": "Partial: metric change is limited to hit count; score/combo are not shown clearly.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_step2.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_step1.png` / `view_game_step2.png` / `view_game_step3.png`: visual evidence at different points during play, showing changes in metrics like hit / score / combo;",
+      "spec_clauses": [
+        "file is named `view_game_step2.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence during play",
+        "is at a different point during play from start/other step screenshots",
+        "shows changes in metrics like hit / score / combo"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_step2.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_step2.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,656,045 bytes."},
+        {"clause": "is visual evidence during play", "satisfied": true, "evidence": "Screenshot shows falling notes in active lanes."},
+        {"clause": "is at a different point during play from start/other step screenshots", "satisfied": true, "evidence": "HUD time is about 6102 ms, distinct from step1 and step3."},
+        {"clause": "shows changes in metrics like hit / score / combo", "satisfied": "partial", "evidence": "Hit count is visible as hits=10, changed from step1; score/combo are not clearly visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Screenshot shows active 4-lane gameplay around 6.1s with hits=10 and notes visible; no explicit score/combo is legible.",
+      "missing_or_wrong": "Partial: metric change is limited to hit count; score/combo are not shown clearly.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_step3.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_step1.png` / `view_game_step2.png` / `view_game_step3.png`: visual evidence at different points during play, showing changes in metrics like hit / score / combo;",
+      "spec_clauses": [
+        "file is named `view_game_step3.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence during play",
+        "is at a different point during play from start/other step screenshots",
+        "shows changes in metrics like hit / score / combo"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_step3.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_step3.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,656,198 bytes."},
+        {"clause": "is visual evidence during play", "satisfied": true, "evidence": "Screenshot shows active notes and the judgment line."},
+        {"clause": "is at a different point during play from start/other step screenshots", "satisfied": true, "evidence": "HUD time is about 9125 ms, distinct from prior screenshots."},
+        {"clause": "shows changes in metrics like hit / score / combo", "satisfied": "partial", "evidence": "Hit count is visible as hits=16, changed from step2; score/combo are not clearly visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Screenshot shows active 4-lane gameplay around 9.1s with hits=16 and notes visible; no explicit score/combo is legible.",
+      "missing_or_wrong": "Partial: metric change is limited to hit count; score/combo are not shown clearly.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_final_easy.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_final_easy.png`: visual evidence at the end of the easy stage, showing total hit / miss / score;",
+      "spec_clauses": [
+        "file is named `view_game_final_easy.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence at the end of the easy stage",
+        "shows total hit",
+        "shows total miss",
+        "shows score"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_final_easy.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_final_easy.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,655,751 bytes."},
+        {"clause": "is visual evidence at the end of the easy stage", "satisfied": "partial", "evidence": "Screenshot is near the end with t≈11513 ms and hits=20, but no final/results screen or clear completion state is visible."},
+        {"clause": "shows total hit", "satisfied": true, "evidence": "HUD shows hits=20."},
+        {"clause": "shows total miss", "satisfied": false, "evidence": "No miss count is clearly visible in the screenshot."},
+        {"clause": "shows score", "satisfied": false, "evidence": "No score is clearly visible in the screenshot."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5833,
+      "evidence_quote": "Screenshot shows 4-lane game near t≈11.5s with hits=20, but does not visibly show misses, score, or a final results state.",
+      "missing_or_wrong": "Partial end-state evidence; missing visible total miss and visible score.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_game_final_medium.png",
+      "task_says": "Visual evidence screenshots, at least 6, each ≥ 50KB: `view_game_final_medium.png`: visual evidence at the end of the medium stage.",
+      "spec_clauses": [
+        "file is named `view_game_final_medium.png` and is present under `/tmp_workspace/results/`",
+        "screenshot size is ≥ 50KB",
+        "is visual evidence at the end of the medium stage",
+        "shows a 4-lane rhythm game state for medium"
+      ],
+      "clause_results": [
+        {"clause": "file is named `view_game_final_medium.png` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/view_game_final_medium.png exists."},
+        {"clause": "screenshot size is ≥ 50KB", "satisfied": true, "evidence": "File size is 1,656,168 bytes."},
+        {"clause": "is visual evidence at the end of the medium stage", "satisfied": "partial", "evidence": "Screenshot shows t≈8941 ms and hits=30, near/after the last medium target, but no final/results screen or completion indicator."},
+        {"clause": "shows a 4-lane rhythm game state for medium", "satisfied": true, "evidence": "Shows four lanes and title bar for RHYTHM_MEDIUM_1_12931."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.875,
+      "evidence_quote": "Screenshot shows medium pygame window with four lanes and hits=30 at about 8.94s, but lacks a definitive final screen.",
+      "missing_or_wrong": "Partial: end-of-stage status is inferred from hits/time, not unambiguously shown by a final results screen.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "summary.md",
+      "task_says": "`summary.md`: 4 paragraphs (each ≥ 80 chars): a) accuracy and rank; b) latency-compensation strategy; c) why beatmap timestamps alone are not enough and why coordinate calibration against the actual rendering is needed; d) directions for improvement.",
+      "spec_clauses": [
+        "file is named `summary.md` and is present under `/tmp_workspace/results/`",
+        "contains exactly 4 paragraphs",
+        "each paragraph is ≥ 80 chars",
+        "paragraph a covers accuracy and rank",
+        "paragraph b covers latency-compensation strategy",
+        "paragraph c explains why beatmap timestamps alone are not enough and why coordinate calibration against actual rendering is needed",
+        "paragraph d covers directions for improvement"
+      ],
+      "clause_results": [
+        {"clause": "file is named `summary.md` and is present under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/summary.md exists and is 1508 bytes."},
+        {"clause": "contains exactly 4 paragraphs", "satisfied": true, "evidence": "Splitting on blank lines gives 4 non-empty paragraphs."},
+        {"clause": "each paragraph is ≥ 80 chars", "satisfied": true, "evidence": "Paragraph lengths are 270, 435, 398, and 399 characters."},
+        {"clause": "paragraph a covers accuracy and rank", "satisfied": "partial", "evidence": "Paragraph a states 100% hit rates and rank S; hit rates match hits CSV, but rank S is not evidenced by game score files and game score accuracy is 0.1/BAD-only."},
+        {"clause": "paragraph b covers latency-compensation strategy", "satisfied": true, "evidence": "Paragraph b describes monotonic clock, already-elapsed launch/calibration time, and latency offset."},
+        {"clause": "paragraph c explains why beatmap timestamps alone are not enough and why coordinate calibration against actual rendering is needed", "satisfied": true, "evidence": "Paragraph c discusses game clock vs rendered system, window movement, client origin, lane centers, and judgment-line coordinate."},
+        {"clause": "paragraph d covers directions for improvement", "satisfied": true, "evidence": "Paragraph d suggests compositor events, rolling latency estimate, cropped evidence, focus validation, and richer telemetry."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9286,
+      "evidence_quote": "summary.md has 4 paragraphs, all over 80 chars, and covers required topics; the rank/accuracy claim is only partially supported because score JSON records accuracy=0.1 and all judgments BAD despite 100% hit rate.",
+      "missing_or_wrong": "Partial: rank S/accuracy wording is not fully supported by score JSON, though requested hit-rate thresholds are met.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.86, "reason": "All required artifacts are present and the core autoplayer outputs meet schedule, log, hit-rate, calibration, and summary requirements. Main gaps are visual evidence: `view_game_final_easy.png` lacks visible miss/score and final screen, `view_game_final_medium.png` is only inferred as final, and step screenshots show hit changes but no score/combo."},
+    "deliverable_correctness": {"score": 0.92, "reason": "Mean artifact correctness is high: schedule/logs/hits/inject are correct, calibration is mostly correct, summary is mostly correct. The lowest artifact is `view_game_final_easy.png` at 0.5833 due to missing visible miss/score; visual step/final artifacts drive the remaining deductions."},
+    "deliverable_quality": {"score": 0.93, "reason": "All required files exist, parse/read successfully, and screenshots exceed 50KB. Quality deductions are for screenshots that are real but minimal/debug-like and final screenshots that do not clearly show requested final score/miss/result panels."},
+    "evidence_authenticity": {"score": 0.9, "reason": "Screenshots appear to be real desktop captures and chat/logs show gnome-screenshot, pygame, xdotool, and live GUI interactions. No hidden GT access or PIL fake-render pattern was found; slight deduction because final calibration JSON was manually rewritten with fixed numbers after calibration attempts."},
+    "tool_use_correctness": {"score": 0.9, "reason": "The rollout used GUI computer actions, real pygame runs, xdotool, gnome-screenshot, logs, and verification. Some trial-and-error and manual calibration rewrite occurred, but tools were broadly appropriate and not substituted with fake screenshots."},
+    "final_state_correctness": {"score": 0.86, "reason": "End state has all deliverables in results and reported hit rates exceed thresholds. However the visual final-state evidence is incomplete: `view_game_final_easy.png` does not show total miss/score and `view_game_final_medium.png` does not show a definitive completion screen."},
+    "efficiency_robustness": {"score": 0.78, "reason": "The agent recovered from display/window/permission issues and produced verified artifacts, but the trajectory involved substantial troubleshooting, repeated runs, manual patching, and accepting BAD-only hits with weak score/latency quality."},
+    "instruction_following": {"score": 0.88, "reason": "It wrote all artifacts to results, verified them, used real GUI/screenshot paths, and avoided forbidden frameworks. Deductions: final visual screenshots do not fully satisfy explicit visual clauses, and summary claims rank S despite score JSON showing all BAD judgments and accuracy=0.1."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.05,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.87875,
+  "summary": "The rollout produced every required file and the core CSV/log/script artifacts are mostly correct: schedules match the beatmaps, the injector uses calibration JSON and xdotool, and extracted hit rates are 100% for easy and medium. The main strict failures are visual: the final easy screenshot does not show total miss or score, the final medium screenshot lacks a definitive final screen, and the play screenshots only show hit-count changes rather than score/combo; summary also overclaims rank/accuracy relative to BAD-only score JSON. No strong hack/fabrication signal was found."
+}
