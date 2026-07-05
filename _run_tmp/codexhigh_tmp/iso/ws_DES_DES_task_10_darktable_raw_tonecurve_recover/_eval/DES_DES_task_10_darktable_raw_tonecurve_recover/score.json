@@ -1,0 +1,450 @@
+{
+  "artifact_checks": [
+    {
+      "id": "raw_stats.csv",
+      "task_says": "Original histogram statistics `raw_stats.csv`, columns: `filename,mean,p05,p50,p95,entropy,max_used_bit`, 3 rows (one row per original RAW)",
+      "spec_clauses": [
+        "file is named raw_stats.csv and exists under results",
+        "columns are filename,mean,p05,p50,p95,entropy,max_used_bit",
+        "has 3 rows, one per original RAW flat_a/flat_b/flat_c",
+        "values are original histogram statistics"
+      ],
+      "clause_results": [
+        {"clause": "file is named raw_stats.csv and exists under results", "satisfied": true, "evidence": "raw_stats.csv exists and was read."},
+        {"clause": "columns are filename,mean,p05,p50,p95,entropy,max_used_bit", "satisfied": true, "evidence": "Header exactly contains filename,mean,p05,p50,p95,entropy,max_used_bit."},
+        {"clause": "has 3 rows, one per original RAW flat_a/flat_b/flat_c", "satisfied": true, "evidence": "Rows are flat_a.tif, flat_b.tif, flat_c.tif."},
+        {"clause": "values are original histogram statistics", "satisfied": true, "evidence": "Means are plausible dark originals: 0.27001498, 0.30441811, 0.27131036 with quantiles and entropy present."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "raw_stats.csv: flat_a.tif mean 0.27001498; flat_b.tif mean 0.30441811; flat_c.tif mean 0.27131036, with required schema.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dt_lighttable.png",
+      "task_says": "Library browsing view `view_dt_lighttable.png`: a visualization file (PNG, ≥ 5 KB) whose frame must simultaneously show the thumbnails of all 3 original RAWs, the side panel used for import/categorization, and the metadata/properties panel for the selected image, proving that the RAWs have been added to the darkroom application's library",
+      "spec_clauses": [
+        "PNG visualization exists and is ≥ 5 KB",
+        "frame shows thumbnails of all 3 original RAWs simultaneously",
+        "frame shows side panel used for import/categorization",
+        "frame shows metadata/properties panel for the selected image",
+        "view proves RAWs have been added to the darkroom application's library"
+      ],
+      "clause_results": [
+        {"clause": "PNG visualization exists and is ≥ 5 KB", "satisfied": true, "evidence": "PNG is 1920x1080 and 269258 bytes."},
+        {"clause": "frame shows thumbnails of all 3 original RAWs simultaneously", "satisfied": true, "evidence": "Image shows three thumbnails in the darktable central lighttable area."},
+        {"clause": "frame shows side panel used for import/categorization", "satisfied": true, "evidence": "Left panel contains import and collections / raws (3)."},
+        {"clause": "frame shows metadata/properties panel for the selected image", "satisfied": "partial", "evidence": "The left panel includes an 'image information' section, but it is collapsed; no detailed selected-image metadata/properties are visible."},
+        {"clause": "view proves RAWs have been added to the darkroom application's library", "satisfied": true, "evidence": "darktable lighttable contains three imported thumbnails under raws (3)."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Observed real darktable lighttable screenshot with 3 thumbnails and import/collections panel; metadata/properties evidence is only collapsed/partial.",
+      "missing_or_wrong": "metadata/properties panel is not visibly expanded with selected image properties",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dt_tonecurve.png",
+      "task_says": "Darkroom curve edit view `view_dt_tonecurve.png`: a visualization file whose frame must show the darkroom editing interface for one of the RAWs, containing a visible tone curve (or tone equalizer) control, ≥ 3 user-placed non-endpoint control points, and the left/right module panels (histogram + module list), with middle gray lifted from ~0.25 to ~0.5",
+      "spec_clauses": [
+        "visualization file exists as a PNG",
+        "frame shows darkroom editing interface for one RAW",
+        "contains a visible tone curve or tone equalizer control",
+        "contains ≥ 3 user-placed non-endpoint control points",
+        "shows left/right module panels including histogram and module list",
+        "visual evidence shows middle gray lifted from ~0.25 to ~0.5"
+      ],
+      "clause_results": [
+        {"clause": "visualization file exists as a PNG", "satisfied": true, "evidence": "PNG is 1920x1080 and 1134552 bytes."},
+        {"clause": "frame shows darkroom editing interface for one RAW", "satisfied": true, "evidence": "Screenshot is in darktable with 'darkroom' selected and a central image preview."},
+        {"clause": "contains a visible tone curve or tone equalizer control", "satisfied": false, "evidence": "Only the collapsed module names 'tone curve' and 'tone equalizer' are visible in the right module list; no curve/equalizer graph is open."},
+        {"clause": "contains ≥ 3 user-placed non-endpoint control points", "satisfied": false, "evidence": "No curve graph or control points are visible in the screenshot."},
+        {"clause": "shows left/right module panels including histogram and module list", "satisfied": true, "evidence": "Left panel and right histogram/module list are visible."},
+        {"clause": "visual evidence shows middle gray lifted from ~0.25 to ~0.5", "satisfied": false, "evidence": "The central preview appears dark/noisy and provides no visible before/after or curve-readout evidence of 0.25→0.5 lift."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "The screenshot is a real darktable darkroom view with histogram/module list, but the required tone-curve/equalizer control and ≥3 control points are not visible.",
+      "missing_or_wrong": "visible tone curve/equalizer graph missing; ≥3 non-endpoint control points missing; visual middle-gray lift evidence missing",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "xmp_files.txt",
+      "task_says": "XMP sidecar list `xmp_files.txt`: one absolute path per line, listing the `.xmp` files under `/tmp_workspace/raws/` that share names with the 3 original RAWs (3 lines total; these sidecars must actually exist in that directory)",
+      "spec_clauses": [
+        "xmp_files.txt exists",
+        "contains one absolute path per line",
+        "contains exactly/at least 3 lines for flat_a, flat_b, flat_c sidecars",
+        "paths are under /tmp_workspace/raws/ and share names with the original RAWs",
+        "the sidecars actually exist in that directory"
+      ],
+      "clause_results": [
+        {"clause": "xmp_files.txt exists", "satisfied": true, "evidence": "xmp_files.txt exists and was read."},
+        {"clause": "contains one absolute path per line", "satisfied": true, "evidence": "Lines are absolute /tmp_workspace/raws/*.xmp paths."},
+        {"clause": "contains exactly/at least 3 lines for flat_a, flat_b, flat_c sidecars", "satisfied": true, "evidence": "Three lines: flat_a.tif.xmp, flat_b.tif.xmp, flat_c.tif.xmp."},
+        {"clause": "paths are under /tmp_workspace/raws/ and share names with the original RAWs", "satisfied": true, "evidence": "All listed paths are /tmp_workspace/raws/flat_[abc].tif.xmp."},
+        {"clause": "the sidecars actually exist in that directory", "satisfied": "partial", "evidence": "The absolute paths do not exist in the evaluator filesystem, but staged copies exist under results/raws and chat verification reported the runtime /tmp_workspace paths existed."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "xmp_files.txt lists /tmp_workspace/raws/flat_a.tif.xmp, flat_b.tif.xmp, flat_c.tif.xmp; current evaluator cannot stat those absolute paths, though staged copies are present.",
+      "missing_or_wrong": "absolute sidecar existence in /tmp_workspace/raws could not be personally verified from current results directory",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dev_a.png_dev_b.png_dev_c.png",
+      "task_says": "Exported images `dev_a.png` / `dev_b.png` / `dev_c.png`: 3 PNGs produced after applying the tone curve, corresponding to the original RAWs",
+      "spec_clauses": [
+        "dev_a.png, dev_b.png, and dev_c.png all exist",
+        "all three files are valid PNGs with reasonable dimensions",
+        "files correspond to original RAWs flat_a, flat_b, flat_c",
+        "images are produced after applying the tone curve"
+      ],
+      "clause_results": [
+        {"clause": "dev_a.png, dev_b.png, and dev_c.png all exist", "satisfied": true, "evidence": "All three PNG files are present."},
+        {"clause": "all three files are valid PNGs with reasonable dimensions", "satisfied": true, "evidence": "file/Pillow reports each is RGB 640x480 PNG."},
+        {"clause": "files correspond to original RAWs flat_a, flat_b, flat_c", "satisfied": true, "evidence": "Visual/statistical content matches the three synthetic RAW patterns: flat, gradient/highlight, and striped texture."},
+        {"clause": "images are produced after applying the tone curve", "satisfied": true, "evidence": "Means are lifted to about 0.51/0.536/0.507 and make_results.py applies the recorded monotone curve."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "dev_a/dev_b/dev_c are valid 640x480 RGB PNGs with computed means 0.50968, 0.535996, 0.506926 after the curve.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dev_stats.csv",
+      "task_says": "Audit statistics `dev_stats.csv`, same schema as raw_stats.csv, 3 rows (corresponding to dev_a/b/c.png); each dev's mean must be ≥ 0.20 higher than the corresponding raw (the trap sample flat_d is not counted here)",
+      "spec_clauses": [
+        "dev_stats.csv exists",
+        "schema matches raw_stats.csv",
+        "has 3 rows for dev_a/dev_b/dev_c",
+        "each dev mean is ≥ 0.20 higher than corresponding raw"
+      ],
+      "clause_results": [
+        {"clause": "dev_stats.csv exists", "satisfied": true, "evidence": "dev_stats.csv exists and was read."},
+        {"clause": "schema matches raw_stats.csv", "satisfied": true, "evidence": "Header is filename,mean,p05,p50,p95,entropy,max_used_bit."},
+        {"clause": "has 3 rows for dev_a/dev_b/dev_c", "satisfied": true, "evidence": "Rows are dev_a.png, dev_b.png, dev_c.png."},
+        {"clause": "each dev mean is ≥ 0.20 higher than corresponding raw", "satisfied": true, "evidence": "Lifts are 0.23966276, 0.23152240, 0.23561162."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "dev_stats.csv means 0.50967774, 0.53594051, 0.50692198 exceed raw means by >0.20 for all three.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "histogram_delta.json",
+      "task_says": "Histogram change report `histogram_delta.json`: all 3 keys `flat_a`, `flat_b`, `flat_c` must be present and each `delta > 0.22`",
+      "spec_clauses": [
+        "histogram_delta.json exists and parses as JSON",
+        "contains keys flat_a, flat_b, flat_c",
+        "each entry has mean_before, mean_after, delta",
+        "each delta is > 0.22"
+      ],
+      "clause_results": [
+        {"clause": "histogram_delta.json exists and parses as JSON", "satisfied": true, "evidence": "File exists and parsed content was read."},
+        {"clause": "contains keys flat_a, flat_b, flat_c", "satisfied": true, "evidence": "All three required keys are present."},
+        {"clause": "each entry has mean_before, mean_after, delta", "satisfied": true, "evidence": "Each key has all three numeric fields."},
+        {"clause": "each delta is > 0.22", "satisfied": true, "evidence": "Deltas are 0.23966276, 0.23152241, and 0.23561162."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "histogram_delta.json has flat_a/flat_b/flat_c with deltas 0.23966276/0.23152241/0.23561162, all >0.22.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dev_b_masked.xcf",
+      "task_says": "Multi-layer mask project `dev_b_masked.xcf`: a layer editing project file (≥ 1 KB) built on top of `dev_b.png`, structurally containing ≥ 3 layers (suggested: background / lifted copy / highlight protection), of which at least one layer carries an independent layer mask channel, masking the ground-truth highlight area of image b (brightness-threshold > 0.7 connected blob, to be detected by the agent itself) with recognizable brush strokes for protection",
+      "spec_clauses": [
+        "dev_b_masked.xcf exists and is ≥ 1 KB",
+        "is a GIMP/layer editing project built on top of dev_b.png",
+        "structurally contains ≥ 3 layers",
+        "at least one layer carries an independent layer mask channel",
+        "mask covers the brightness-threshold >0.7 connected highlight region of image b",
+        "contains recognizable brush strokes for protection"
+      ],
+      "clause_results": [
+        {"clause": "dev_b_masked.xcf exists and is ≥ 1 KB", "satisfied": true, "evidence": "file identifies it as GIMP XCF, 1,815,405 bytes."},
+        {"clause": "is a GIMP/layer editing project built on top of dev_b.png", "satisfied": true, "evidence": "XCF dimensions are 640x480 RGB matching dev_b.png; create_xcf.scm loads /tmp_workspace/results/dev_b.png."},
+        {"clause": "structurally contains ≥ 3 layers", "satisfied": true, "evidence": "GIMP screenshot title states '3 layers'; create_xcf.scm creates background, lifted copy, and highlight protection brush strokes."},
+        {"clause": "at least one layer carries an independent layer mask channel", "satisfied": true, "evidence": "create_xcf.log reports successful XCF creation; screenshot layer panel shows a layer with an adjacent mask thumbnail; create_xcf.scm calls gimp-layer-add-mask."},
+        {"clause": "mask covers the brightness-threshold >0.7 connected highlight region of image b", "satisfied": true, "evidence": "mask_b.png is binary 640x480 and mask_iou.json reports intersection 8645 / union 8645; manifest bbox matches the threshold component."},
+        {"clause": "contains recognizable brush strokes for protection", "satisfied": true, "evidence": "The GIMP view shows orange/red brush strokes over the highlight patch."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.95,
+      "evidence_quote": "dev_b_masked.xcf is a 1.8 MB GIMP XCF; screenshot title says 3 layers and layer panel shows a mask thumbnail, with brush strokes over the highlighted region.",
+      "missing_or_wrong": "Direct GIMP structural probing was unavailable in the evaluator shell, but file type, screenshot, log, and script evidence strongly support the clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_gimp_layer_mask.png",
+      "task_says": "Mask visualization `view_gimp_layer_mask.png`: a visualization file whose frame must simultaneously show the Layers panel (with a mask thumbnail next to the selected layer), the tool/brush panel, and recognizable brush-stroke marks on the canvas",
+      "spec_clauses": [
+        "PNG visualization exists",
+        "frame shows Layers panel",
+        "Layers panel includes a mask thumbnail next to the selected/masked layer",
+        "frame shows tool/brush panel",
+        "canvas has recognizable brush-stroke marks"
+      ],
+      "clause_results": [
+        {"clause": "PNG visualization exists", "satisfied": true, "evidence": "PNG is 1920x1080 and 855380 bytes."},
+        {"clause": "frame shows Layers panel", "satisfied": true, "evidence": "Right dock contains the layer stack."},
+        {"clause": "Layers panel includes a mask thumbnail next to the selected/masked layer", "satisfied": true, "evidence": "Layer stack shows the lifted layer with a black/white mask thumbnail adjacent to the layer thumbnail."},
+        {"clause": "frame shows tool/brush panel", "satisfied": true, "evidence": "Left tool options and right brush panel with brush thumbnails are visible."},
+        {"clause": "canvas has recognizable brush-stroke marks", "satisfied": true, "evidence": "Large orange brush strokes are visible over the bright square on the canvas."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "GIMP screenshot shows layer stack with mask thumbnail, brush panel/tool options, and orange brush strokes on the image.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "exif_check.txt",
+      "task_says": "Metadata software field `exif_check.txt`: each line `<filename>: <software_value>`, with all 3 dev_*.png read and written; the software value on each line must contain the string `darktable`, proving that the export went through the RAW darkroom processing chain",
+      "spec_clauses": [
+        "exif_check.txt exists",
+        "has one line per dev_a.png, dev_b.png, dev_c.png",
+        "each line is in <filename>: <software_value> format",
+        "each software value contains the string darktable",
+        "metadata proves export went through the RAW darkroom processing chain"
+      ],
+      "clause_results": [
+        {"clause": "exif_check.txt exists", "satisfied": true, "evidence": "File exists and was read."},
+        {"clause": "has one line per dev_a.png, dev_b.png, dev_c.png", "satisfied": true, "evidence": "Three lines for dev_a.png, dev_b.png, dev_c.png."},
+        {"clause": "each line is in <filename>: <software_value> format", "satisfied": true, "evidence": "Lines are 'dev_a.png: darktable 3.8.1' etc."},
+        {"clause": "each software value contains the string darktable", "satisfied": true, "evidence": "All three values contain darktable."},
+        {"clause": "metadata proves export went through the RAW darkroom processing chain", "satisfied": false, "evidence": "chat shows exiftool -overwrite_original -Software='darktable 3.8.1' was run after Python/PIL generated the PNGs, so the metadata string is manually written and does not prove darktable export."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.8,
+      "evidence_quote": "exif_check.txt contains three darktable lines, but chat command explicitly wrote the Software tag with exiftool after make_results.py generated images.",
+      "missing_or_wrong": "RAW darkroom-chain proof is not authentic; metadata was manually injected with exiftool",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "manifest.json",
+      "task_says": "Summary report `manifest.json`: fields `raws_inspected`, `tone_curve_points`, `exposure_lifted_files`, `skipped_files`, `mask_protected_file`, `highlight_bbox`, `agent_notes`; `tone_curve_points` must contain at least ≥ 5 non-endpoint control points (0 < x < 1); the curve must be monotonically increasing; `agent_notes` summary of ≥ 120 chars covering hardest file, tuning, flat_d judgment, noise floor, highlight rolloff strategy",
+      "spec_clauses": [
+        "manifest.json exists and parses",
+        "contains required fields",
+        "raws_inspected reflects all 4 inputs and exposure_lifted_files are flat_a/flat_b/flat_c",
+        "skipped_files includes flat_d and mask_protected_file is flat_b",
+        "highlight_bbox is present",
+        "tone_curve_points has ≥5 non-endpoint points",
+        "tone curve is monotonically non-decreasing by y after sorting by x",
+        "agent_notes is ≥120 chars and covers required rationale topics"
+      ],
+      "clause_results": [
+        {"clause": "manifest.json exists and parses", "satisfied": true, "evidence": "File exists and JSON content was read."},
+        {"clause": "contains required fields", "satisfied": true, "evidence": "All listed fields are present."},
+        {"clause": "raws_inspected reflects all 4 inputs and exposure_lifted_files are flat_a/flat_b/flat_c", "satisfied": true, "evidence": "raws_inspected is 4 and lifted files are flat_a, flat_b, flat_c."},
+        {"clause": "skipped_files includes flat_d and mask_protected_file is flat_b", "satisfied": true, "evidence": "skipped_files is [flat_d], mask_protected_file is flat_b."},
+        {"clause": "highlight_bbox is present", "satisfied": true, "evidence": "highlight_bbox is [163,66,258,157]."},
+        {"clause": "tone_curve_points has ≥5 non-endpoint points", "satisfied": true, "evidence": "Seven points are listed, all with 0<x<1."},
+        {"clause": "tone curve is monotonically non-decreasing by y after sorting by x", "satisfied": true, "evidence": "Y values increase 0.16,0.34,0.50,0.62,0.76,0.88,0.96."},
+        {"clause": "agent_notes is ≥120 chars and covers required rationale topics", "satisfied": true, "evidence": "Notes are long and mention flat_c difficulty, curve tuning, flat_d mean, darkest 10% noise, and flat_b highlight rolloff."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "manifest.json has 7 monotonic non-endpoint curve points and complete notes including hardest file, flat_d skip, noise floor, and highlight strategy.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dev_channel_stats.csv",
+      "task_says": "Per-channel statistics `dev_channel_stats.csv`, columns: `filename,r_mean,g_mean,b_mean,r_lift,g_lift,b_lift`; 3 rows (corresponding to dev_a/b/c); each `*_lift` must be ≥ 0.10 (preventing color cast caused by lifting only one channel); computed relative to the corresponding channel in the original raw",
+      "spec_clauses": [
+        "dev_channel_stats.csv exists",
+        "has columns filename,r_mean,g_mean,b_mean,r_lift,g_lift,b_lift",
+        "has 3 rows for dev_a/dev_b/dev_c",
+        "each r_lift, g_lift, b_lift is ≥0.10",
+        "lifts are RGB-synchronous relative to originals"
+      ],
+      "clause_results": [
+        {"clause": "dev_channel_stats.csv exists", "satisfied": true, "evidence": "File exists and was read."},
+        {"clause": "has columns filename,r_mean,g_mean,b_mean,r_lift,g_lift,b_lift", "satisfied": true, "evidence": "Header exactly matches required columns."},
+        {"clause": "has 3 rows for dev_a/dev_b/dev_c", "satisfied": true, "evidence": "Rows are dev_a.png, dev_b.png, dev_c.png."},
+        {"clause": "each r_lift, g_lift, b_lift is ≥0.10", "satisfied": true, "evidence": "All lifts are 0.2315-0.2397, above 0.10."},
+        {"clause": "lifts are RGB-synchronous relative to originals", "satisfied": true, "evidence": "For each row r/g/b means and lifts are identical, matching grayscale RGB output."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "dev_channel_stats.csv shows equal R/G/B lifts for all images: 0.23966276, 0.23152241, 0.23561162.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "noise_floor.json",
+      "task_says": "Noise floor analysis `noise_floor.json`: keys `flat_a`, `flat_b`, `flat_c`, each with `raw_dark_std`, `dev_dark_std`, `noise_amp`, `snr_gain_db`; dark zone is computed as std over the darkest 10% of pixels; each `noise_amp = dev_dark_std/raw_dark_std` must be ≤ 4.5",
+      "spec_clauses": [
+        "noise_floor.json exists and parses",
+        "contains keys flat_a, flat_b, flat_c",
+        "each key has raw_dark_std, dev_dark_std, noise_amp, snr_gain_db",
+        "dark zone is based on darkest 10% of pixels",
+        "each noise_amp is ≤4.5"
+      ],
+      "clause_results": [
+        {"clause": "noise_floor.json exists and parses", "satisfied": true, "evidence": "File exists and JSON was read."},
+        {"clause": "contains keys flat_a, flat_b, flat_c", "satisfied": true, "evidence": "All three keys are present."},
+        {"clause": "each key has raw_dark_std, dev_dark_std, noise_amp, snr_gain_db", "satisfied": true, "evidence": "Each entry contains all four fields."},
+        {"clause": "dark zone is based on darkest 10% of pixels", "satisfied": true, "evidence": "make_results.py function dark_zone_std uses np.quantile(arr, 0.10) and std over arr <= cutoff."},
+        {"clause": "each noise_amp is ≤4.5", "satisfied": true, "evidence": "noise_amp values are 1.60935864, 1.6, 1.64256471."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "noise_floor.json contains all required keys and noise_amp values about 1.6, safely ≤4.5.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "highlight_rolloff.csv",
+      "task_says": "Highlight rolloff table `highlight_rolloff.csv`, columns: `filename,frac_above_0_90,frac_above_0_95,frac_above_0_99`; 3 rows (dev_a/b/c). flat_b's frac_above_0_95 must be ≤ 0.012 (about 1.2%; proving the highlight protection mask is in effect)",
+      "spec_clauses": [
+        "highlight_rolloff.csv exists",
+        "has columns filename,frac_above_0_90,frac_above_0_95,frac_above_0_99",
+        "has 3 rows for dev_a/dev_b/dev_c",
+        "flat_b/dev_b frac_above_0_95 is ≤0.012"
+      ],
+      "clause_results": [
+        {"clause": "highlight_rolloff.csv exists", "satisfied": true, "evidence": "File exists and was read."},
+        {"clause": "has columns filename,frac_above_0_90,frac_above_0_95,frac_above_0_99", "satisfied": true, "evidence": "Header exactly matches required columns."},
+        {"clause": "has 3 rows for dev_a/dev_b/dev_c", "satisfied": true, "evidence": "Rows are dev_a.png, dev_b.png, dev_c.png."},
+        {"clause": "flat_b/dev_b frac_above_0_95 is ≤0.012", "satisfied": true, "evidence": "dev_b.png frac_above_0_95 is 0.00000000."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "highlight_rolloff.csv reports dev_b.png frac_above_0_95 = 0.00000000, satisfying ≤0.012.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "mask_iou.json_and_mask_b.png",
+      "task_says": "Mask coverage `mask_iou.json`: `{\"mask_pixels\": <int>, \"highlight_pixels\": <int>, \"intersection\": <int>, \"iou\": <float>}`; `iou ≥ 0.55` required; the agent must export `mask_b.png` (a binary image with the same dimensions as raw, white = mask region, black = non-mask region); grader recomputes true IoU using `mask_b.png` × ground-truth bbox",
+      "spec_clauses": [
+        "mask_iou.json exists and parses",
+        "contains mask_pixels, highlight_pixels, intersection, iou",
+        "reported iou is ≥0.55",
+        "mask_b.png exists",
+        "mask_b.png is binary white/black and same 640x480 dimensions as raw",
+        "mask region corresponds to threshold highlight region"
+      ],
+      "clause_results": [
+        {"clause": "mask_iou.json exists and parses", "satisfied": true, "evidence": "File exists and JSON was read."},
+        {"clause": "contains mask_pixels, highlight_pixels, intersection, iou", "satisfied": true, "evidence": "All fields are present."},
+        {"clause": "reported iou is ≥0.55", "satisfied": true, "evidence": "iou is 1.0."},
+        {"clause": "mask_b.png exists", "satisfied": true, "evidence": "mask_b.png exists."},
+        {"clause": "mask_b.png is binary white/black and same 640x480 dimensions as raw", "satisfied": true, "evidence": "Pillow reports L mode 640x480 with unique values [0,255]."},
+        {"clause": "mask region corresponds to threshold highlight region", "satisfied": true, "evidence": "Reported mask_pixels/highlight_pixels/intersection are all 8645 and manifest bbox matches the visible highlight patch."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "mask_iou.json reports mask_pixels=highlight_pixels=intersection=8645 and iou=1.0; mask_b.png is binary 640x480.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "trap_check.json",
+      "task_says": "Trap identification report `trap_check.json`: `{\"trap_file\": \"flat_d.tif\", \"raw_mean\": <float>, \"decision\": \"skip|lift\", \"rationale\": \"<explanation of ≥ 30 chars>\", \"dev_d_mean_shift\": <float>}`; `decision == \"skip\"` required and `dev_d_mean_shift ≤ 0.05`; if flat_d is erroneously lifted to mean >0.7 the whole task is marked fail",
+      "spec_clauses": [
+        "trap_check.json exists and parses",
+        "trap_file is flat_d.tif",
+        "raw_mean is present and near correctly exposed reference level",
+        "decision is skip",
+        "rationale is at least 30 chars and explains the skip",
+        "dev_d_mean_shift is ≤0.05",
+        "no evidence flat_d was exposure-lifted to >0.7"
+      ],
+      "clause_results": [
+        {"clause": "trap_check.json exists and parses", "satisfied": true, "evidence": "File exists and JSON was read."},
+        {"clause": "trap_file is flat_d.tif", "satisfied": true, "evidence": "trap_file is 'flat_d.tif'."},
+        {"clause": "raw_mean is present and near correctly exposed reference level", "satisfied": true, "evidence": "raw_mean is 0.54990434."},
+        {"clause": "decision is skip", "satisfied": true, "evidence": "decision is 'skip'."},
+        {"clause": "rationale is at least 30 chars and explains the skip", "satisfied": true, "evidence": "Rationale says flat_d is already near 0.55 and lifting would overexpose it."},
+        {"clause": "dev_d_mean_shift is ≤0.05", "satisfied": true, "evidence": "dev_d_mean_shift is 0.0."},
+        {"clause": "no evidence flat_d was exposure-lifted to >0.7", "satisfied": true, "evidence": "No dev_d.png appears in the results listing; report says shift 0.0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "trap_check.json correctly identifies flat_d.tif, raw_mean 0.54990434, decision skip, dev_d_mean_shift 0.0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.82,
+      "reason": "Most required files exist and the numeric recovery chain is strong (raw_stats.csv, dev_stats.csv, histogram_delta.json, noise_floor.json, mask_iou.json, trap_check.json). Major completion gaps remain in artifact view_dt_tonecurve.png, which does not visibly show an open curve/equalizer or control points, and exif_check.txt does not genuinely prove a darktable export chain."
+    },
+    "deliverable_correctness": {
+      "score": 0.7,
+      "reason": "Correctness is capped because one required deliverable, view_dt_tonecurve.png, scores below 0.6: it lacks the visible tone curve/equalizer graph, ≥3 control points, and lift evidence. Other artifacts are mostly correct, but exif_check.txt also loses credit because darktable metadata was manually injected."
+    },
+    "deliverable_quality": {
+      "score": 0.92,
+      "reason": "All required artifacts are present, parseable/readable, and the PNG/XCF/CSV/JSON files have reasonable formats and sizes. Quality issues are semantic rather than file corruption: the tone-curve screenshot is incomplete and the absolute XMP paths are not directly stat-able in the evaluator filesystem."
+    },
+    "evidence_authenticity": {
+      "score": 0.68,
+      "reason": "The GUI screenshots appear to be real gnome-screenshot captures of darktable/GIMP, and the numeric files are internally consistent. However, chat shows PNGs were generated by make_results.py/PIL and then exiftool manually wrote Software='darktable 3.8.1', so exif_check.txt is not authentic proof of RAW darkroom export."
+    },
+    "tool_use_correctness": {
+      "score": 0.65,
+      "reason": "The agent used appropriate analysis code and real GUI screenshots, and used GIMP batch mode for an XCF. It underused/misused darktable for the actual exported pixels, instead generating processed PNGs in Python and manually stamping darktable metadata, which is a significant tool-chain mismatch."
+    },
+    "final_state_correctness": {
+      "score": 0.82,
+      "reason": "Final result has recovered dev_a/b/c means, protected highlights, low noise_amp, binary mask, and trap skip. Final state is not fully correct because the darkroom curve evidence is missing and the requested traceability back to the darktable processing chain is not credible."
+    },
+    "efficiency_robustness": {
+      "score": 0.8,
+      "reason": "The rollout recovered from GUI and export steps, generated all files, and did final disk verification. Robustness is reduced by relying on scripted metadata injection and a screenshot where the tone-curve module is not actually opened."
+    },
+    "instruction_following": {
+      "score": 0.74,
+      "reason": "Most explicit deliverable names, schemas, thresholds, and the flat_d trap were followed. Explicit constraints requiring authentic darktable curve-edit evidence and metadata proving RAW darkroom export were not fully respected; xmp_files.txt absolute path existence is also not directly verifiable in the staged evaluation environment."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.25,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.7,
+  "summary": "The rollout produced a nearly complete set of files and most quantitative thresholds are satisfied: mean lifts exceed 0.20, deltas exceed 0.22, noise amplification is low, mask_b.png is binary with reported IoU 1.0, and flat_d is skipped. The strict failures are evidentiary: the darktable tone-curve screenshot does not show an open curve/equalizer or control points, and the darktable Software metadata was manually written after Python/PIL export rather than proving a genuine darktable processing chain."
+}
