@@ -4,44 +4,44 @@
       "id": "baseline_dump.txt",
       "task_says": "`baseline_dump.txt`: full gsettings baseline snapshot of the current desktop session, ≥ 200 lines.",
       "spec_clauses": [
-        "file is named baseline_dump.txt and exists under /tmp_workspace/results/",
+        "file is named baseline_dump.txt and is under /tmp_workspace/results/",
         "contains a full gsettings baseline snapshot of the current desktop session",
         "contains ≥ 200 lines"
       ],
       "clause_results": [
-        {"clause": "file is named baseline_dump.txt and exists under /tmp_workspace/results/", "satisfied": true, "evidence": "results/baseline_dump.txt exists."},
-        {"clause": "contains a full gsettings baseline snapshot of the current desktop session", "satisfied": true, "evidence": "Head of file contains gsettings list-recursively style schema/key/value rows such as ca.desrt.dconf-editor.Demo and other schemas."},
-        {"clause": "contains ≥ 200 lines", "satisfied": true, "evidence": "wc -l reported 1852 lines."}
+        {"clause": "file is named baseline_dump.txt and is under /tmp_workspace/results/", "satisfied": true, "evidence": "results listing shows baseline_dump.txt, size 102213 bytes."},
+        {"clause": "contains a full gsettings baseline snapshot of the current desktop session", "satisfied": true, "evidence": "File begins with schema/key/value rows such as ca.desrt.dconf-editor.Demo and many GNOME schemas."},
+        {"clause": "contains ≥ 200 lines", "satisfied": true, "evidence": "wc/inspection showed 1714 lines."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "baseline_dump.txt exists and wc -l showed 1852 results/baseline_dump.txt; content is a gsettings-style recursive snapshot.",
+      "evidence_quote": "baseline_dump.txt exists, is parseable text, and has 1714 lines of gsettings schema/key/value output.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "audit_before.json",
-      "task_says": "`audit_before.json`: compliance audit result for every key in `policy_spec.json`, with fields total_keys/compliant/non_compliant/items, and each item contains schema/key/expected/actual/status; `items` count equals the total number of keys in the spec file; each entry contains 5 fields.",
+      "task_says": "`audit_before.json`: compliance audit result for every key in `policy_spec.json`, with fields: total_keys, compliant, non_compliant, items [{schema, key, expected, actual, status}]. `items` count equals the total number of keys in the spec file; each entry contains 5 fields.",
       "spec_clauses": [
-        "valid JSON file named audit_before.json exists",
-        "top-level fields total_keys, compliant, non_compliant, items are present",
+        "file is valid JSON",
+        "contains total_keys, compliant, non_compliant, and items fields",
         "items count equals total number of keys in policy_spec.json",
         "each item contains schema, key, expected, actual, status",
-        "status values are COMPLIANT or NON_COMPLIANT"
+        "status values correctly distinguish COMPLIANT and NON_COMPLIANT before edits"
       ],
       "clause_results": [
-        {"clause": "valid JSON file named audit_before.json exists", "satisfied": true, "evidence": "JSON parsed successfully."},
-        {"clause": "top-level fields total_keys, compliant, non_compliant, items are present", "satisfied": true, "evidence": "File has total_keys=12, compliant=2, non_compliant=10, items=[...]."},
-        {"clause": "items count equals total number of keys in policy_spec.json", "satisfied": true, "evidence": "policy_spec.json has 12 keys and audit_before.json has 12 items."},
-        {"clause": "each item contains schema, key, expected, actual, status", "satisfied": true, "evidence": "All inspected items include exactly the required fields."},
-        {"clause": "status values are COMPLIANT or NON_COMPLIANT", "satisfied": true, "evidence": "Statuses are COMPLIANT for 2 entries and NON_COMPLIANT for 10 entries."}
+        {"clause": "file is valid JSON", "satisfied": true, "evidence": "json.loads succeeded."},
+        {"clause": "contains total_keys, compliant, non_compliant, and items fields", "satisfied": true, "evidence": "Top-level values are total_keys=12, compliant=3, non_compliant=9, items=[...]."},
+        {"clause": "items count equals total number of keys in policy_spec.json", "satisfied": true, "evidence": "policy_spec/expected have 12 keys and audit_before has 12 items."},
+        {"clause": "each item contains schema, key, expected, actual, status", "satisfied": true, "evidence": "All inspected items have exactly those five fields."},
+        {"clause": "status values correctly distinguish COMPLIANT and NON_COMPLIANT before edits", "satisfied": true, "evidence": "Examples: enable-animations true vs expected false is NON_COMPLIANT; lock-enabled true vs expected true is COMPLIANT."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "Parsed JSON shows total_keys=12, compliant=2, non_compliant=10, and 12 items with schema/key/expected/actual/status.",
+      "evidence_quote": "audit_before.json reports 12 total keys, 3 compliant and 9 non_compliant, with every item carrying schema/key/expected/actual/status.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -50,21 +50,23 @@
       "id": "key_ranges.txt",
       "task_says": "`key_ranges.txt`: `type` / `enum` / `range` metadata gathered for all keys in the spec; file must contain at least one `enum` or `range` line.",
       "spec_clauses": [
-        "file exists and is readable text",
-        "contains type / enum / range metadata",
-        "metadata is gathered for all keys in the spec",
-        "contains at least one enum or range line"
+        "file exists as text",
+        "contains type metadata for all keys in the spec",
+        "contains enum or range metadata for all keys in the spec",
+        "contains at least one enum or range line",
+        "metadata includes supporting default/writable/summary/description where available"
       ],
       "clause_results": [
-        {"clause": "file exists and is readable text", "satisfied": true, "evidence": "results/key_ranges.txt exists with 74 lines."},
-        {"clause": "contains type / enum / range metadata", "satisfied": true, "evidence": "Entries include range: type b, type: b, range: enum, and enum: default, prefer-dark, prefer-light."},
-        {"clause": "metadata is gathered for all keys in the spec", "satisfied": true, "evidence": "There is a bracketed section for each of the 12 policy keys."},
-        {"clause": "contains at least one enum or range line", "satisfied": true, "evidence": "Multiple range lines and an enum section for color-scheme are present."}
+        {"clause": "file exists as text", "satisfied": true, "evidence": "key_ranges.txt exists, size 2997 bytes, 108 lines."},
+        {"clause": "contains type metadata for all keys in the spec", "satisfied": true, "evidence": "Sections are present for the 12 expected schema/key pairs; examples include type: b and type: enum."},
+        {"clause": "contains enum or range metadata for all keys in the spec", "satisfied": true, "evidence": "Each section includes range lines such as range: type b or range: enum."},
+        {"clause": "contains at least one enum or range line", "satisfied": true, "evidence": "color-scheme section includes enum: org.gnome.desktop.GDesktopColorScheme and range: enum."},
+        {"clause": "metadata includes supporting default/writable/summary/description where available", "satisfied": true, "evidence": "Sections include default, writable, summary, and description lines."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "key_ranges.txt has 12 sections and includes lines such as range: enum and enum: default, prefer-dark, prefer-light.",
+      "evidence_quote": "key_ranges.txt has 108 lines with sections for the spec keys, including type/range/default/writable/summary/description and an enum for color-scheme.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -73,46 +75,46 @@
       "id": "view_01_dconf_interface.png",
       "task_says": "`view_01_dconf_interface.png`: shows the key list under the `org.gnome.desktop.interface` path together with the right-side key properties panel; Summary / Description / Type / Default value and other fields that are only exposed in the GUI must be visible.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
-        "shows dconf-editor under org.gnome.desktop.interface",
+        "image file exists, is a real screenshot, and is usable",
+        "shows dconf-editor under the org.gnome.desktop.interface path",
         "shows the key list under the org.gnome.desktop.interface path",
-        "shows a right-side key properties panel together with the list",
-        "Summary / Description / Type / Default value and other GUI fields are visible"
+        "shows the right-side key properties panel together with the list",
+        "Summary, Description, Type, Default value, and other GUI-only fields are visible"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 118737 bytes, 1920×1080."},
-        {"clause": "shows dconf-editor under org.gnome.desktop.interface", "satisfied": true, "evidence": "Image shows dconf Editor at /org/gnome/desktop/interface/enable-animations with schema org.gnome.desktop.interface."},
-        {"clause": "shows the key list under the org.gnome.desktop.interface path", "satisfied": false, "evidence": "The screenshot is a single key detail page for enable-animations; no key list is visible."},
-        {"clause": "shows a right-side key properties panel together with the list", "satisfied": false, "evidence": "Properties are displayed in the main content area; there is no visible side-by-side list plus right-side panel."},
-        {"clause": "Summary / Description / Type / Default value and other GUI fields are visible", "satisfied": true, "evidence": "Visible fields include Summary Enable Animations, Description, Type name Boolean, Default true, Current value true, Use default value, and Custom value."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1152793 bytes, 1920x1080, unique md5."},
+        {"clause": "shows dconf-editor under the org.gnome.desktop.interface path", "satisfied": true, "evidence": "Vision inspection read path /org/gnome/desktop/interface/clock-format in dconf Editor."},
+        {"clause": "shows the key list under the org.gnome.desktop.interface path", "satisfied": false, "evidence": "Vision inspection found it is a single key detail page, not a key list."},
+        {"clause": "shows the right-side key properties panel together with the list", "satisfied": false, "evidence": "No split layout with a list and separate right-side panel is visible; it shows only the selected key details."},
+        {"clause": "Summary, Description, Type, Default value, and other GUI-only fields are visible", "satisfied": true, "evidence": "Visible fields include Summary, Description, Type/Enumeration, Default value '24h', Current value, Use default value, and Custom value."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 0.6,
-      "evidence_quote": "Image shows dconf Editor key detail for /org/gnome/desktop/interface/enable-animations with metadata fields, but not the requested interface key list/right-side panel layout.",
-      "missing_or_wrong": "Missing key list under org.gnome.desktop.interface; missing right-side properties panel shown together with the list; md5 duplicates view_03_dconf_edit_before.png.",
-      "fake_signal": true,
+      "evidence_quote": "The screenshot is real dconf Editor at /org/gnome/desktop/interface/clock-format and shows metadata fields, but it does not show the required key list/right-side panel combination.",
+      "missing_or_wrong": "Missing key list under org.gnome.desktop.interface; missing right-side properties panel together with the list.",
+      "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "view_02_dconf_privacy.png",
       "task_says": "`view_02_dconf_privacy.png`: shows the properties panel of any key under the `org.gnome.desktop.privacy` path, containing Default value / Custom value fields or the corresponding toggle.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
-        "shows dconf-editor properties panel for a key under org.gnome.desktop.privacy",
-        "contains Default value field",
-        "contains Custom value fields or corresponding toggle"
+        "image file exists, is a real screenshot, and is usable",
+        "shows properties panel of a key under org.gnome.desktop.privacy",
+        "Default value field is visible",
+        "Custom value field or corresponding toggle is visible"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 117096 bytes, 1920×1080."},
-        {"clause": "shows dconf-editor properties panel for a key under org.gnome.desktop.privacy", "satisfied": true, "evidence": "Image shows /org/gnome/desktop/privacy/remember-recent-files and schema org.gnome.desktop.privacy."},
-        {"clause": "contains Default value field", "satisfied": true, "evidence": "Default value true is visible."},
-        {"clause": "contains Custom value fields or corresponding toggle", "satisfied": true, "evidence": "Use default value toggle and greyed Custom value controls are visible."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1154207 bytes, 1920x1080, unique md5."},
+        {"clause": "shows properties panel of a key under org.gnome.desktop.privacy", "satisfied": true, "evidence": "Vision inspection read /org/gnome/desktop/privacy/remember-recent-files and schema org.gnome.desktop.privacy."},
+        {"clause": "Default value field is visible", "satisfied": true, "evidence": "Default true is visible."},
+        {"clause": "Custom value field or corresponding toggle is visible", "satisfied": true, "evidence": "Use default value toggle and Custom value False/True controls are visible."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "Screenshot shows dconf Editor privacy key remember-recent-files with Default true, Current value, Use default value toggle, and Custom value controls.",
+      "evidence_quote": "The screenshot clearly shows dconf Editor properties for /org/gnome/desktop/privacy/remember-recent-files with Default, Current value, Use default value, and Custom value controls.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -121,19 +123,19 @@
       "id": "dconf_signals.log",
       "task_says": "`dconf_signals.log`: dconf change-signal log collected in the background during the policy edits; must contain at least 2 `/org/gnome/...` path entries.",
       "spec_clauses": [
-        "log file exists and is readable",
-        "was collected from dconf change-signal output during edits",
+        "file exists as text",
+        "was collected as dconf change-signal output during edits",
         "contains at least 2 /org/gnome/... path entries"
       ],
       "clause_results": [
-        {"clause": "log file exists and is readable", "satisfied": true, "evidence": "results/dconf_signals.log exists with 33 lines."},
-        {"clause": "was collected from dconf change-signal output during edits", "satisfied": true, "evidence": "Chat shows dconf watch /org/gnome/desktop/ | tee /tmp_workspace/results/dconf_signals.log was run, followed by gsettings set commands."},
-        {"clause": "contains at least 2 /org/gnome/... path entries", "satisfied": true, "evidence": "File contains 11 /org/gnome/... entries, including interface, privacy, notifications, and lockdown paths."}
+        {"clause": "file exists as text", "satisfied": true, "evidence": "dconf_signals.log exists, 1076 bytes, 42 lines."},
+        {"clause": "was collected as dconf change-signal output during edits", "satisfied": true, "evidence": "Log contains dconf watch-style path/value pairs matching edited keys."},
+        {"clause": "contains at least 2 /org/gnome/... path entries", "satisfied": true, "evidence": "14 entries were counted; examples include /org/gnome/desktop/interface/clock-show-seconds and /org/gnome/desktop/privacy/old-files-age."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "dconf_signals.log includes /org/gnome/desktop/interface/enable-animations, /privacy/remember-recent-files, /lockdown/disable-user-switching, etc.; 11 path entries counted.",
+      "evidence_quote": "dconf_signals.log contains 14 /org/gnome/... entries, including interface, privacy, screensaver, notifications, and lockdown changes.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -142,69 +144,69 @@
       "id": "view_03_dconf_edit_before.png",
       "task_says": "`view_03_dconf_edit_before.png`: properties panel state for some non-compliant boolean key right before it is about to be modified (showing the current key value).",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
-        "shows a properties panel in dconf-editor",
-        "shows a non-compliant boolean key from audit_before",
-        "shows the current key value before modification",
-        "state is right before it is about to be modified"
+        "image file exists, is a real screenshot, and is usable",
+        "shows a dconf-editor properties panel",
+        "key shown is a non-compliant boolean key from audit_before",
+        "screenshot is before modification",
+        "current key value is visible"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 118737 bytes, 1920×1080."},
-        {"clause": "shows a properties panel in dconf-editor", "satisfied": true, "evidence": "Screenshot shows dconf Editor key details for enable-animations."},
-        {"clause": "shows a non-compliant boolean key from audit_before", "satisfied": true, "evidence": "enable-animations is boolean and audit_before expected false while actual true."},
-        {"clause": "shows the current key value before modification", "satisfied": true, "evidence": "Image shows Current value true / Use default value enabled."},
-        {"clause": "state is right before it is about to be modified", "satisfied": "partial", "evidence": "The screenshot content is a before state, but it is byte-identical to view_01 and timing is inferred from chat rather than independently shown."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1151933 bytes, 1920x1080, unique md5."},
+        {"clause": "shows a dconf-editor properties panel", "satisfied": true, "evidence": "Vision inspection read dconf Editor details panel for /org/gnome/desktop/interface/clock-show-seconds."},
+        {"clause": "key shown is a non-compliant boolean key from audit_before", "satisfied": true, "evidence": "audit_before marks clock-show-seconds expected true, actual false, status NON_COMPLIANT; screenshot shows Type name Boolean."},
+        {"clause": "screenshot is before modification", "satisfied": true, "evidence": "Use default value is on and default/current state indicates false, matching audit_before before the later true screenshot."},
+        {"clause": "current key value is visible", "satisfied": "partial", "evidence": "Current value is shown as 'Default value' with Default false visible, so the actual false value is inferable but not printed as a standalone current=false line."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 0.9,
-      "evidence_quote": "Screenshot shows /org/gnome/desktop/interface/enable-animations, Boolean, Default true, Current value true; audit_before marks this key NON_COMPLIANT against expected false.",
-      "missing_or_wrong": "Right-before-modification timing is only inferred; md5 duplicates view_01_dconf_interface.png.",
-      "fake_signal": true,
+      "evidence_quote": "The screenshot shows /org/gnome/desktop/interface/clock-show-seconds before change, with Boolean type, default false, and Current value: Default value; current false is visible only indirectly.",
+      "missing_or_wrong": "Current value is not explicitly printed as false; it is inferable from Current value: Default value plus Default false.",
+      "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "view_04_dconf_edit_after.png",
       "task_says": "`view_04_dconf_edit_after.png`: properties panel for a key marked NON_COMPLIANT in audit_before after it has been changed to the compliant target value; the \"Use default value\" switch and the current Custom value must be visible.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
-        "shows properties panel for a key marked NON_COMPLIANT in audit_before",
+        "image file exists, is a real screenshot, and is usable",
+        "shows dconf-editor properties panel for a key marked NON_COMPLIANT in audit_before",
         "shows the key after it has been changed to the compliant target value",
         "Use default value switch is visible",
         "current Custom value is visible"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 118844 bytes, 1920×1080."},
-        {"clause": "shows properties panel for a key marked NON_COMPLIANT in audit_before", "satisfied": true, "evidence": "Image shows enable-animations, which audit_before marks NON_COMPLIANT."},
-        {"clause": "shows the key after it has been changed to the compliant target value", "satisfied": true, "evidence": "Current value is false, matching expected false."},
-        {"clause": "Use default value switch is visible", "satisfied": true, "evidence": "Use default value switch is visible and off."},
-        {"clause": "current Custom value is visible", "satisfied": true, "evidence": "Custom value control is visible with False selected."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1151360 bytes, 1920x1080, unique md5."},
+        {"clause": "shows dconf-editor properties panel for a key marked NON_COMPLIANT in audit_before", "satisfied": true, "evidence": "Screenshot shows /org/gnome/desktop/interface/clock-show-seconds, which audit_before marks NON_COMPLIANT."},
+        {"clause": "shows the key after it has been changed to the compliant target value", "satisfied": true, "evidence": "Current value is true; expected target for clock-show-seconds is true."},
+        {"clause": "Use default value switch is visible", "satisfied": true, "evidence": "Use default value toggle is visible and off."},
+        {"clause": "current Custom value is visible", "satisfied": true, "evidence": "Custom value controls are visible with True selected."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "Image shows enable-animations after edit: Current value false, Use default value off, Custom value False selected.",
-      "missing_or_wrong": "md5 duplicates view_07_dconf_verified.png, although this artifact's own content satisfies its clauses.",
-      "fake_signal": true,
+      "evidence_quote": "The screenshot shows clock-show-seconds after editing: Current value true, Use default value off, and Custom value True selected.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "view_05_dconf_lockdown.png",
       "task_says": "`view_05_dconf_lockdown.png`: shows the properties panel of at least one key under the `org.gnome.desktop.lockdown` path.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
+        "image file exists, is a real screenshot, and is usable",
         "shows dconf-editor properties panel",
-        "the key is under org.gnome.desktop.lockdown"
+        "shown key is under org.gnome.desktop.lockdown"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 118975 bytes, 1920×1080."},
-        {"clause": "shows dconf-editor properties panel", "satisfied": true, "evidence": "Screenshot shows dconf Editor key properties fields."},
-        {"clause": "the key is under org.gnome.desktop.lockdown", "satisfied": true, "evidence": "Path is /org/gnome/desktop/lockdown/disable-print-setup and schema org.gnome.desktop.lockdown."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1157014 bytes, 1920x1080, unique md5."},
+        {"clause": "shows dconf-editor properties panel", "satisfied": true, "evidence": "Vision inspection identified dconf Editor key detail/properties page."},
+        {"clause": "shown key is under org.gnome.desktop.lockdown", "satisfied": true, "evidence": "Visible path is /org/gnome/desktop/lockdown/disable-print-setup and schema org.gnome.desktop.lockdown."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "Image shows dconf Editor at /org/gnome/desktop/lockdown/disable-print-setup with lockdown schema and key properties.",
+      "evidence_quote": "The screenshot shows dconf Editor at /org/gnome/desktop/lockdown/disable-print-setup with Summary, Description, Boolean type, Default and Custom value controls.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -213,24 +215,24 @@
       "id": "view_06_dconf_watch.png",
       "task_says": "`view_06_dconf_watch.png`: shows real-time dconf change-signal output inside a real terminal window (with a command prompt and several `/org/gnome/...` lines), as runtime evidence.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
+        "image file exists, is a real screenshot, and is usable",
         "shows a real terminal window",
-        "shows real-time dconf change-signal output",
-        "shows a command prompt",
-        "shows several /org/gnome/... lines"
+        "terminal includes a command prompt",
+        "shows dconf watch/change-signal output",
+        "contains several /org/gnome/... lines"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 169640 bytes, 1920×1080."},
-        {"clause": "shows a real terminal window", "satisfied": true, "evidence": "Ubuntu Terminal window is visible in foreground."},
-        {"clause": "shows real-time dconf change-signal output", "satisfied": true, "evidence": "Terminal contains dconf watch style path/value pairs matching dconf_signals.log."},
-        {"clause": "shows a command prompt", "satisfied": "partial", "evidence": "Terminal title shows user@user-virtual-machine:/tmp_workspace and a cursor is visible, but the typed dconf watch command/prompt line is not clearly visible in the scrollback."},
-        {"clause": "shows several /org/gnome/... lines", "satisfied": true, "evidence": "Visible lines include /org/gnome/desktop/privacy/remember-recent-files, /session/idle-delay, /notifications/show-in-lock-screen, and lockdown paths."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1129507 bytes, 1920x1080, unique md5."},
+        {"clause": "shows a real terminal window", "satisfied": true, "evidence": "Vision inspection identified an Ubuntu Terminal foreground window."},
+        {"clause": "terminal includes a command prompt", "satisfied": true, "evidence": "Visible command prompt: user@user-virtual-machine:~$ mkdir -p /tmp_workspace/results; dconf watch / | tee ..."},
+        {"clause": "shows dconf watch/change-signal output", "satisfied": true, "evidence": "Terminal shows path/value pairs produced by dconf watch."},
+        {"clause": "contains several /org/gnome/... lines", "satisfied": true, "evidence": "Visible lines include /org/gnome/desktop/interface/clock-show-seconds, enable-animations, color-scheme, and privacy paths."}
       ],
       "exists": true,
       "format_ok": true,
-      "correctness": 0.9,
-      "evidence_quote": "Foreground Terminal shows several /org/gnome/desktop/... path/value pairs; command/prompt itself is not clearly visible, only terminal title/cursor.",
-      "missing_or_wrong": "Command prompt/typed dconf watch command not clearly visible in the terminal content.",
+      "correctness": 1.0,
+      "evidence_quote": "The screenshot shows a terminal running dconf watch / piped to tee, with a prompt and many visible /org/gnome/... change paths and values.",
+      "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
     },
@@ -238,46 +240,46 @@
       "id": "view_07_dconf_verified.png",
       "task_says": "`view_07_dconf_verified.png`: final re-inspection of a modified interface key; the toggle next to \"Use default value\" must be consistent with the Custom value that was set.",
       "spec_clauses": [
-        "PNG exists and is a real 1920×1080 screenshot ≥ 5KB",
+        "image file exists, is a real screenshot, and is usable",
         "shows final re-inspection of a modified interface key",
         "Use default value toggle is visible",
-        "toggle state is consistent with the Custom value that was set"
+        "toggle state is consistent with the Custom value set"
       ],
       "clause_results": [
-        {"clause": "PNG exists and is a real 1920×1080 screenshot ≥ 5KB", "satisfied": true, "evidence": "PNG is 118844 bytes, 1920×1080."},
-        {"clause": "shows final re-inspection of a modified interface key", "satisfied": "partial", "evidence": "It shows modified interface key enable-animations, but file is byte-identical to view_04 and chat shows it was copied rather than separately captured as a final re-inspection."},
-        {"clause": "Use default value toggle is visible", "satisfied": true, "evidence": "Use default value switch is visible and off."},
-        {"clause": "toggle state is consistent with the Custom value that was set", "satisfied": true, "evidence": "Current value false and Custom value False selected; Use default value is off."}
+        {"clause": "image file exists, is a real screenshot, and is usable", "satisfied": true, "evidence": "PNG exists, 1094713 bytes, 1920x1080, unique md5."},
+        {"clause": "shows final re-inspection of a modified interface key", "satisfied": true, "evidence": "Vision inspection read /org/gnome/desktop/interface/clock-show-seconds, a modified interface key."},
+        {"clause": "Use default value toggle is visible", "satisfied": true, "evidence": "Use default value toggle is visible."},
+        {"clause": "toggle state is consistent with the Custom value set", "satisfied": true, "evidence": "Toggle is off, Current value is true, and Custom value True is selected."}
       ],
       "exists": true,
       "format_ok": true,
-      "correctness": 0.875,
-      "evidence_quote": "Image shows enable-animations with Current value false, Use default value off, Custom value False; however it is an exact duplicate of view_04_dconf_edit_after.png.",
-      "missing_or_wrong": "Separate final re-inspection evidence is weak because the screenshot is byte-identical to view_04 and was copied in chat.",
-      "fake_signal": true,
+      "correctness": 1.0,
+      "evidence_quote": "The verified screenshot shows clock-show-seconds current value true, Use default value off, and Custom value True selected, which is internally consistent.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "audit_after.json",
       "task_says": "`audit_after.json`: re-audit against `policy_spec.json` performed after the policy edits, same schema as audit_before; goal is for every `items.status == \"COMPLIANT\"` and for each `actual` value to match `gt/expected.json`.",
       "spec_clauses": [
-        "valid JSON file named audit_after.json exists",
-        "uses the same schema as audit_before",
-        "re-audits every key in policy_spec.json",
+        "file is valid JSON with same schema as audit_before",
+        "items count equals total number of spec keys",
         "every items.status is COMPLIANT",
-        "each actual value matches gt/expected.json"
+        "each actual value matches gt/expected.json",
+        "top-level compliant/non_compliant counts are consistent"
       ],
       "clause_results": [
-        {"clause": "valid JSON file named audit_after.json exists", "satisfied": true, "evidence": "JSON parsed successfully."},
-        {"clause": "uses the same schema as audit_before", "satisfied": true, "evidence": "Contains total_keys, compliant, non_compliant, and items with schema/key/expected/actual/status."},
-        {"clause": "re-audits every key in policy_spec.json", "satisfied": true, "evidence": "12 items match the 12 policy keys."},
-        {"clause": "every items.status is COMPLIANT", "satisfied": true, "evidence": "compliant=12, non_compliant=0 and all statuses are COMPLIANT."},
-        {"clause": "each actual value matches gt/expected.json", "satisfied": true, "evidence": "Cross-check showed all 12 actual values equal gt/expected.json expected values."}
+        {"clause": "file is valid JSON with same schema as audit_before", "satisfied": true, "evidence": "json.loads succeeded and fields mirror audit_before."},
+        {"clause": "items count equals total number of spec keys", "satisfied": true, "evidence": "total_keys=12 and len(items)=12, matching expected.json."},
+        {"clause": "every items.status is COMPLIANT", "satisfied": true, "evidence": "All 12 inspected statuses are COMPLIANT."},
+        {"clause": "each actual value matches gt/expected.json", "satisfied": true, "evidence": "Cross-check found all 12 actual values match gt expected values, including color-scheme prefer-dark and old-files-age 7."},
+        {"clause": "top-level compliant/non_compliant counts are consistent", "satisfied": true, "evidence": "Top-level compliant=12 and non_compliant=0."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "audit_after.json has total_keys=12, compliant=12, non_compliant=0; each actual value matches gt/expected.json.",
+      "evidence_quote": "audit_after.json has 12/12 COMPLIANT and every actual value equals gt/expected.json.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -288,17 +290,19 @@
       "spec_clauses": [
         "file exists",
         "file is non-empty",
-        "contains a dconf database dump after policy edits"
+        "content is dconf dump INI-style output after edits",
+        "contains relevant edited GNOME desktop keys"
       ],
       "clause_results": [
-        {"clause": "file exists", "satisfied": true, "evidence": "results/dconf_after_dump.ini exists."},
-        {"clause": "file is non-empty", "satisfied": true, "evidence": "wc -l reported 244 lines; file size is 8230 bytes."},
-        {"clause": "contains a dconf database dump after policy edits", "satisfied": true, "evidence": "INI sections include [org/gnome/desktop/interface] with color-scheme='prefer-dark', enable-animations=false, and other edited keys."}
+        {"clause": "file exists", "satisfied": true, "evidence": "dconf_after_dump.ini exists in results."},
+        {"clause": "file is non-empty", "satisfied": true, "evidence": "Size is 8360 bytes and 245 lines."},
+        {"clause": "content is dconf dump INI-style output after edits", "satisfied": true, "evidence": "File contains sections like [org/gnome/desktop/interface] and [org/gnome/desktop/privacy]."},
+        {"clause": "contains relevant edited GNOME desktop keys", "satisfied": true, "evidence": "Relevant sections include clock-show-seconds=true, color-scheme='prefer-dark', remember-recent-files=false, old-files-age=uint32 7, and lockdown keys true."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "dconf_after_dump.ini is non-empty and includes edited dconf sections such as [org/gnome/desktop/interface] clock-show-seconds=true, color-scheme='prefer-dark', enable-animations=false.",
+      "evidence_quote": "dconf_after_dump.ini is a 245-line dconf dump with edited interface/privacy/notifications/lockdown values present.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
@@ -307,20 +311,22 @@
       "id": "policy_diff.txt",
       "task_says": "`policy_diff.txt`: diff between `baseline_dump.txt` and `dconf_after_dump.ini`, ≥ 3 changed lines.",
       "spec_clauses": [
-        "file exists and is readable text",
+        "file exists as text",
         "is a diff between baseline_dump.txt and dconf_after_dump.ini",
-        "contains ≥ 3 changed lines"
+        "contains ≥ 3 changed lines",
+        "changed lines are meaningful for policy verification"
       ],
       "clause_results": [
-        {"clause": "file exists and is readable text", "satisfied": true, "evidence": "results/policy_diff.txt exists with 2099 lines."},
-        {"clause": "is a diff between baseline_dump.txt and dconf_after_dump.ini", "satisfied": "partial", "evidence": "Header says --- /tmp_workspace/results/baseline_dump.txt and +++ /tmp_workspace/results/dconf_after_dump.ini, but it compares a gsettings list-recursively file to a dconf dump INI, so most changes are format mismatch rather than policy-only changes."},
-        {"clause": "contains ≥ 3 changed lines", "satisfied": true, "evidence": "Counted 2096 +/- changed lines excluding diff headers."}
+        {"clause": "file exists as text", "satisfied": true, "evidence": "policy_diff.txt exists, 112600 bytes, 1962 lines."},
+        {"clause": "is a diff between baseline_dump.txt and dconf_after_dump.ini", "satisfied": true, "evidence": "Header shows --- baseline_dump.txt and +++ dconf_after_dump.ini."},
+        {"clause": "contains ≥ 3 changed lines", "satisfied": true, "evidence": "Unified diff has far more than 3 changed lines."},
+        {"clause": "changed lines are meaningful for policy verification", "satisfied": "partial", "evidence": "The diff is very large because baseline_dump.txt is a gsettings list while dconf_after_dump.ini is an INI dconf dump; it proves difference but is noisy and not a clean policy-only diff."}
       ],
       "exists": true,
       "format_ok": true,
-      "correctness": 0.833,
-      "evidence_quote": "policy_diff.txt is a unified diff with headers for baseline_dump.txt and dconf_after_dump.ini and far more than 3 changed lines, but the two compared files use different dump formats.",
-      "missing_or_wrong": "Diff is not a clean policy-change diff because baseline_dump.txt is gsettings list-recursively while dconf_after_dump.ini is dconf dump INI.",
+      "correctness": 0.875,
+      "evidence_quote": "policy_diff.txt is a unified diff with the requested filenames and 1962 lines, but it compares two different output formats, making the evidence noisy rather than focused.",
+      "missing_or_wrong": "Diff is not clean/targeted because it compares full gsettings-list format to dconf INI dump format.",
       "fake_signal": false,
       "unstaged_evidence": false
     },
@@ -328,76 +334,95 @@
       "id": "compliance_report.md",
       "task_says": "`compliance_report.md`: must contain an H1 title, ≥ 6 markdown table rows of the form `| schema | key | before | after | status |`, one compliance-rate percentage in the form `\\d+(\\.\\d+)?%`, and references to all 7 screenshots.",
       "spec_clauses": [
-        "markdown file exists",
         "contains an H1 title",
-        "contains ≥ 6 markdown table rows in the requested schema/key/before/after/status format",
+        "contains ≥ 6 markdown table rows of the requested schema/key/before/after/status form",
         "contains a compliance-rate percentage matching \\d+(\\.\\d+)?%",
-        "references all 7 screenshots"
+        "references all 7 screenshots",
+        "report content summarizes before/after compliance"
       ],
       "clause_results": [
-        {"clause": "markdown file exists", "satisfied": true, "evidence": "results/compliance_report.md exists."},
-        {"clause": "contains an H1 title", "satisfied": true, "evidence": "First line is # GNOME Desktop Policy Compliance Report."},
-        {"clause": "contains ≥ 6 markdown table rows in the requested schema/key/before/after/status format", "satisfied": true, "evidence": "Report contains 12 data rows plus header for schema/key/before/after/status."},
-        {"clause": "contains a compliance-rate percentage matching \\d+(\\.\\d+)?%", "satisfied": true, "evidence": "Contains Final compliance rate: 100.0%."},
-        {"clause": "references all 7 screenshots", "satisfied": true, "evidence": "Screenshots section lists view_01 through view_07 filenames."}
+        {"clause": "contains an H1 title", "satisfied": true, "evidence": "File begins with # GNOME Desktop Policy Compliance Report."},
+        {"clause": "contains ≥ 6 markdown table rows of the requested schema/key/before/after/status form", "satisfied": true, "evidence": "There are 12 data rows plus header; rows include schema, key, before, after, status."},
+        {"clause": "contains a compliance-rate percentage matching \\d+(\\.\\d+)?%", "satisfied": true, "evidence": "Contains Compliance before: 25.0% and Compliance after: 100.0%."},
+        {"clause": "references all 7 screenshots", "satisfied": true, "evidence": "Screenshot Evidence section lists view_01 through view_07 filenames."},
+        {"clause": "report content summarizes before/after compliance", "satisfied": true, "evidence": "Table includes before and after values for all 12 keys and final COMPLIANT statuses."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "Report has H1, 12 compliance rows, 100.0%, and lists all seven screenshot filenames.",
+      "evidence_quote": "compliance_report.md has an H1, 12 table rows, 25.0%/100.0% percentages, and references all 7 screenshots.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
     },
     {
       "id": "audit_summary.json",
-      "task_says": "`audit_summary.json`: must contain total_keys, compliant_before, compliant_after, compliance_rate_before, compliance_rate_after, screenshots, signals_captured.",
+      "task_says": "`audit_summary.json`: { total_keys, compliant_before, compliant_after, compliance_rate_before, compliance_rate_after, screenshots, signals_captured }.",
       "spec_clauses": [
-        "valid JSON file exists",
+        "file is valid JSON",
         "contains total_keys",
-        "contains compliant_before",
-        "contains compliant_after",
-        "contains compliance_rate_before",
-        "contains compliance_rate_after",
+        "contains compliant_before and compliant_after",
+        "contains compliance_rate_before and compliance_rate_after as floats 0-1",
         "contains screenshots array",
-        "contains signals_captured"
+        "contains signals_captured",
+        "screenshots array names all 7 screenshot files and signals count is consistent"
       ],
       "clause_results": [
-        {"clause": "valid JSON file exists", "satisfied": true, "evidence": "JSON parsed successfully."},
-        {"clause": "contains total_keys", "satisfied": true, "evidence": "total_keys is 12."},
-        {"clause": "contains compliant_before", "satisfied": true, "evidence": "compliant_before is 2."},
-        {"clause": "contains compliant_after", "satisfied": true, "evidence": "compliant_after is 12."},
-        {"clause": "contains compliance_rate_before", "satisfied": true, "evidence": "compliance_rate_before is 0.16666666666666666."},
-        {"clause": "contains compliance_rate_after", "satisfied": true, "evidence": "compliance_rate_after is 1.0."},
-        {"clause": "contains screenshots array", "satisfied": true, "evidence": "screenshots array lists all 7 expected PNG filenames."},
-        {"clause": "contains signals_captured", "satisfied": true, "evidence": "signals_captured is 11."}
+        {"clause": "file is valid JSON", "satisfied": true, "evidence": "json.loads succeeded."},
+        {"clause": "contains total_keys", "satisfied": true, "evidence": "total_keys=12."},
+        {"clause": "contains compliant_before and compliant_after", "satisfied": true, "evidence": "compliant_before=3 and compliant_after=12."},
+        {"clause": "contains compliance_rate_before and compliance_rate_after as floats 0-1", "satisfied": true, "evidence": "compliance_rate_before=0.25 and compliance_rate_after=1.0."},
+        {"clause": "contains screenshots array", "satisfied": true, "evidence": "screenshots array is present."},
+        {"clause": "contains signals_captured", "satisfied": true, "evidence": "signals_captured=14."},
+        {"clause": "screenshots array names all 7 screenshot files and signals count is consistent", "satisfied": true, "evidence": "Array lists view_01 through view_07; dconf_signals.log count is 14 /org/gnome entries."}
       ],
       "exists": true,
       "format_ok": true,
       "correctness": 1.0,
-      "evidence_quote": "audit_summary.json includes all required fields with total_keys=12, compliant_before=2, compliant_after=12, seven screenshots, signals_captured=11.",
+      "evidence_quote": "audit_summary.json contains all 7 required fields, lists all screenshots, and reports 14 signals matching the log count.",
       "missing_or_wrong": "",
       "fake_signal": false,
       "unstaged_evidence": false
     }
   ],
   "dimensions": {
-    "task_completion": {"score": 0.88, "reason": "Core audit/remediate/re-audit loop is complete: baseline_dump.txt, audit_before.json, dconf_signals.log, audit_after.json, dconf_after_dump.ini, report, and summary all exist and mostly satisfy the spec. Main deductions are view_01_dconf_interface.png missing the requested key-list plus right-side panel, duplicate screenshot reuse for view_01/view_03 and view_04/view_07, and policy_diff.txt being a noisy cross-format diff."},
-    "deliverable_correctness": {"score": 0.88, "reason": "Mean per-artifact correctness is about 0.88. Text/JSON artifacts and final compliance are strong, but view_01_dconf_interface.png scores 0.60, view_06_dconf_watch.png has only partial command-prompt evidence, view_07_dconf_verified.png is copied from view_04, and policy_diff.txt is only partially meaningful."},
-    "deliverable_quality": {"score": 0.84, "reason": "All required files exist and parse/open; PNGs are 1920×1080 and >5KB. Quality is reduced by only 5 unique screenshot md5s for 7 required images and a weak/noisy diff format."},
-    "evidence_authenticity": {"score": 0.8, "reason": "No PIL/ImageDraw/LD_PRELOAD/gt-read fabrication was found and screenshots are real desktop captures. However chat shows cp reuse for view_01 from view_03 and view_07 from view_04, so screenshot evidence is not fully independent."},
-    "tool_use_correctness": {"score": 0.85, "reason": "The agent used gsettings, dconf watch, dconf dump, dconf-editor/terminal screenshots, and corrected root-vs-user session context. Deductions: it relied on shell screenshot copies for some GUI deliverables instead of independently navigating/capturing each required view, and policy_diff compares mismatched formats."},
-    "final_state_correctness": {"score": 0.93, "reason": "audit_after.json reports 12/12 COMPLIANT and all actual values match gt/expected.json; dconf_after_dump.ini shows edited keys under interface/privacy/lockdown. Final GUI proof is somewhat weakened because view_07 is a duplicate of view_04."},
-    "efficiency_robustness": {"score": 0.8, "reason": "The agent recovered from the root/user session mismatch and permission issue, and verified files at the end. It was less robust in GUI evidence collection, reusing screenshots and leaving view_01 without the required key list/right-side panel."},
-    "instruction_following": {"score": 0.78, "reason": "Most deliverable instructions were followed, including all filenames under results and required JSON/report fields. Deductions for duplicate screenshots despite md5 uniqueness anti-cheat rubric, view_01 not matching exact visual spec, and a copied final verification screenshot."}
+    "task_completion": {
+      "score": 0.94,
+      "reason": "The rollout completes the baseline → audit → edit → verify loop with audit_after.json at 12/12 COMPLIANT and real dconf signals, but artifact view_01_dconf_interface.png misses the required key-list plus right-side-panel composition. See artifact checks audit_after.json, dconf_signals.log, and view_01_dconf_interface.png."
+    },
+    "deliverable_correctness": {
+      "score": 0.93,
+      "reason": "Most deliverables are correct and fully evidenced; the main correctness gap is view_01_dconf_interface.png, which shows an interface key details page but not the required key list/right-side panel, and policy_diff.txt is noisy because it compares different output formats."
+    },
+    "deliverable_quality": {
+      "score": 0.98,
+      "reason": "All required files exist, parse, and are non-empty; all screenshots are unique 1920x1080 PNGs larger than 5KB. Minor quality deduction for noisy policy_diff.txt and the layout miss in view_01_dconf_interface.png."
+    },
+    "evidence_authenticity": {
+      "score": 0.97,
+      "reason": "Chat trajectory shows real gsettings/dconf commands, real gnome-screenshot captures, and dconf watch output; grep found no PIL/ImageDraw/LD_PRELOAD/mock-service cheat signals beyond the user/developer instruction mentioning /tmp_workspace/gt."
+    },
+    "tool_use_correctness": {
+      "score": 0.95,
+      "reason": "The agent used appropriate gsettings, dconf watch, dconf dump, dconf-editor, and screenshot tooling and verified outputs on disk. It recovered from initial DBus/user-context issues before successful edits."
+    },
+    "final_state_correctness": {
+      "score": 0.96,
+      "reason": "Final audit values exactly match gt/expected.json for all 12 keys, dconf_after_dump.ini contains the edited values, and final verified screenshot shows a modified interface key consistent with the set custom value."
+    },
+    "efficiency_robustness": {
+      "score": 0.9,
+      "reason": "The rollout was robust and verified results, but there were several repeated attempts around DBus/session user context and dconf-editor navigation. No harmful failure persisted."
+    },
+    "instruction_following": {
+      "score": 0.93,
+      "reason": "It followed output-location, verification, screenshot-count, and report requirements, but one explicit visual instruction for view_01_dconf_interface.png was not met: key list plus right-side properties panel together."
+    }
   },
   "is_hack": false,
-  "hack_confidence": 0.55,
-  "hack_patterns": ["DUPLICATE_SCREENSHOT_REUSE"],
-  "hack_evidence_quotes": [
-    "cp /tmp_workspace/results/view_03_dconf_edit_before.png /tmp_workspace/results/view_01_dconf_interface.png",
-    "cp /tmp_workspace/results/view_04_dconf_edit_after.png /tmp_workspace/results/view_07_dconf_verified.png"
-  ],
-  "final_score": 0.845,
-  "summary": "The rollout completed the substantive gsettings audit/remediation loop: before/after audits are well-formed, final values match gt/expected.json, and dconf signals/dump/report/summary are present. The major weaknesses are GUI evidence strictness: view_01 does not show the requested key list plus right-side properties panel, two screenshots are exact duplicates created by cp, and the final verification is not independent. No hidden-GT or fake-render hack was found, but screenshot reuse materially lowers confidence."
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.93,
+  "summary": "The rollout is strong: all required files are present, final audit values match gt/expected.json, dconf watch evidence is real, and six of seven screenshots satisfy their specific visual requirements. The main defect is view_01_dconf_interface.png, which shows a single interface key detail page instead of the required key list plus right-side properties panel, with a smaller deduction for a noisy cross-format policy diff. No hack or fabrication signal was found."
 }
