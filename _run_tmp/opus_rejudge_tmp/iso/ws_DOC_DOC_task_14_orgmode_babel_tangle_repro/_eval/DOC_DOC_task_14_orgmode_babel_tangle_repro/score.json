@@ -1,0 +1,427 @@
+{
+  "artifact_checks": [
+    {
+      "id": "paper.fixed.org",
+      "task_says": "Hard constraints on the main deliverable `/tmp_workspace/results/paper.fixed.org`: Contains `:tangle src/load_data.py`, and `load_data_WRONG.py` no longer appears anywhere in the file. A new Python named block `#+name: helper-mean` is added that defines `def mean(xs): return sum(xs)/len(xs)`; the noweb reference in `compute-means` is changed to `<<helper-mean>>`, and the original `<<missing-helper>>` text is gone. The `:results` header of the `bar-chart` block contains both the `file` and `graphics` keywords (for example, `:results file graphics :file build/figs/means_bar.png`) so that the inline image can be embedded in the buffer. All non-bug lines are preserved unchanged; avoid wholesale rewriting.",
+      "spec_clauses": [
+        "`/tmp_workspace/results/paper.fixed.org` exists as the main deliverable",
+        "Contains `:tangle src/load_data.py`, and `load_data_WRONG.py` no longer appears anywhere in the file",
+        "A new Python named block `#+name: helper-mean` is added that defines `def mean(xs): return sum(xs)/len(xs)`",
+        "The noweb reference in `compute-means` is changed to `<<helper-mean>>`, and the original `<<missing-helper>>` text is gone",
+        "The `:results` header of the `bar-chart` block contains both the `file` and `graphics` keywords",
+        "All non-bug lines are preserved unchanged; avoid wholesale rewriting"
+      ],
+      "clause_results": [
+        {"clause": "`/tmp_workspace/results/paper.fixed.org` exists as the main deliverable", "satisfied": false, "evidence": "results/paper.fixed.org is absent; only original paper.org copies are present."},
+        {"clause": "Contains `:tangle src/load_data.py`, and `load_data_WRONG.py` no longer appears anywhere in the file", "satisfied": false, "evidence": "No fixed file exists to inspect; staged original still contains `:tangle src/load_data_WRONG.py`."},
+        {"clause": "A new Python named block `#+name: helper-mean` is added that defines `def mean(xs): return sum(xs)/len(xs)`", "satisfied": false, "evidence": "No fixed file exists; staged original has no `helper-mean` block."},
+        {"clause": "The noweb reference in `compute-means` is changed to `<<helper-mean>>`, and the original `<<missing-helper>>` text is gone", "satisfied": false, "evidence": "No fixed file exists; staged original still contains `<<missing-helper>>`."},
+        {"clause": "The `:results` header of the `bar-chart` block contains both the `file` and `graphics` keywords", "satisfied": false, "evidence": "No fixed file exists; staged original still says `:results silent`."},
+        {"clause": "All non-bug lines are preserved unchanged; avoid wholesale rewriting", "satisfied": false, "evidence": "Cannot verify preservation because the fixed deliverable is missing."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`find results` shows no paper.fixed.org; chat shows the run stopped after baseline logging with API 403 before any fix was written.",
+      "missing_or_wrong": "Missing main fixed Org file; therefore all required bug fixes and preservation requirements are unmet.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_tangle.log",
+      "task_says": "`baseline_tangle.log` | Combined stdout+stderr of the batch tangle run on the **original** paper.org **before** the fix; must genuinely capture at least one failure signal among the three bugs (`_WRONG` filename / unbound `mean` / unresolved `missing-helper`), and the batch command used must be visible in the log.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/` and is non-empty",
+        "Combined stdout+stderr of the batch tangle run on the original paper.org before the fix",
+        "The batch command used is visible in the log",
+        "Genuinely captures at least one failure signal among `_WRONG` filename / unbound `mean` / unresolved `missing-helper`"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/` and is non-empty", "satisfied": true, "evidence": "results/baseline_tangle.log exists and is 2620 bytes."},
+        {"clause": "Combined stdout+stderr of the batch tangle run on the original paper.org before the fix", "satisfied": true, "evidence": "Log header says `BASELINE BATCH RUN (before fix)` and contains Emacs loading output plus later Python stderr traceback."},
+        {"clause": "The batch command used is visible in the log", "satisfied": true, "evidence": "Log contains `Command: emacs --batch ... --visit=paper.org --funcall org-babel-tangle`."},
+        {"clause": "Genuinely captures at least one failure signal among `_WRONG` filename / unbound `mean` / unresolved `missing-helper`", "satisfied": true, "evidence": "Log lists `load_data_WRONG.py` and includes `NameError: name 'mean' is not defined`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The log contains `Tangled 3 code blocks`, `load_data_WRONG.py`, `python3: can't open file '/tmp_workspace/paper/src/load_data.py'`, and `NameError: name 'mean' is not defined`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_tangle_files.txt",
+      "task_says": "`baseline_tangle_files.txt` | Absolute paths of `src/*.py` actually produced by tangle before the fix (one per line), for comparison with the post-fix artifacts.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains absolute paths",
+        "Lists `src/*.py` actually produced by tangle before the fix",
+        "One path per line"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/baseline_tangle_files.txt is absent."},
+        {"clause": "Contains absolute paths", "satisfied": false, "evidence": "No file exists to inspect."},
+        {"clause": "Lists `src/*.py` actually produced by tangle before the fix", "satisfied": false, "evidence": "No file exists; baseline log lists files, but not this required deliverable with absolute paths."},
+        {"clause": "One path per line", "satisfied": false, "evidence": "No file exists to verify format."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`find results` shows no baseline_tangle_files.txt; chat contains no command writing that file.",
+      "missing_or_wrong": "Missing required comparison file; no absolute one-per-line path list provided.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_tangle.log",
+      "task_says": "`fixed_tangle.log` | Combined stdout+stderr of the batch tangle + execute on paper.org after the fix.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains combined stdout+stderr",
+        "Documents batch tangle after the fix",
+        "Documents execution after the fix"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/fixed_tangle.log is absent."},
+        {"clause": "Contains combined stdout+stderr", "satisfied": false, "evidence": "No file exists."},
+        {"clause": "Documents batch tangle after the fix", "satisfied": false, "evidence": "No fixed run log is staged; chat shows only baseline tangle before 403 errors."},
+        {"clause": "Documents execution after the fix", "satisfied": false, "evidence": "No execution-after-fix evidence exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results and no chat evidence of successful fixed tangle/execute.",
+      "missing_or_wrong": "Missing required post-fix batch tangle+execute log.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pandoc.log",
+      "task_says": "`pandoc.log` | Combined stdout+stderr of exporting the fixed paper.org to HTML.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains combined stdout+stderr",
+        "Corresponds to exporting the fixed paper.org to HTML"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/pandoc.log is absent."},
+        {"clause": "Contains combined stdout+stderr", "satisfied": false, "evidence": "No file exists."},
+        {"clause": "Corresponds to exporting the fixed paper.org to HTML", "satisfied": false, "evidence": "No pandoc export command or log completion appears after the baseline run."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; chat stopped before export.",
+      "missing_or_wrong": "Missing required pandoc export log.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "paper.html",
+      "task_says": "`paper.html` | HTML exported from the fixed paper.org; byte count ≥ 1500, body contains keywords such as `Iris` / `setosa` / `versicolor`, and formulas can be rendered by the browser in MathJax typeset form.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "HTML exported from the fixed paper.org",
+        "Byte count ≥ 1500",
+        "Body contains keywords such as `Iris` / `setosa` / `versicolor`",
+        "Formulas can be rendered by the browser in MathJax typeset form"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/paper.html is absent."},
+        {"clause": "HTML exported from the fixed paper.org", "satisfied": false, "evidence": "No HTML exists and no fixed Org file exists."},
+        {"clause": "Byte count ≥ 1500", "satisfied": false, "evidence": "No file exists; byte count is unavailable."},
+        {"clause": "Body contains keywords such as `Iris` / `setosa` / `versicolor`", "satisfied": false, "evidence": "No file exists to inspect."},
+        {"clause": "Formulas can be rendered by the browser in MathJax typeset form", "satisfied": false, "evidence": "No HTML or browser evidence exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; no exported HTML artifact staged.",
+      "missing_or_wrong": "Missing required exported HTML report and all size/keyword/MathJax requirements are unmet.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "means.txt",
+      "task_says": "`means.txt` | Three lines of key/value (4 decimal places is sufficient): `setosa_mean <num>` / `versicolor_mean <num>` / `delta <num>`; the numbers must be produced by the real pipeline and fall within the intervals given by the GT.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Contains three key/value lines: `setosa_mean <num>`, `versicolor_mean <num>`, `delta <num>`",
+        "Values are produced by the real pipeline",
+        "Values fall within GT intervals: setosa 4.85-5.10, versicolor 5.85-6.05, delta 0.85-1.10"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/means.txt is absent."},
+        {"clause": "Contains three key/value lines: `setosa_mean <num>`, `versicolor_mean <num>`, `delta <num>`", "satisfied": false, "evidence": "No file exists."},
+        {"clause": "Values are produced by the real pipeline", "satisfied": false, "evidence": "No post-fix execution log or means file exists."},
+        {"clause": "Values fall within GT intervals: setosa 4.85-5.10, versicolor 5.85-6.05, delta 0.85-1.10", "satisfied": false, "evidence": "No numeric values are available to compare."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; baseline failure log never produced valid means.",
+      "missing_or_wrong": "Missing required numeric means file; cannot validate pipeline or GT intervals.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "repro_hash.json",
+      "task_says": "`repro_hash.json` | `{\"fig_sha256\": \"<hex64>\", \"fig_bytes\": <int>, \"html_bytes\": <int>}`; `fig_sha256` must equal the actual sha256 of `/tmp_workspace/paper/build/figs/means_bar.png`, and `fig_bytes` / `html_bytes` must be the actual file byte sizes.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "JSON schema has `fig_sha256` hex64 string, `fig_bytes` int, and `html_bytes` int",
+        "`fig_sha256` equals actual sha256 of `/tmp_workspace/paper/build/figs/means_bar.png`",
+        "`fig_bytes` and `html_bytes` are actual file byte sizes"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/repro_hash.json is absent."},
+        {"clause": "JSON schema has `fig_sha256` hex64 string, `fig_bytes` int, and `html_bytes` int", "satisfied": false, "evidence": "No JSON file exists to parse."},
+        {"clause": "`fig_sha256` equals actual sha256 of `/tmp_workspace/paper/build/figs/means_bar.png`", "satisfied": false, "evidence": "No hash file or figure artifact exists."},
+        {"clause": "`fig_bytes` and `html_bytes` are actual file byte sizes", "satisfied": false, "evidence": "No hash JSON, figure, or HTML artifact exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; there are no corresponding fig/html artifacts to hash.",
+      "missing_or_wrong": "Missing required reproducibility hash JSON.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "notes.md",
+      "task_says": "`notes.md` | ≥ 200 characters, describing how the three bugs were located: which one was first exposed in the batch log, which one could only be observed from interactive rendering signals (font-lock / minibuffer / inline image preview). Write this based on what you actually saw, not by copying from the task statement.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Length is ≥ 200 characters",
+        "Describes how the three bugs were located",
+        "States which bug was first exposed in the batch log",
+        "States which bug could only be observed from interactive rendering signals (font-lock / minibuffer / inline image preview)",
+        "Based on what was actually seen, not copied from the task statement"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/notes.md is absent."},
+        {"clause": "Length is ≥ 200 characters", "satisfied": false, "evidence": "No file exists; length is 0 for grading purposes."},
+        {"clause": "Describes how the three bugs were located", "satisfied": false, "evidence": "No notes file exists."},
+        {"clause": "States which bug was first exposed in the batch log", "satisfied": false, "evidence": "No notes file exists."},
+        {"clause": "States which bug could only be observed from interactive rendering signals (font-lock / minibuffer / inline image preview)", "satisfied": false, "evidence": "No notes file exists; no interactive screenshots were produced."},
+        {"clause": "Based on what was actually seen, not copied from the task statement", "satisfied": false, "evidence": "No authored notes exist to evaluate."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results.",
+      "missing_or_wrong": "Missing required ≥200-character notes with bug-location narrative.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "src/load_data.py",
+      "task_says": "You must also produce real derived artifacts under `/tmp_workspace/paper/`: `src/load_data.py` / `src/compute_means.py` / `src/plot_bar.py` — source files produced by tangling the fixed paper.org. Old artifacts such as `src/load_data_WRONG.py` must not remain.",
+      "spec_clauses": [
+        "`/tmp_workspace/paper/src/load_data.py` exists as a real derived artifact",
+        "It is produced by tangling the fixed paper.org",
+        "Old artifact `src/load_data_WRONG.py` must not remain"
+      ],
+      "clause_results": [
+        {"clause": "`/tmp_workspace/paper/src/load_data.py` exists as a real derived artifact", "satisfied": false, "evidence": "No staged paper/src/load_data.py artifact exists; baseline log explicitly says `python3: can't open file '/tmp_workspace/paper/src/load_data.py'`."},
+        {"clause": "It is produced by tangling the fixed paper.org", "satisfied": false, "evidence": "No fixed paper.org or post-fix tangle log exists."},
+        {"clause": "Old artifact `src/load_data_WRONG.py` must not remain", "satisfied": false, "evidence": "Baseline log lists `load_data_WRONG.py`; no post-fix cleanup evidence exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No fixed-derived source artifact is staged; chat only proves the pre-fix WRONG file was created.",
+      "missing_or_wrong": "Missing fixed `src/load_data.py`; old wrong filename remains in baseline evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "src/compute_means.py",
+      "task_says": "You must also produce real derived artifacts under `/tmp_workspace/paper/`: `src/load_data.py` / `src/compute_means.py` / `src/plot_bar.py` — source files produced by tangling the fixed paper.org. Old artifacts such as `src/load_data_WRONG.py` must not remain.",
+      "spec_clauses": [
+        "`/tmp_workspace/paper/src/compute_means.py` exists as a real derived artifact",
+        "It is produced by tangling the fixed paper.org",
+        "It reflects the fixed helper-mean noweb expansion rather than unbound `mean`"
+      ],
+      "clause_results": [
+        {"clause": "`/tmp_workspace/paper/src/compute_means.py` exists as a real derived artifact", "satisfied": false, "evidence": "No staged fixed `paper/src/compute_means.py` exists."},
+        {"clause": "It is produced by tangling the fixed paper.org", "satisfied": false, "evidence": "No fixed tangle log exists."},
+        {"clause": "It reflects the fixed helper-mean noweb expansion rather than unbound `mean`", "satisfied": false, "evidence": "Baseline log shows pre-fix `compute_means.py` failed with `NameError: name 'mean' is not defined`; no fixed source is available."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Only pre-fix failure evidence exists; no fixed-derived compute_means.py was staged.",
+      "missing_or_wrong": "Missing fixed `src/compute_means.py` with helper definition/expansion.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "src/plot_bar.py",
+      "task_says": "You must also produce real derived artifacts under `/tmp_workspace/paper/`: `src/load_data.py` / `src/compute_means.py` / `src/plot_bar.py` — source files produced by tangling the fixed paper.org. Old artifacts such as `src/load_data_WRONG.py` must not remain.",
+      "spec_clauses": [
+        "`/tmp_workspace/paper/src/plot_bar.py` exists as a real derived artifact",
+        "It is produced by tangling the fixed paper.org",
+        "It supports producing the bar chart under `build/figs/means_bar.png`"
+      ],
+      "clause_results": [
+        {"clause": "`/tmp_workspace/paper/src/plot_bar.py` exists as a real derived artifact", "satisfied": false, "evidence": "No staged fixed `paper/src/plot_bar.py` exists."},
+        {"clause": "It is produced by tangling the fixed paper.org", "satisfied": false, "evidence": "No fixed tangle log exists."},
+        {"clause": "It supports producing the bar chart under `build/figs/means_bar.png`", "satisfied": false, "evidence": "No post-fix plot execution or PNG exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Only baseline listing mentioned a pre-fix plot_bar.py; no fixed-derived source artifact was staged or verified.",
+      "missing_or_wrong": "Missing fixed `src/plot_bar.py` and no generated chart evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build/figs/means_bar.png",
+      "task_says": "You must also produce real derived artifacts under `/tmp_workspace/paper/`: `build/figs/means_bar.png` — the bar chart PNG produced by the bar-chart block; file size ≥ 5 KB.",
+      "spec_clauses": [
+        "`/tmp_workspace/paper/build/figs/means_bar.png` exists",
+        "PNG is produced by the bar-chart block",
+        "File size ≥ 5 KB",
+        "It is a bar chart for the means"
+      ],
+      "clause_results": [
+        {"clause": "`/tmp_workspace/paper/build/figs/means_bar.png` exists", "satisfied": false, "evidence": "No means_bar.png is present in staged artifacts."},
+        {"clause": "PNG is produced by the bar-chart block", "satisfied": false, "evidence": "No fixed execution log or PNG exists."},
+        {"clause": "File size ≥ 5 KB", "satisfied": false, "evidence": "No file exists; size unavailable."},
+        {"clause": "It is a bar chart for the means", "satisfied": false, "evidence": "No image exists to view."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No PNG artifact exists; image-view could not be run because there is no file.",
+      "missing_or_wrong": "Missing required generated bar chart PNG.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_emacs_fontlock.png",
+      "task_says": "`view_emacs_fontlock.png`: full-window screenshot of paper.org opened in an interactive Org-mode editor, showing the editor main window (title bar + modeline), syntax highlighting on at least 2 `#+begin_src` blocks, and a visible `#+TITLE:` line.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Full-window screenshot of paper.org opened in an interactive Org-mode editor",
+        "Shows editor main window with title bar and modeline",
+        "Shows syntax highlighting on at least 2 `#+begin_src` blocks",
+        "Shows a visible `#+TITLE:` line",
+        "Must come from a real interactive UI, not pure-white/collage/placeholder"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/view_emacs_fontlock.png is absent."},
+        {"clause": "Full-window screenshot of paper.org opened in an interactive Org-mode editor", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "Shows editor main window with title bar and modeline", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Shows syntax highlighting on at least 2 `#+begin_src` blocks", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Shows a visible `#+TITLE:` line", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Must come from a real interactive UI, not pure-white/collage/placeholder", "satisfied": false, "evidence": "No screenshot exists; authenticity cannot be established."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing screenshot; no image to view.",
+      "missing_or_wrong": "Missing required Emacs font-lock screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_emacs_tangle_msg.png",
+      "task_says": "`view_emacs_tangle_msg.png`: screenshot taken after triggering tangle in the interactive editor, showing the status/message area with the word `Tangled` and the block count / file count.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Screenshot is taken after triggering tangle in the interactive editor",
+        "Shows status/message area with the word `Tangled`",
+        "Shows block count / file count",
+        "Must come from a real interactive UI, not pure-white/collage/placeholder"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/view_emacs_tangle_msg.png is absent."},
+        {"clause": "Screenshot is taken after triggering tangle in the interactive editor", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Shows status/message area with the word `Tangled`", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Shows block count / file count", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Must come from a real interactive UI, not pure-white/collage/placeholder", "satisfied": false, "evidence": "No screenshot exists; authenticity cannot be established."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing screenshot; no image to view.",
+      "missing_or_wrong": "Missing required interactive tangle message screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_emacs_inline_image.png",
+      "task_says": "`view_emacs_inline_image.png`: screenshot taken with inline image display enabled in the editor and focused near the `#+RESULTS: bar-chart` block; the image must **visually** show the means_bar bar chart embedded in the buffer, not appearing as the text link `[[file:...]]`.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Screenshot is taken with inline image display enabled in the editor",
+        "Focused near the `#+RESULTS: bar-chart` block",
+        "Visually shows the means_bar bar chart embedded in the buffer",
+        "Does not merely show the text link `[[file:...]]`",
+        "Must come from a real interactive UI, not pure-white/collage/placeholder"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/view_emacs_inline_image.png is absent."},
+        {"clause": "Screenshot is taken with inline image display enabled in the editor", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Focused near the `#+RESULTS: bar-chart` block", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Visually shows the means_bar bar chart embedded in the buffer", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Does not merely show the text link `[[file:...]]`", "satisfied": false, "evidence": "No image file exists; cannot verify embedded chart."},
+        {"clause": "Must come from a real interactive UI, not pure-white/collage/placeholder", "satisfied": false, "evidence": "No screenshot exists; authenticity cannot be established."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing screenshot; no image to view.",
+      "missing_or_wrong": "Missing required inline-image proof screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_browser_mathjax.png",
+      "task_says": "`view_browser_mathjax.png`: full-window screenshot of `paper.html` opened in a browser, showing the browser main window + document body + math formulas (e.g., `\\bar{x}`, `\\Delta`) rendered as typeset math symbols, not as raw LaTeX source with backslashes.",
+      "spec_clauses": [
+        "File exists under `/tmp_workspace/results/`",
+        "Full-window screenshot of `paper.html` opened in a browser",
+        "Shows browser main window and document body",
+        "Shows math formulas such as `\\bar{x}` and `\\Delta` rendered as typeset math symbols",
+        "Does not show raw LaTeX source with backslashes",
+        "Must come from a real interactive UI, not pure-white/collage/placeholder"
+      ],
+      "clause_results": [
+        {"clause": "File exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "results/view_browser_mathjax.png is absent."},
+        {"clause": "Full-window screenshot of `paper.html` opened in a browser", "satisfied": false, "evidence": "No image file exists and paper.html is also missing."},
+        {"clause": "Shows browser main window and document body", "satisfied": false, "evidence": "No image file exists."},
+        {"clause": "Shows math formulas such as `\\bar{x}` and `\\Delta` rendered as typeset math symbols", "satisfied": false, "evidence": "No image file exists; cannot verify MathJax rendering."},
+        {"clause": "Does not show raw LaTeX source with backslashes", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "Must come from a real interactive UI, not pure-white/collage/placeholder", "satisfied": false, "evidence": "No screenshot exists; authenticity cannot be established."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing screenshot; no image to view.",
+      "missing_or_wrong": "Missing required browser MathJax screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.08, "reason": "Only artifact_check baseline_tangle.log is complete. The main fixed file, post-fix logs, HTML, numeric outputs, hashes, real derived artifacts, and all four screenshots are missing."},
+    "deliverable_correctness": {"score": 0.06, "reason": "Mean correctness across the 17 required artifacts is approximately 1/17: baseline_tangle.log scored 1.0, while every other required deliverable scored 0.0."},
+    "deliverable_quality": {"score": 0.08, "reason": "The one delivered required log is readable and relevant, but almost all required files are absent and therefore fail existence/format checks."},
+    "evidence_authenticity": {"score": 0.8, "reason": "No fake-image or hardcoded-result pattern was found. The baseline log appears to reflect real Emacs/Python output, but there is virtually no final evidence to authenticate."},
+    "tool_use_correctness": {"score": 0.35, "reason": "The rollout used appropriate tools for setup and baseline Emacs batch tangle, but never completed the required fix, export, hash, or interactive screenshot workflow."},
+    "final_state_correctness": {"score": 0.0, "reason": "Final state is not correct: paper.fixed.org is missing, the bugs remain in staged original paper.org, and no post-fix artifacts or visual sign-off exist."},
+    "efficiency_robustness": {"score": 0.2, "reason": "The agent recovered from missing Emacs/pandoc by installing them and captured a baseline log, but then stalled/failed after authentication errors without producing the requested deliverables."},
+    "instruction_following": {"score": 0.2, "reason": "The baseline-log part of the instructions was partly followed, but explicit requirements for all supporting deliverables, real derived artifacts, screenshots, fixed Org, export, notes, and hashes were not fulfilled."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.06,
+  "summary": "The rollout completed only the baseline failure log, which genuinely shows the wrong tangle filename and unbound `mean` error. It did not produce the fixed Org file, post-fix execution/export artifacts, means, hashes, real derived files, notes, or any of the required GUI/browser screenshots, so overall correctness is extremely low."
+}
