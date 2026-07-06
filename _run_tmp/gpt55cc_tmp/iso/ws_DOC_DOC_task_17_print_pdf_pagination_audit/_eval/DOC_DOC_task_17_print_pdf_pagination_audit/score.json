@@ -1,0 +1,503 @@
+{
+  "artifact_checks": [
+    {
+      "id": "baseline_weasy.pdf",
+      "task_says": "`baseline_weasy.pdf` / `baseline_chromium.pdf` | PDFs rendered by each pipeline with the unfixed CSS; > 1 KB, page count readable by structured tools; in the baseline stage the page-count difference between the two sides **should be ≥ 2**",
+      "spec_clauses": [
+        "PDF rendered by the weasy pipeline with the unfixed CSS",
+        "file size is > 1 KB",
+        "page count is readable by structured tools",
+        "in the baseline stage the page-count difference between the two sides should be ≥ 2"
+      ],
+      "clause_results": [
+        {"clause": "PDF rendered by the weasy pipeline with the unfixed CSS", "satisfied": true, "evidence": "baseline_weasy.pdf exists; chat shows `weasyprint /tmp_workspace/article/longform_article.html /tmp_workspace/results/baseline_weasy.pdf`; source CSS under results has no fixes."},
+        {"clause": "file size is > 1 KB", "satisfied": true, "evidence": "stat size is 27516 bytes."},
+        {"clause": "page count is readable by structured tools", "satisfied": true, "evidence": "pdfinfo reports Pages: 5 and A4 page size."},
+        {"clause": "in the baseline stage the page-count difference between the two sides should be ≥ 2", "satisfied": false, "evidence": "pdfinfo reports both baseline_weasy.pdf and baseline_chromium.pdf have 5 pages, so difference is 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "Observed baseline_weasy.pdf: 27516 bytes, pdfinfo Pages: 5, Page size: A4; paired baseline_chromium.pdf also has 5 pages, violating the expected baseline drift ≥2.",
+      "missing_or_wrong": "Baseline page-count difference is 0, not ≥ 2.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_chromium.pdf",
+      "task_says": "`baseline_weasy.pdf` / `baseline_chromium.pdf` | PDFs rendered by each pipeline with the unfixed CSS; > 1 KB, page count readable by structured tools; in the baseline stage the page-count difference between the two sides **should be ≥ 2**",
+      "spec_clauses": [
+        "PDF rendered by the chromium pipeline with the unfixed CSS",
+        "file size is > 1 KB",
+        "page count is readable by structured tools",
+        "in the baseline stage the page-count difference between the two sides should be ≥ 2"
+      ],
+      "clause_results": [
+        {"clause": "PDF rendered by the chromium pipeline with the unfixed CSS", "satisfied": true, "evidence": "baseline_chromium.pdf exists; log says 94085 bytes written to /tmp_workspace/results/baseline_chromium.pdf."},
+        {"clause": "file size is > 1 KB", "satisfied": true, "evidence": "stat size is 94085 bytes."},
+        {"clause": "page count is readable by structured tools", "satisfied": true, "evidence": "pdfinfo reports Pages: 5 and letter page size."},
+        {"clause": "in the baseline stage the page-count difference between the two sides should be ≥ 2", "satisfied": false, "evidence": "pdfinfo reports both baseline PDFs have 5 pages, so difference is 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "Observed baseline_chromium.pdf: 94085 bytes, pdfinfo Pages: 5, Page size: letter; paired baseline_weasy.pdf also has 5 pages, violating the expected baseline drift ≥2.",
+      "missing_or_wrong": "Baseline page-count difference is 0, not ≥ 2.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_weasy.log",
+      "task_says": "`baseline_weasy.log` / `baseline_chromium.log` | Full stdout+stderr of the above two renders",
+      "spec_clauses": [
+        "log file for the baseline weasy render exists",
+        "contains full stdout+stderr of the render",
+        "is a usable non-empty evidence artifact"
+      ],
+      "clause_results": [
+        {"clause": "log file for the baseline weasy render exists", "satisfied": true, "evidence": "baseline_weasy.log exists in results/."},
+        {"clause": "contains full stdout+stderr of the render", "satisfied": "partial", "evidence": "The final file is 0 bytes; Weasy may have emitted no output, but this gives no positive render trace."},
+        {"clause": "is a usable non-empty evidence artifact", "satisfied": false, "evidence": "stat size is 0 bytes."}
+      ],
+      "exists": true,
+      "format_ok": false,
+      "correctness": 0.5,
+      "evidence_quote": "baseline_weasy.log exists but is empty (0 bytes), so it is weak evidence for the render despite the PDF existing.",
+      "missing_or_wrong": "Empty log; no stdout/stderr content to inspect.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_chromium.log",
+      "task_says": "`baseline_weasy.log` / `baseline_chromium.log` | Full stdout+stderr of the above two renders",
+      "spec_clauses": [
+        "log file for the baseline chromium render exists",
+        "contains stdout/stderr from the render command",
+        "records successful output or equivalent render evidence"
+      ],
+      "clause_results": [
+        {"clause": "log file for the baseline chromium render exists", "satisfied": true, "evidence": "baseline_chromium.log exists and is 182 bytes."},
+        {"clause": "contains stdout/stderr from the render command", "satisfied": true, "evidence": "Contains libva stderr and Chrome output message."},
+        {"clause": "records successful output or equivalent render evidence", "satisfied": true, "evidence": "Log says `94085 bytes written to file /tmp_workspace/results/baseline_chromium.pdf` and `[exit_status] 0`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "baseline_chromium.log includes Chrome stderr plus `94085 bytes written...` and `[exit_status] 0`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_pages.jsonl",
+      "task_says": "`baseline_pages.jsonl` | Exactly two JSON Lines, schema `{\"engine\":\"weasy\"|\"chromium\",\"pages\":<int>,\"sha256\":\"<hex>\"}`; `pages` truly read from PDF metadata, `sha256` is the sha256 of the corresponding PDF byte stream",
+      "spec_clauses": [
+        "exactly two JSON Lines",
+        "each line has engine equal to weasy or chromium",
+        "each line has integer pages truly matching PDF metadata",
+        "each line has sha256 matching the corresponding PDF byte stream"
+      ],
+      "clause_results": [
+        {"clause": "exactly two JSON Lines", "satisfied": true, "evidence": "File contains two non-empty JSONL records."},
+        {"clause": "each line has engine equal to weasy or chromium", "satisfied": true, "evidence": "Records have engines `weasy` and `chromium`."},
+        {"clause": "each line has integer pages truly matching PDF metadata", "satisfied": true, "evidence": "Both records say pages=5, matching pdfinfo for both baseline PDFs."},
+        {"clause": "each line has sha256 matching the corresponding PDF byte stream", "satisfied": true, "evidence": "sha256sum output matches the two recorded hashes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "baseline_pages.jsonl has two valid records: weasy pages 5 sha256 10393c..., chromium pages 5 sha256 26ce5f..., both matching pdfinfo/sha256sum.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_text_diff.txt",
+      "task_says": "`baseline_text_diff.txt` | First 200 lines of unified diff between the two baseline PDFs after extracting text with layout preservation split by form-feed; contains ≥ 8 lines of real diff (starting with `+` or `-` and not the `+++`/`---` file headers), of which ≥ 2 lines hit section names / Figure / page numbers / form-feed markers",
+      "spec_clauses": [
+        "is a unified diff of extracted baseline PDF text",
+        "uses layout-preserved text split by form-feed",
+        "contains at least 8 real +/- diff lines excluding headers",
+        "at least 2 diff lines hit section names / Figure / page numbers / form-feed markers",
+        "is limited to the first 200 diff lines"
+      ],
+      "clause_results": [
+        {"clause": "is a unified diff of extracted baseline PDF text", "satisfied": true, "evidence": "File begins with `--- baseline_weasy.txt`, `+++ baseline_chromium.txt`, and a unified diff hunk."},
+        {"clause": "uses layout-preserved text split by form-feed", "satisfied": true, "evidence": "Source work text files contain form-feed page breaks; diff includes the layout-preserved extracted text structure."},
+        {"clause": "contains at least 8 real +/- diff lines excluding headers", "satisfied": true, "evidence": "The shown excerpt contains far more than 8 minus lines and plus lines."},
+        {"clause": "at least 2 diff lines hit section names / Figure / page numbers / form-feed markers", "satisfied": true, "evidence": "Diff lines include `Foreword`, `1. Background`, `Figure 1`, `2. Materials`, `3. Methods`, etc."},
+        {"clause": "is limited to the first 200 diff lines", "satisfied": true, "evidence": "Generation command in chat sliced `[:200]`; file excerpt is a 200-line unified diff."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "baseline_text_diff.txt is a valid unified diff with many real +/- lines and section/Figure signals such as `Figure 1` and numbered headings.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "weasy_pages/page-*.png",
+      "task_says": "`weasy_pages/page-*.png` | Per-page rasterized bitmaps of `baseline_weasy.pdf` (DPI ≈ 90), ≥ 3 images, file names like `page-1.png` / `page-2.png` / …",
+      "spec_clauses": [
+        "directory contains per-page rasterized bitmaps of baseline_weasy.pdf",
+        "DPI is approximately 90",
+        "contains at least 3 images",
+        "file names follow page-1.png / page-2.png / … pattern",
+        "images are readable raster pages rather than placeholders"
+      ],
+      "clause_results": [
+        {"clause": "directory contains per-page rasterized bitmaps of baseline_weasy.pdf", "satisfied": true, "evidence": "Five page PNGs exist; visual inspection shows the same Northern Survey PDF pages."},
+        {"clause": "DPI is approximately 90", "satisfied": true, "evidence": "Chat command used `pdftoppm -png -r 90`; image dimensions/softness are consistent with raster PDF pages."},
+        {"clause": "contains at least 3 images", "satisfied": true, "evidence": "page-1.png through page-5.png exist."},
+        {"clause": "file names follow page-1.png / page-2.png / … pattern", "satisfied": true, "evidence": "Files are named page-1.png, page-2.png, page-3.png, page-4.png, page-5.png."},
+        {"clause": "images are readable raster pages rather than placeholders", "satisfied": true, "evidence": "One-by-one image inspection shows real document pages with headers, sections, figures/captions, and readable text."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Five PNGs exist and image inspection of each page shows clean rasterized Northern Survey PDF pages with figures/captions and text.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "preview_save.pdf",
+      "task_says": "`preview_save.pdf` | PDF exported through the browser print-preview pane's *Save as PDF* channel; > 5 KB and sha256 **different** from `baseline_chromium.pdf` (must come from the rendered-state channel; do not overwrite this file name with a headless PDF output)",
+      "spec_clauses": [
+        "preview_save.pdf exists under results/",
+        "file size is > 5 KB",
+        "sha256 differs from baseline_chromium.pdf",
+        "was exported through the browser print-preview pane Save as PDF channel"
+      ],
+      "clause_results": [
+        {"clause": "preview_save.pdf exists under results/", "satisfied": false, "evidence": "No preview_save.pdf in results file listing."},
+        {"clause": "file size is > 5 KB", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "sha256 differs from baseline_chromium.pdf", "satisfied": false, "evidence": "File is absent; cannot compare."},
+        {"clause": "was exported through the browser print-preview pane Save as PDF channel", "satisfied": false, "evidence": "chat grep shows only TODO text for capturing preview evidence; no successful save/export command or UI evidence."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; chat only shows the agent planned GUI capture/export and never produced it.",
+      "missing_or_wrong": "Entire preview_save.pdf deliverable missing; no Save as PDF channel evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "article.fixed.css",
+      "task_says": "`article.fixed.css` | A minimal-patch copy of `/tmp_workspace/article/article.css`, modifying only the 3 bugs and leaving all other non-bug lines as-is (the grader checks that non-bug lines are preserved at ≥ 80%): • **bug-A** — the `@page { ... }` block contains both an explicit `size: Letter` (or `A4`) and `margin: ...` • **bug-B** — the `figure` selector contains `break-inside: avoid` (or alias `page-break-inside: avoid`) • **bug-C** — the `h2` selector contains `break-before: page`/`always` (or alias `page-break-before: always`) Wholesale CSS rewrites are not allowed",
+      "spec_clauses": [
+        "article.fixed.css exists under results/",
+        "is a minimal-patch copy preserving at least 80% of non-bug lines",
+        "@page block contains explicit size: Letter or A4",
+        "@page block contains margin",
+        "figure selector contains break-inside: avoid or page-break-inside: avoid",
+        "h2 selector contains break-before: page/always or page-break-before: always",
+        "wholesale CSS rewrite is not used"
+      ],
+      "clause_results": [
+        {"clause": "article.fixed.css exists under results/", "satisfied": false, "evidence": "No article.fixed.css in results listing."},
+        {"clause": "is a minimal-patch copy preserving at least 80% of non-bug lines", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "@page block contains explicit size: Letter or A4", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "@page block contains margin", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "figure selector contains break-inside: avoid or page-break-inside: avoid", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "h2 selector contains break-before: page/always or page-break-before: always", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "wholesale CSS rewrite is not used", "satisfied": false, "evidence": "No fixed CSS exists to evaluate."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; only original article/article.css was copied, with no size/margin, break-inside, or break-before fixes.",
+      "missing_or_wrong": "Entire fixed CSS deliverable missing, including all three required CSS repairs.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_weasy.pdf",
+      "task_says": "`fixed_weasy.pdf` / `fixed_chromium.pdf` + same-name `.log` | PDFs and logs from re-running both engines after applying `article.fixed.css`",
+      "spec_clauses": [
+        "fixed_weasy.pdf exists under results/",
+        "was rendered by the weasy engine after applying article.fixed.css",
+        "file is a readable PDF with structured page count",
+        "participates in final page parity and figure/caption verification"
+      ],
+      "clause_results": [
+        {"clause": "fixed_weasy.pdf exists under results/", "satisfied": false, "evidence": "No fixed_weasy.pdf in results listing."},
+        {"clause": "was rendered by the weasy engine after applying article.fixed.css", "satisfied": false, "evidence": "No article.fixed.css or fixed render command evidence in chat."},
+        {"clause": "file is a readable PDF with structured page count", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "participates in final page parity and figure/caption verification", "satisfied": false, "evidence": "File and pagination_report.json are absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; chat grep found no successful fixed_weasy.pdf creation.",
+      "missing_or_wrong": "Entire fixed weasy PDF deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_chromium.pdf",
+      "task_says": "`fixed_weasy.pdf` / `fixed_chromium.pdf` + same-name `.log` | PDFs and logs from re-running both engines after applying `article.fixed.css`",
+      "spec_clauses": [
+        "fixed_chromium.pdf exists under results/",
+        "was rendered by the chromium engine after applying article.fixed.css",
+        "file is a readable PDF with structured page count",
+        "participates in final page parity and figure/caption verification"
+      ],
+      "clause_results": [
+        {"clause": "fixed_chromium.pdf exists under results/", "satisfied": false, "evidence": "No fixed_chromium.pdf in results listing."},
+        {"clause": "was rendered by the chromium engine after applying article.fixed.css", "satisfied": false, "evidence": "No article.fixed.css or fixed render command evidence in chat."},
+        {"clause": "file is a readable PDF with structured page count", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "participates in final page parity and figure/caption verification", "satisfied": false, "evidence": "File and pagination_report.json are absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; chat grep found no successful fixed_chromium.pdf creation.",
+      "missing_or_wrong": "Entire fixed chromium PDF deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_weasy.log",
+      "task_says": "`fixed_weasy.pdf` / `fixed_chromium.pdf` + same-name `.log` | PDFs and logs from re-running both engines after applying `article.fixed.css`",
+      "spec_clauses": [
+        "fixed_weasy.log exists under results/",
+        "contains stdout+stderr from re-running weasy after applying article.fixed.css"
+      ],
+      "clause_results": [
+        {"clause": "fixed_weasy.log exists under results/", "satisfied": false, "evidence": "No fixed_weasy.log in results listing."},
+        {"clause": "contains stdout+stderr from re-running weasy after applying article.fixed.css", "satisfied": false, "evidence": "No fixed run occurred or was staged."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/ and no chat evidence of successful fixed weasy logging.",
+      "missing_or_wrong": "Entire fixed_weasy.log deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_chromium.log",
+      "task_says": "`fixed_weasy.pdf` / `fixed_chromium.pdf` + same-name `.log` | PDFs and logs from re-running both engines after applying `article.fixed.css`",
+      "spec_clauses": [
+        "fixed_chromium.log exists under results/",
+        "contains stdout+stderr from re-running chromium after applying article.fixed.css"
+      ],
+      "clause_results": [
+        {"clause": "fixed_chromium.log exists under results/", "satisfied": false, "evidence": "No fixed_chromium.log in results listing."},
+        {"clause": "contains stdout+stderr from re-running chromium after applying article.fixed.css", "satisfied": false, "evidence": "No fixed run occurred or was staged."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/ and no chat evidence of successful fixed chromium logging.",
+      "missing_or_wrong": "Entire fixed_chromium.log deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_pages.jsonl",
+      "task_says": "`fixed_pages.jsonl` | Two records with the same schema as baseline (sourced from the fixed PDFs), `|weasy.pages - chromium.pages| <= 1`",
+      "spec_clauses": [
+        "fixed_pages.jsonl exists under results/",
+        "contains two records with baseline schema",
+        "records are sourced from the fixed PDFs",
+        "absolute weasy/chromium page difference is <= 1"
+      ],
+      "clause_results": [
+        {"clause": "fixed_pages.jsonl exists under results/", "satisfied": false, "evidence": "No fixed_pages.jsonl in results listing."},
+        {"clause": "contains two records with baseline schema", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "records are sourced from the fixed PDFs", "satisfied": false, "evidence": "File and fixed PDFs are absent."},
+        {"clause": "absolute weasy/chromium page difference is <= 1", "satisfied": false, "evidence": "No fixed records exist to verify."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; no fixed PDF page metadata was produced.",
+      "missing_or_wrong": "Entire fixed_pages.jsonl deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pagination_report.json",
+      "task_says": "Hard constraints on the main deliverable `pagination_report.json`: schema must include `weasy_pages`, `chromium_pages`, `page_diff_abs`, `parity_ok`, `figure_caption_same_page.{weasy,chromium}`, and `all_figures_intact`; pages must match real page counts of fixed PDFs; `page_diff_abs == |weasy_pages - chromium_pages|`, `parity_ok == (page_diff_abs <= 1)`, and must finally be `true`; figure arrays length must equal actual figure count; `all_figures_intact` is true iff all elements of both arrays are true, and must finally be `true`.",
+      "spec_clauses": [
+        "pagination_report.json exists under results/",
+        "has the exact required schema keys",
+        "weasy_pages and chromium_pages match real fixed PDF page counts",
+        "page_diff_abs equals absolute page-count difference",
+        "parity_ok equals page_diff_abs <= 1 and is finally true",
+        "figure_caption_same_page arrays have length equal to actual figure count (4)",
+        "all elements in both engine arrays are true",
+        "all_figures_intact is true iff all elements are true and is finally true"
+      ],
+      "clause_results": [
+        {"clause": "pagination_report.json exists under results/", "satisfied": false, "evidence": "No pagination_report.json in results listing."},
+        {"clause": "has the exact required schema keys", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "weasy_pages and chromium_pages match real fixed PDF page counts", "satisfied": false, "evidence": "File and fixed PDFs are absent."},
+        {"clause": "page_diff_abs equals absolute page-count difference", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "parity_ok equals page_diff_abs <= 1 and is finally true", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "figure_caption_same_page arrays have length equal to actual figure count (4)", "satisfied": false, "evidence": "File is absent; gt expected figure count is 4 and source HTML has 4 figures."},
+        {"clause": "all elements in both engine arrays are true", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "all_figures_intact is true iff all elements are true and is finally true", "satisfied": false, "evidence": "File is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; no final parity or figure/caption report exists.",
+      "missing_or_wrong": "Entire main report deliverable missing, including all hard-constrained schema and truth values.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "notes.md",
+      "task_says": "`notes.md` | ≥ 250 characters, based on actual run output (do not copy the prompt), describing how you cross-located the `@page` / `figure` / `h2` CSS lines corresponding to bug-A / bug-B / bug-C across the structured channel (PDF metadata + per-page text diff) and the rendered-state channel (print preview + PDF reader sidebar)",
+      "spec_clauses": [
+        "notes.md exists under results/",
+        "contains at least 250 characters",
+        "is based on actual run output rather than copying the prompt",
+        "describes structured-channel localization using PDF metadata and per-page text diff",
+        "describes rendered-state localization using print preview and PDF reader sidebar",
+        "covers @page, figure, and h2 CSS lines"
+      ],
+      "clause_results": [
+        {"clause": "notes.md exists under results/", "satisfied": false, "evidence": "No notes.md in results listing."},
+        {"clause": "contains at least 250 characters", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "is based on actual run output rather than copying the prompt", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "describes structured-channel localization using PDF metadata and per-page text diff", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "describes rendered-state localization using print preview and PDF reader sidebar", "satisfied": false, "evidence": "File is absent and GUI screenshots are absent."},
+        {"clause": "covers @page, figure, and h2 CSS lines", "satisfied": false, "evidence": "File is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; no cross-channel repair notes were produced.",
+      "missing_or_wrong": "Entire notes.md deliverable missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_chromium_preview_before.png",
+      "task_says": "`view_chromium_preview_before.png` | Full-window screenshot after opening `file:///tmp_workspace/article/longform_article.html` in the browser print-preview pane before fixing: contains the main window (title bar + print-preview pane), ≥ 3 multi-page thumbnails, output destination settings area (Save as PDF or similar), and genuinely shows visual evidence of at least one `<figure>` / `<figcaption>` split across pages",
+      "spec_clauses": [
+        "screenshot exists under results/ and is > 3 KB",
+        "is a full-window screenshot of browser print-preview before fixing",
+        "contains main window title bar plus print-preview pane",
+        "shows at least 3 multi-page thumbnails",
+        "shows output destination settings area such as Save as PDF",
+        "genuinely shows a figure/figcaption split across pages"
+      ],
+      "clause_results": [
+        {"clause": "screenshot exists under results/ and is > 3 KB", "satisfied": false, "evidence": "No view_chromium_preview_before.png in results listing."},
+        {"clause": "is a full-window screenshot of browser print-preview before fixing", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "contains main window title bar plus print-preview pane", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "shows at least 3 multi-page thumbnails", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "shows output destination settings area such as Save as PDF", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "genuinely shows a figure/figcaption split across pages", "satisfied": false, "evidence": "File is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; chat only planned GUI capture and never created the screenshot.",
+      "missing_or_wrong": "Entire before-print-preview visual evidence missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_okular_orphan_caption.png",
+      "task_says": "`view_okular_orphan_caption.png` | Full-window screenshot after opening `baseline_weasy.pdf` in a PDF reader, enabling the page-thumbnail sidebar, and navigating to the broken page: contains the main window (with thumbnail sidebar) + an orphan `<figcaption>` in the main display area (caption alone at the top of one page, separated from the figure at the bottom of the previous page)",
+      "spec_clauses": [
+        "screenshot exists under results/ and is > 3 KB",
+        "is a full-window screenshot of baseline_weasy.pdf in a PDF reader",
+        "page-thumbnail sidebar is enabled and visible",
+        "navigated to the broken page",
+        "main display area shows an orphan figcaption alone at top of a page",
+        "caption is separated from the figure at bottom of previous page"
+      ],
+      "clause_results": [
+        {"clause": "screenshot exists under results/ and is > 3 KB", "satisfied": false, "evidence": "No view_okular_orphan_caption.png in results listing."},
+        {"clause": "is a full-window screenshot of baseline_weasy.pdf in a PDF reader", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "page-thumbnail sidebar is enabled and visible", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "navigated to the broken page", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "main display area shows an orphan figcaption alone at top of a page", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "caption is separated from the figure at bottom of previous page", "satisfied": false, "evidence": "File is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; no Okular/PDF-reader screenshot exists.",
+      "missing_or_wrong": "Entire PDF-reader orphan-caption visual evidence missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_chromium_preview_after.png",
+      "task_says": "`view_chromium_preview_after.png` | Full-window screenshot of the print-preview pane after re-rendering with the fixed CSS: ≥ 3 multi-page thumbnails, output destination settings area, all visible figures together with their captions on the same page (no orphaned figures)",
+      "spec_clauses": [
+        "screenshot exists under results/ and is > 3 KB",
+        "is a full-window screenshot of print-preview after re-rendering with fixed CSS",
+        "shows at least 3 multi-page thumbnails",
+        "shows output destination settings area",
+        "all visible figures are together with captions on the same page",
+        "no orphaned figures/captions are visible"
+      ],
+      "clause_results": [
+        {"clause": "screenshot exists under results/ and is > 3 KB", "satisfied": false, "evidence": "No view_chromium_preview_after.png in results listing."},
+        {"clause": "is a full-window screenshot of print-preview after re-rendering with fixed CSS", "satisfied": false, "evidence": "File, fixed CSS, and fixed rendering are absent."},
+        {"clause": "shows at least 3 multi-page thumbnails", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "shows output destination settings area", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "all visible figures are together with captions on the same page", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "no orphaned figures/captions are visible", "satisfied": false, "evidence": "File is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results/; no after-fix print-preview evidence exists.",
+      "missing_or_wrong": "Entire after-print-preview visual evidence missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.25,
+      "reason": "Only the baseline structured artifacts were partially produced (baseline PDFs/logs/pages/diff/weasy_pages). The core repair/re-verification loop is absent: article.fixed.css, fixed PDFs/logs, fixed_pages.jsonl, pagination_report.json, notes.md, preview_save.pdf, and all three GUI screenshots are missing (see article.fixed.css, fixed_weasy.pdf, pagination_report.json, and screenshot artifact checks)."
+    },
+    "deliverable_correctness": {
+      "score": 0.32,
+      "reason": "Mean artifact correctness is about 6.0/19 = 0.32. Several baseline artifacts are correct, but most required deliverables score 0.0, and even the baseline PDFs fail the required baseline page-count difference ≥2 (baseline_weasy.pdf and baseline_chromium.pdf checks)."
+    },
+    "deliverable_quality": {
+      "score": 0.35,
+      "reason": "Existing baseline PDFs, JSONL, diff, and raster PNGs are parseable/readable, but baseline_weasy.log is empty and the majority of required final/GUI artifacts are missing. Missing preview_save.pdf and the three screenshots are major quality failures."
+    },
+    "evidence_authenticity": {
+      "score": 0.65,
+      "reason": "No fabrication/hack signatures were found in chat grep, and the produced baseline PDFs/PNGs look genuine. However, the required rendered-state evidence channel is entirely absent, so authenticity cannot be established for the claimed print-preview/PDF-reader workflow."
+    },
+    "tool_use_correctness": {
+      "score": 0.45,
+      "reason": "The agent used appropriate baseline tools (weasyprint, google-chrome headless print, pdfinfo, pdftotext, pdftoppm) and recovered from a WeasyPrint dependency error, but it did not complete browser preview/PDF reader capture, fixed CSS creation, or fixed rerenders; it also attempted sudo password handling before proceeding."
+    },
+    "final_state_correctness": {
+      "score": 0.15,
+      "reason": "The final state does not match the requested repaired pagination state: no fixed CSS, no fixed PDFs, no final metadata/report, no proof of parity_ok=true or all_figures_intact=true. Only baseline artifacts remain."
+    },
+    "efficiency_robustness": {
+      "score": 0.25,
+      "reason": "The agent made some useful recovery steps for permissions and WeasyPrint/pydyf compatibility, but stopped after baseline production and did not recover toward the actual repair and GUI evidence requirements."
+    },
+    "instruction_following": {
+      "score": 0.25,
+      "reason": "Major explicit deliverable instructions were not followed: all three required screenshots, preview Save-as-PDF, minimal fixed CSS, fixed rerenders, pagination_report.json, and notes.md are missing. The baseline page-count drift expectation is also not met."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.32,
+  "summary": "The rollout produced a credible subset of baseline structured artifacts, including two baseline PDFs, metadata JSONL, text diff, and five rasterized Weasy pages. It failed the central task: no fixed CSS, no fixed PDFs/logs, no pagination_report.json, no notes, no preview_save.pdf, and none of the three required real GUI screenshots; even the baseline PDFs do not show the required ≥2 page-count difference."
+}
