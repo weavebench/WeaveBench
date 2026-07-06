@@ -1,0 +1,140 @@
+{
+  "artifact_checks": [
+    {
+      "id": "room.blend",
+      "task_says": "Hard constraints on the primary deliverable `room.blend`: The filename must be exactly `room.blend` (not `room_scene.blend` or similar). Must contain at least 6 MESH objects whose names can be recognized as synonyms of the following 6 furniture categories: sofa / coffee(table) / tv(stand or console) / dining(table) / chair / nightstand (bedside / sidetable / lamp and similar synonyms are accepted). The xy bounding boxes of the 6 pieces must pairwise not overlap (no clipping); the overall overlap-compliance rate must be ≥ 0.85. Placement orientation and wall clearances must conform to the rules above (tolerance ~ ±50–100 mm). At least 1 piece of furniture must have `distance_to_nearest_wall_mm` within `[0, 200]` (i.e., genuinely flush against a wall). Goal: build a 30 m² rectangular living room (approximately 5 m × 6 m × 2.8 m, with 4 walls + floor + ceiling), arrange the 6 pieces of furniture per the home-layout common sense below, add basic lighting and a camera, render the scene. Overall, the scene should visibly demonstrate: a complete room, no furniture clipping, ≥ 3 large pieces against walls, a walkable aisle through the center, and normal lighting (not all-black / not over-exposed).",
+      "spec_clauses": [
+        "filename must be exactly `room.blend`",
+        "build a 30 m² rectangular living room approximately 5 m × 6 m × 2.8 m with 4 walls + floor + ceiling",
+        "must contain at least 6 MESH objects whose names can be recognized as sofa / coffee(table) / tv(stand or console) / dining(table) / chair / nightstand",
+        "xy bounding boxes of the furniture pieces must pairwise not overlap; overall overlap-compliance rate ≥ 0.85",
+        "sofa against the north wall, ~100 mm clearance from the wall",
+        "TV stand against the south wall, centered horizontally",
+        "coffee table sits between the sofa and the TV stand, centered",
+        "dining table against the east wall with ~800 mm clearance, with the two chairs on either side of it",
+        "nightstand from `floor_lamp.blend` in the corner at the right end of the sofa, flush against the sofa's short side as a side table",
+        "at least 1 piece of furniture has `distance_to_nearest_wall_mm` within [0, 200]",
+        "add basic lighting and a camera",
+        "scene visibly demonstrates complete room, no furniture clipping, ≥ 3 large pieces against walls, walkable aisle through center, and normal lighting"
+      ],
+      "clause_results": [
+        {"clause": "filename must be exactly `room.blend`", "satisfied": true, "evidence": "results/room.blend exists with exact basename and size 5,373,780 bytes."},
+        {"clause": "build a 30 m² rectangular living room approximately 5 m × 6 m × 2.8 m with 4 walls + floor + ceiling", "satisfied": true, "evidence": "create_room.py constructs floor 5×6 m, ceiling at z=2.8, and North/South/East/West walls; room.blend strings include Room_Floor_5m_by_6m and North_Wall."},
+        {"clause": "must contain at least 6 MESH objects whose names can be recognized as sofa / coffee(table) / tv(stand or console) / dining(table) / chair / nightstand", "satisfied": true, "evidence": "room.blend strings show OBSofa_01_North_Wall, OBCoffee_Table_01_Centered, OBTV_Stand_01_South_Wall_Centered, OBDining_Table_01_East_Wall_800mm_Clearance, OBDining_Chair_01/02, OBNightstand_01_Right_End_Of_Sofa."},
+        {"clause": "xy bounding boxes of the furniture pieces must pairwise not overlap; overall overlap-compliance rate ≥ 0.85", "satisfied": true, "evidence": "Agent's verify_room.py output in chat says 'Pairwise XY overlaps: none' for the 7 furniture objects; layout centers are separated consistently with no clipping in top_view."},
+        {"clause": "sofa against the north wall, ~100 mm clearance from the wall", "satisfied": true, "evidence": "layout.csv row Sofa_01_North_Wall has y=2.571 and distance_to_nearest_wall_mm=100; chat verification bbox y max=2.900 against north interior y=3.0."},
+        {"clause": "TV stand against the south wall, centered horizontally", "satisfied": true, "evidence": "layout.csv row TV_Stand_01_South_Wall_Centered has x=0.000, y=-2.606, distance_to_nearest_wall_mm=99."},
+        {"clause": "coffee table sits between the sofa and the TV stand, centered", "satisfied": "partial", "evidence": "layout.csv places Coffee_Table_01_Centered at y=-0.200 between sofa y=2.571 and TV y=-2.606, but x=-0.150 is slightly off the room/TV center rather than exactly centered."},
+        {"clause": "dining table against the east wall with ~800 mm clearance, with the two chairs on either side of it", "satisfied": true, "evidence": "layout.csv has Dining_Table_01_East_Wall_800mm_Clearance distance=800 and chairs at x=0.555 and x=2.130 on opposite sides of dining table x=1.371."},
+        {"clause": "nightstand from `floor_lamp.blend` in the corner at the right end of the sofa, flush against the sofa's short side as a side table", "satisfied": true, "evidence": "create_room.py imports floor_lamp.blend as Nightstand_01_Right_End_Of_Sofa; layout.csv places it near sofa right/east end at x=0.570, y=2.788, distance=0; top_view shows small table to the right of sofa."},
+        {"clause": "at least 1 piece of furniture has `distance_to_nearest_wall_mm` within [0, 200]", "satisfied": true, "evidence": "layout.csv has Sofa=100, Nightstand=0, TV_Stand=99, Dining_Chair_02=41 mm."},
+        {"clause": "add basic lighting and a camera", "satisfied": true, "evidence": "create_room.py adds two AREA lights, one SUN light, Perspective_Camera_Render, and Top_Down_Orthographic_Camera; room.blend strings include camera names."},
+        {"clause": "scene visibly demonstrates complete room, no furniture clipping, ≥ 3 large pieces against walls, walkable aisle through center, and normal lighting", "satisfied": "partial", "evidence": "Geometry/layout evidence supports no clipping and wall placement, and top_view shows aisle, but the perspective render is misframed/occluded by walls and does not visibly show the furniture or complete room interior."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9167,
+      "evidence_quote": "room.blend is present and contains named furniture/room/camera objects; layout.csv and chat verification show sofa 100 mm north, nightstand 0 mm, TV 99 mm south, dining 800 mm east, no pairwise XY overlaps. Main weakness: the saved perspective render suggests the perspective camera/view is poorly framed by wall geometry, so visual demonstration from this artifact is only partial.",
+      "missing_or_wrong": "Coffee table is only slightly off center (x=-0.150); perspective visual demonstration of the complete furnished room is partial because render.png is dominated by walls/ceiling and does not show the furniture.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "render.png",
+      "task_says": "`render.png` | Perspective render, resolution strictly **1920×1080**, with real materials and shadows (grayscale std > 35), file size ≥ 30 KB. Overall, the scene should visibly demonstrate: a complete room, no furniture clipping, ≥ 3 large pieces against walls, a walkable aisle through the center, and normal lighting (not all-black / not over-exposed).",
+      "spec_clauses": [
+        "file is named render.png and exists under results/root deliverables",
+        "Perspective render",
+        "resolution strictly 1920×1080",
+        "with real materials and shadows / grayscale std > 35",
+        "file size ≥ 30 KB",
+        "visibly demonstrates a complete room and furniture layout, not all-black or over-exposed"
+      ],
+      "clause_results": [
+        {"clause": "file is named render.png and exists under results/root deliverables", "satisfied": true, "evidence": "results/render.png exists."},
+        {"clause": "Perspective render", "satisfied": "partial", "evidence": "The image is a perspective camera view, but it is badly occluded/misframed by walls/ceiling and does not function as a useful room perspective render."},
+        {"clause": "resolution strictly 1920×1080", "satisfied": true, "evidence": "PIL reports render.png size (1920, 1080)."},
+        {"clause": "with real materials and shadows / grayscale std > 35", "satisfied": true, "evidence": "PIL/numpy grayscale std is about 80.63; image contains gradients/shadows and non-solid lighting."},
+        {"clause": "file size ≥ 30 KB", "satisfied": true, "evidence": "File size is 1,808,309 bytes."},
+        {"clause": "visibly demonstrates a complete room and furniture layout, not all-black or over-exposed", "satisfied": false, "evidence": "Direct image view shows mostly wall/ceiling planes and a black vertical obstruction; no furniture layout is visible, so it does not demonstrate the furnished room despite normal contrast."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "render.png is 1920×1080, 1.8 MB, and high-contrast (std≈80.6), but visual inspection shows a misframed perspective dominated by white/gray walls and a black vertical band with no visible furniture.",
+      "missing_or_wrong": "Perspective view is poorly framed/occluded; it fails to visibly demonstrate the complete furnished room or furniture layout.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "top_view.png",
+      "task_says": "`top_view.png` | Top-down view screenshot, resolution ≥ **1280×720**, file size ≥ 15 KB; md5 must differ from `render.png` (prevents renaming the same image). Overall, the scene should visibly demonstrate: a complete room, no furniture clipping, ≥ 3 large pieces against walls, a walkable aisle through the center, and normal lighting (not all-black / not over-exposed).",
+      "spec_clauses": [
+        "file is named top_view.png and exists under results/root deliverables",
+        "Top-down view screenshot",
+        "resolution ≥ 1280×720",
+        "file size ≥ 15 KB",
+        "md5 differs from render.png",
+        "visibly demonstrates room layout with no obvious furniture clipping, wall placements, walkable aisle, and normal lighting"
+      ],
+      "clause_results": [
+        {"clause": "file is named top_view.png and exists under results/root deliverables", "satisfied": true, "evidence": "results/top_view.png exists."},
+        {"clause": "Top-down view screenshot", "satisfied": true, "evidence": "Direct image view is an overhead orthographic view of the room/floor and furniture."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "PIL reports top_view.png size (1920, 1080)."},
+        {"clause": "file size ≥ 15 KB", "satisfied": true, "evidence": "File size is 2,043,474 bytes."},
+        {"clause": "md5 differs from render.png", "satisfied": true, "evidence": "top_view md5 432abe07af12626ae2eab1a90867bf0f differs from render md5 718c64f074a64d80dfc3a56bf800f0c1."},
+        {"clause": "visibly demonstrates room layout with no obvious furniture clipping, wall placements, walkable aisle, and normal lighting", "satisfied": "partial", "evidence": "Top view clearly shows sofa, nightstand, dining table and chairs on a lit floor with no obvious clipping and center aisle; however the TV stand and coffee table are not visible in the captured crop/area, so it does not show all required furniture/wall placements."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9167,
+      "evidence_quote": "top_view.png is a distinct 1920×1080 top-down PNG over 15 KB. It shows the sofa/nightstand/dining cluster and aisle clearly, but not all required pieces are visible in the viewed frame.",
+      "missing_or_wrong": "TV stand and coffee table are not visible in the top-view image as inspected, so the full layout is only partially demonstrated.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "layout.csv",
+      "task_says": "`layout.csv` | ≥ 6 rows; header must be `object,x,y,z,rotation_z,distance_to_nearest_wall_mm`; the 6 object names must all be distinct. At least 1 piece of furniture must have `distance_to_nearest_wall_mm` within `[0, 200]`.",
+      "spec_clauses": [
+        "file is named layout.csv and exists under results/root deliverables",
+        "has ≥ 6 data rows",
+        "header must be exactly `object,x,y,z,rotation_z,distance_to_nearest_wall_mm`",
+        "the 6 object names must all be distinct",
+        "at least 1 furniture distance_to_nearest_wall_mm is within [0, 200]",
+        "rows correspond to the required furniture categories/placement data"
+      ],
+      "clause_results": [
+        {"clause": "file is named layout.csv and exists under results/root deliverables", "satisfied": true, "evidence": "results/layout.csv exists and is readable."},
+        {"clause": "has ≥ 6 data rows", "satisfied": true, "evidence": "CSV has 7 data rows: sofa, nightstand, TV stand, coffee table, dining table, and two dining chairs."},
+        {"clause": "header must be exactly `object,x,y,z,rotation_z,distance_to_nearest_wall_mm`", "satisfied": true, "evidence": "First line is exactly object,x,y,z,rotation_z,distance_to_nearest_wall_mm."},
+        {"clause": "the 6 object names must all be distinct", "satisfied": true, "evidence": "All 7 object names are distinct."},
+        {"clause": "at least 1 furniture distance_to_nearest_wall_mm is within [0, 200]", "satisfied": true, "evidence": "Distances include 100, 0, 99, and 41 mm, all within [0,200]."},
+        {"clause": "rows correspond to the required furniture categories/placement data", "satisfied": true, "evidence": "Object names cover Sofa, Nightstand, TV_Stand, Coffee_Table, Dining_Table, Dining_Chair_01, Dining_Chair_02 with plausible x/y/z/rotation/distance values."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "layout.csv has the exact required header, 7 distinct furniture rows, and multiple wall distances within [0,200] including sofa=100, nightstand=0, TV=99.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.86, "reason": "All required files are present and most geometric/format constraints are met across room.blend, top_view.png, and layout.csv, but render.png fails to visually show the furnished room and top_view.png does not show every required piece."},
+    "deliverable_correctness": {"score": 0.8958, "reason": "Mean artifact correctness: room.blend 0.9167, render.png 0.75, top_view.png 0.9167, layout.csv 1.0. The main correctness loss is render.png visual framing."},
+    "deliverable_quality": {"score": 0.9, "reason": "All deliverables exist, parse/open as expected, and images meet size/resolution/std thresholds. Quality is reduced because the perspective render is an unusable view of walls rather than the room layout."},
+    "evidence_authenticity": {"score": 0.95, "reason": "No fabrication grep hits, no PIL/ImageDraw fake-render sequence, Blender logs in chat show real asset imports/textures and Cycles renders saved to disk; generated helper scripts are transparent bpy scene construction."},
+    "tool_use_correctness": {"score": 0.92, "reason": "Agent used Blender headless bpy, inspected assets, rendered with Cycles, and self-verified files/geometry. It did not catch the bad perspective camera framing, so not perfect."},
+    "final_state_correctness": {"score": 0.86, "reason": "Final state contains room.blend, render.png, top_view.png, and layout.csv with strong layout geometry, but the final perspective render does not match the requested visible furnished perspective scene."},
+    "efficiency_robustness": {"score": 0.88, "reason": "Agent recovered from an initial inline Python syntax error, generated scripts, rendered, and ran self-checks within the task flow. Robustness is penalized for relying on numeric checks while missing visual framing problems."},
+    "instruction_following": {"score": 0.9, "reason": "Explicit deliverable names, root output convention, layout header, md5 distinction, and self-check were followed. The visible-render requirement was only partially followed."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.8958,
+  "summary": "The rollout produced all required files with strong geometry and CSV compliance: room.blend contains the named furniture/room objects, layout.csv is exact and complete, and the top view is distinct and informative. The serious flaw is render.png: although it meets resolution/filesize/contrast thresholds, visual inspection shows a misframed perspective dominated by walls/ceiling and no visible furniture, so the overall score is capped by that deliverable-quality gap."
+}
