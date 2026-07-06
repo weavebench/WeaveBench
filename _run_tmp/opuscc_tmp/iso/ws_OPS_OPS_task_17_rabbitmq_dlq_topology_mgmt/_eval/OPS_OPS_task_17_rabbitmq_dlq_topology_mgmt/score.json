@@ -1,0 +1,523 @@
+{
+  "artifact_checks": [
+    {
+      "id": "diagnosis.json",
+      "task_says": "Hard constraints for the main deliverable `diagnosis.json`: All 10 schema fields must be present: `vhost` / `broken_binding_source` / `broken_binding_destination` / `broken_binding_routing_key` / `expected_routing_key` / `remediation` / `dlq_depth_before_fix` / `dlq_depth_after_fix` / `publish_rate_msgps` / `deliver_rate_msgps`. `expected_routing_key` must equal `dead.unrouted` exactly. `broken_binding_routing_key` must hit the literal `dead.routed` value (taken from the broker's real binding table). `remediation` must contain both `dead.unrouted` and the word `bind` / `binding`. `dlq_depth_before_fix ∈ [0, 5]`, `dlq_depth_after_fix ≥ 20`, `publish_rate_msgps ≥ 5`, `deliver_rate_msgps ≥ 0`; all four numbers must come from real samples — fabrication is not allowed.",
+      "spec_clauses": [
+        "All 10 schema fields must be present: vhost / broken_binding_source / broken_binding_destination / broken_binding_routing_key / expected_routing_key / remediation / dlq_depth_before_fix / dlq_depth_after_fix / publish_rate_msgps / deliver_rate_msgps",
+        "expected_routing_key must equal dead.unrouted exactly",
+        "broken_binding_routing_key must hit literal dead.routed value from real binding table",
+        "remediation must contain dead.unrouted and bind/binding",
+        "dlq_depth_before_fix ∈ [0, 5]",
+        "dlq_depth_after_fix ≥ 20",
+        "publish_rate_msgps ≥ 5 and deliver_rate_msgps ≥ 0",
+        "all four numbers must come from real samples — fabrication is not allowed"
+      ],
+      "clause_results": [
+        {"clause": "All 10 schema fields must be present: vhost / broken_binding_source / broken_binding_destination / broken_binding_routing_key / expected_routing_key / remediation / dlq_depth_before_fix / dlq_depth_after_fix / publish_rate_msgps / deliver_rate_msgps", "satisfied": true, "evidence": "Parsed JSON contains exactly the required keys including rates and DLQ depths."},
+        {"clause": "expected_routing_key must equal dead.unrouted exactly", "satisfied": true, "evidence": "expected_routing_key is \"dead.unrouted\"."},
+        {"clause": "broken_binding_routing_key must hit literal dead.routed value from real binding table", "satisfied": true, "evidence": "broken_binding_routing_key is \"dead.routed.#\", matching 03_bindings.txt row."},
+        {"clause": "remediation must contain dead.unrouted and bind/binding", "satisfied": true, "evidence": "Remediation text contains \"dead.unrouted\" and multiple forms of bind/binding."},
+        {"clause": "dlq_depth_before_fix ∈ [0, 5]", "satisfied": true, "evidence": "dlq_depth_before_fix is 0, consistent with 02_queues.txt orders.dlq 0."},
+        {"clause": "dlq_depth_after_fix ≥ 20", "satisfied": true, "evidence": "dlq_depth_after_fix is 37, consistent with 08_queues_after.txt."},
+        {"clause": "publish_rate_msgps ≥ 5 and deliver_rate_msgps ≥ 0", "satisfied": true, "evidence": "publish_rate_msgps=16.8 and deliver_rate_msgps=5.0."},
+        {"clause": "all four numbers must come from real samples — fabrication is not allowed", "satisfied": true, "evidence": "Chat shows rates captured via curl /api/queues/%2F/orders.q and queue depths via rabbitmqctl list_queues; values match result files."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "diagnosis.json has vhost '/', broken_binding_source 'orders.dlx', destination 'orders.dlq', broken key 'dead.routed.#', expected key 'dead.unrouted', before/after DLQ 0/37, publish/deliver 16.8/5.0; commands in chat used rabbitmqctl and management API samples.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "01_rmq_status.txt",
+      "task_says": "`01_rmq_status.txt` | Broker liveness snapshot; must contain the string `RabbitMQ` and identifier lines such as node name / version / enabled plugins",
+      "spec_clauses": [
+        "Broker liveness snapshot",
+        "must contain the string RabbitMQ",
+        "must contain identifier lines such as node name",
+        "must contain version",
+        "must contain enabled plugins"
+      ],
+      "clause_results": [
+        {"clause": "Broker liveness snapshot", "satisfied": true, "evidence": "File is output of rabbitmqctl status and includes Runtime, listeners, totals, alarms."},
+        {"clause": "must contain the string RabbitMQ", "satisfied": true, "evidence": "Contains \"RabbitMQ version: 3.9.27\"."},
+        {"clause": "must contain identifier lines such as node name", "satisfied": true, "evidence": "Contains \"Node name: rabbit@user-virtual-machine\"."},
+        {"clause": "must contain version", "satisfied": true, "evidence": "Contains \"RabbitMQ version: 3.9.27\" and Erlang config."},
+        {"clause": "must contain enabled plugins", "satisfied": true, "evidence": "Enabled plugins section lists rabbitmq_management, amqp_client, rabbitmq_web_dispatch, cowboy, cowlib, rabbitmq_management_agent."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "rabbitmqctl status output shows Status of node rabbit@user-virtual-machine, RabbitMQ version 3.9.27, and enabled plugins including rabbitmq_management.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "02_queues.txt",
+      "task_says": "`02_queues.txt` | Queue listing for vhost `/`; must contain all three lines `orders.q` / `orders.dlq` / `orders.audit`, with the `orders.dlq` row's messages count ≤ 5",
+      "spec_clauses": [
+        "Queue listing for vhost /",
+        "must contain line orders.q",
+        "must contain line orders.dlq",
+        "must contain line orders.audit",
+        "orders.dlq row's messages count ≤ 5"
+      ],
+      "clause_results": [
+        {"clause": "Queue listing for vhost /", "satisfied": true, "evidence": "Header says Listing queues for vhost /; fields name messages consumers state."},
+        {"clause": "must contain line orders.q", "satisfied": true, "evidence": "Line: orders.q 410 1 running."},
+        {"clause": "must contain line orders.dlq", "satisfied": true, "evidence": "Line: orders.dlq 0 0 running."},
+        {"clause": "must contain line orders.audit", "satisfied": true, "evidence": "Line: orders.audit 574 0 running."},
+        {"clause": "orders.dlq row's messages count ≤ 5", "satisfied": true, "evidence": "orders.dlq messages count is 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "02_queues.txt lists orders.q 410, orders.dlq 0, orders.audit 574 under vhost /.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "03_bindings.txt",
+      "task_says": "`03_bindings.txt` | Full binding-table dump; must contain the row with source=`orders.dlx` and destination=`orders.dlq`, whose routing_key field falls under `dead.routed.*` (the literal mismatch is the root-cause evidence)",
+      "spec_clauses": [
+        "Full binding-table dump",
+        "must contain row with source=orders.dlx",
+        "same row destination=orders.dlq",
+        "routing_key field falls under dead.routed.*",
+        "literal mismatch is visible as root-cause evidence"
+      ],
+      "clause_results": [
+        {"clause": "Full binding-table dump", "satisfied": true, "evidence": "File includes default exchange bindings plus orders exchange bindings and orders.dlx binding with source/destination fields."},
+        {"clause": "must contain row with source=orders.dlx", "satisfied": true, "evidence": "Row begins orders.dlx exchange ..."},
+        {"clause": "same row destination=orders.dlq", "satisfied": true, "evidence": "Row: orders.dlx exchange orders.dlq queue dead.routed.# []."},
+        {"clause": "routing_key field falls under dead.routed.*", "satisfied": true, "evidence": "routing_key is dead.routed.#, a dead.routed wildcard form."},
+        {"clause": "literal mismatch is visible as root-cause evidence", "satisfied": true, "evidence": "Combined with 04_queue_args dead.unrouted, the dead.routed.# mismatch is directly shown."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "03_bindings.txt contains row 'orders.dlx exchange orders.dlq queue dead.routed.# []'.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "04_queue_args.txt",
+      "task_says": "`04_queue_args.txt` | Complete queue arguments for `orders.q`; must contain the field name `x-dead-letter-routing-key` with value `dead.unrouted`",
+      "spec_clauses": [
+        "Complete queue arguments for orders.q",
+        "must contain field name x-dead-letter-routing-key",
+        "x-dead-letter-routing-key value dead.unrouted",
+        "arguments should show queue-side DLX context"
+      ],
+      "clause_results": [
+        {"clause": "Complete queue arguments for orders.q", "satisfied": true, "evidence": "rabbitmqctl list_queues name arguments output lists arguments for orders.q, orders.dlq, and orders.audit."},
+        {"clause": "must contain field name x-dead-letter-routing-key", "satisfied": true, "evidence": "orders.q arguments include {\"x-dead-letter-routing-key\",\"dead.unrouted\"}."},
+        {"clause": "x-dead-letter-routing-key value dead.unrouted", "satisfied": true, "evidence": "Value is exactly dead.unrouted."},
+        {"clause": "arguments should show queue-side DLX context", "satisfied": true, "evidence": "orders.q also includes x-dead-letter-exchange=orders.dlx."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "04_queue_args.txt lists orders.q [{\"x-dead-letter-exchange\",\"orders.dlx\"},{\"x-dead-letter-routing-key\",\"dead.unrouted\"}].",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "05_rates_t0.json",
+      "task_says": "`05_rates_t0.json` + `05_rates_t1.json` | Two `orders.q` rate snapshots separated by ≥ 5 s, structurally aligned with the `message_stats` subtree of `/api/queues/<vhost>/<name>`, containing `publish_details.rate` and `deliver_get_details.rate` (or `deliver_details.rate`); at least one of them must show `publish - deliver_get` ≥ 4 msg/s",
+      "spec_clauses": [
+        "Snapshot is for orders.q from /api/queues/<vhost>/<name>",
+        "Valid JSON structurally aligned with message_stats subtree",
+        "contains message_stats.publish_details.rate",
+        "contains message_stats.deliver_get_details.rate or deliver_details.rate",
+        "paired with t1 separated by ≥ 5 s",
+        "at least one of t0/t1 shows publish - deliver_get ≥ 4 msg/s"
+      ],
+      "clause_results": [
+        {"clause": "Snapshot is for orders.q from /api/queues/<vhost>/<name>", "satisfied": true, "evidence": "JSON name is orders.q and vhost is /; chat command used curl http://127.0.0.1:15672/api/queues/%2F/orders.q."},
+        {"clause": "Valid JSON structurally aligned with message_stats subtree", "satisfied": true, "evidence": "Parsed JSON contains full queue object with message_stats subtree."},
+        {"clause": "contains message_stats.publish_details.rate", "satisfied": true, "evidence": "publish_details.rate is 16.6."},
+        {"clause": "contains message_stats.deliver_get_details.rate or deliver_details.rate", "satisfied": true, "evidence": "deliver_get_details.rate is 5.0 and deliver_details.rate is also 5.0."},
+        {"clause": "paired with t1 separated by ≥ 5 s", "satisfied": true, "evidence": "Chat command for t1 explicitly sleeps 6 seconds between t0 and t1 captures."},
+        {"clause": "at least one of t0/t1 shows publish - deliver_get ≥ 4 msg/s", "satisfied": true, "evidence": "t0 gap is 16.6 - 5.0 = 11.6 msg/s; t1 gap also passes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "05_rates_t0.json parses with message_stats.publish_details.rate=16.6 and deliver_get_details.rate=5.0; chat shows management API curl capture before a sleep 6 for t1.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "05_rates_t1.json",
+      "task_says": "`05_rates_t0.json` + `05_rates_t1.json` | Two `orders.q` rate snapshots separated by ≥ 5 s, structurally aligned with the `message_stats` subtree of `/api/queues/<vhost>/<name>`, containing `publish_details.rate` and `deliver_get_details.rate` (or `deliver_details.rate`); at least one of them must show `publish - deliver_get` ≥ 4 msg/s",
+      "spec_clauses": [
+        "Snapshot is for orders.q from /api/queues/<vhost>/<name>",
+        "Valid JSON structurally aligned with message_stats subtree",
+        "contains message_stats.publish_details.rate",
+        "contains message_stats.deliver_get_details.rate or deliver_details.rate",
+        "paired with t0 separated by ≥ 5 s",
+        "at least one of t0/t1 shows publish - deliver_get ≥ 4 msg/s"
+      ],
+      "clause_results": [
+        {"clause": "Snapshot is for orders.q from /api/queues/<vhost>/<name>", "satisfied": true, "evidence": "JSON name is orders.q and vhost is /; chat command used curl after sleep 6."},
+        {"clause": "Valid JSON structurally aligned with message_stats subtree", "satisfied": true, "evidence": "Parsed JSON contains full queue object with message_stats subtree."},
+        {"clause": "contains message_stats.publish_details.rate", "satisfied": true, "evidence": "publish_details.rate is 16.8."},
+        {"clause": "contains message_stats.deliver_get_details.rate or deliver_details.rate", "satisfied": true, "evidence": "deliver_get_details.rate is 5.0 and deliver_details.rate is 5.0."},
+        {"clause": "paired with t0 separated by ≥ 5 s", "satisfied": true, "evidence": "Chat command sleeps 6 seconds before writing 05_rates_t1.json."},
+        {"clause": "at least one of t0/t1 shows publish - deliver_get ≥ 4 msg/s", "satisfied": true, "evidence": "t1 gap is 16.8 - 5.0 = 11.8 msg/s; t0 also passes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "05_rates_t1.json parses with message_stats.publish_details.rate=16.8 and deliver_get_details.rate=5.0 after a chat-recorded sleep 6 from t0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "06_remediation.sh",
+      "task_says": "`06_remediation.sh` | Mitigation script that re-binds `orders.dlx → orders.dlq` to a routing key that matches `dead.unrouted` (the literal `dead.unrouted` or the `#` wildcard); the text must also contain `dead.unrouted` together with at least one binding-action keyword among `declare binding` / `Add binding` / `queue_bind` / `x-dead-letter-routing-key`; the script must be re-entrant",
+      "spec_clauses": [
+        "Mitigation script re-binds orders.dlx → orders.dlq",
+        "routing key matches dead.unrouted using literal dead.unrouted or # wildcard",
+        "text contains dead.unrouted",
+        "text contains at least one binding-action keyword among declare binding / Add binding / queue_bind / x-dead-letter-routing-key",
+        "script must be re-entrant"
+      ],
+      "clause_results": [
+        {"clause": "Mitigation script re-binds orders.dlx → orders.dlq", "satisfied": true, "evidence": "declare_good_binding posts/declares binding source orders.dlx destination orders.dlq."},
+        {"clause": "routing key matches dead.unrouted using literal dead.unrouted or # wildcard", "satisfied": true, "evidence": "GOOD_KEY=dead.unrouted and declare uses routing_key=${GOOD_KEY}."},
+        {"clause": "text contains dead.unrouted", "satisfied": true, "evidence": "dead.unrouted appears in comments and GOOD_KEY."},
+        {"clause": "text contains at least one binding-action keyword among declare binding / Add binding / queue_bind / x-dead-letter-routing-key", "satisfied": true, "evidence": "Script contains all of declare binding, Add binding, queue_bind, and x-dead-letter-routing-key."},
+        {"clause": "script must be re-entrant", "satisfied": true, "evidence": "has_binding checks skip duplicate good binding; remove_bad_binding skips if bad binding absent; chat ran script twice for re-entrancy."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "06_remediation.sh defines GOOD_KEY='dead.unrouted', declares orders.dlx→orders.dlq binding idempotently, removes bad dead.routed.# only if present, and chat shows a second run test.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "07_bindings_after.txt",
+      "task_says": "`07_bindings_after.txt` | Binding-table dump taken after running `06_remediation.sh`; must contain both `orders.dlx` and `orders.dlq`, with the routing_key field containing `dead.unrouted`",
+      "spec_clauses": [
+        "Binding-table dump taken after running 06_remediation.sh",
+        "must contain orders.dlx",
+        "must contain orders.dlq",
+        "routing_key field contains dead.unrouted"
+      ],
+      "clause_results": [
+        {"clause": "Binding-table dump taken after running 06_remediation.sh", "satisfied": true, "evidence": "Chat runs bash /tmp_workspace/results/06_remediation.sh, sleeps 15, then rabbitmqctl list_bindings to 07_bindings_after.txt."},
+        {"clause": "must contain orders.dlx", "satisfied": true, "evidence": "Row includes source orders.dlx."},
+        {"clause": "must contain orders.dlq", "satisfied": true, "evidence": "Same row destination orders.dlq."},
+        {"clause": "routing_key field contains dead.unrouted", "satisfied": true, "evidence": "Row: orders.dlx exchange orders.dlq queue dead.unrouted []."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "07_bindings_after.txt includes 'orders.dlx exchange orders.dlq queue dead.unrouted []' after script execution.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "08_queues_after.txt",
+      "task_says": "`08_queues_after.txt` | Queue snapshot taken after the fix and after waiting ≥ 10 s; the `orders.dlq` row's messages count must be ≥ 20",
+      "spec_clauses": [
+        "Queue snapshot taken after the fix",
+        "taken after waiting ≥ 10 s",
+        "orders.dlq row messages count ≥ 20"
+      ],
+      "clause_results": [
+        {"clause": "Queue snapshot taken after the fix", "satisfied": true, "evidence": "Chat runs 06_remediation.sh before collecting 08_queues_after.txt."},
+        {"clause": "taken after waiting ≥ 10 s", "satisfied": true, "evidence": "Chat command says '# Wait to accumulate DLQ messages' and sleeps 15 before queue capture."},
+        {"clause": "orders.dlq row messages count ≥ 20", "satisfied": true, "evidence": "orders.dlq row is 37 messages."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "08_queues_after.txt after sleep 15 contains orders.dlq 37 0 running.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "postmortem.md",
+      "task_says": "`postmortem.md` | ≥ 600 characters; must contain all four section headings `## 时间线` / `## 根因` / `## 修复` / `## 跨通道证据链`; must hit ≥ 5 of the seven keywords `dead-letter` / `binding` / `routing key` / `broker` / `management` / `dlx` / `topic`",
+      "spec_clauses": [
+        "≥ 600 characters",
+        "contains heading ## 时间线",
+        "contains heading ## 根因",
+        "contains heading ## 修复",
+        "contains heading ## 跨通道证据链",
+        "hits ≥ 5 of seven keywords dead-letter / binding / routing key / broker / management / dlx / topic"
+      ],
+      "clause_results": [
+        {"clause": "≥ 600 characters", "satisfied": true, "evidence": "File length is 3631 characters."},
+        {"clause": "contains heading ## 时间线", "satisfied": true, "evidence": "Heading present."},
+        {"clause": "contains heading ## 根因", "satisfied": true, "evidence": "Heading present."},
+        {"clause": "contains heading ## 修复", "satisfied": true, "evidence": "Heading present."},
+        {"clause": "contains heading ## 跨通道证据链", "satisfied": true, "evidence": "Heading present."},
+        {"clause": "hits ≥ 5 of seven keywords dead-letter / binding / routing key / broker / management / dlx / topic", "satisfied": true, "evidence": "All seven keywords occur in the postmortem."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "postmortem.md is 3631 chars with all four required Chinese headings and all seven required keywords.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "cross_channel.json",
+      "task_says": "`cross_channel.json` | `{\"switches\": int, \"trace\": [...]}`, with `switches ≥ 5`, `trace` length ≥ 5, of which entries starting with `STRUCT:` and `VISUAL:` are each ≥ 2; entry names should be aligned with the on-disk files `03_bindings.txt` / `04_queue_args.txt` / `07_bindings_after.txt` / `08_queues_after.txt` and `view_02` / `view_04` / `view_06` / `view_07`",
+      "spec_clauses": [
+        "JSON object has switches int and trace array",
+        "switches ≥ 5",
+        "trace length ≥ 5",
+        "entries starting with STRUCT: are ≥ 2",
+        "entries starting with VISUAL: are ≥ 2",
+        "entry names aligned with on-disk structural files and visual files"
+      ],
+      "clause_results": [
+        {"clause": "JSON object has switches int and trace array", "satisfied": true, "evidence": "Parsed JSON contains switches=8 and trace list."},
+        {"clause": "switches ≥ 5", "satisfied": true, "evidence": "switches is 8."},
+        {"clause": "trace length ≥ 5", "satisfied": true, "evidence": "trace length is 9."},
+        {"clause": "entries starting with STRUCT: are ≥ 2", "satisfied": "partial", "evidence": "There are 5 STRUCT channel entries, but stored as channel='STRUCT' rather than entries literally starting with 'STRUCT:'."},
+        {"clause": "entries starting with VISUAL: are ≥ 2", "satisfied": "partial", "evidence": "There are 4 VISUAL channel entries, but stored as channel='VISUAL' rather than entries literally starting with 'VISUAL:'."},
+        {"clause": "entry names aligned with on-disk structural files and visual files", "satisfied": true, "evidence": "Names reference 03_bindings.txt, 04_queue_args.txt, 05_rates_t0.json, 07_bindings_after.txt, 08_queues_after.txt, and view_02/view_04/view_06/view_07."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.83,
+      "evidence_quote": "cross_channel.json has switches 8 and 9 trace objects referencing the required files, but uses separate channel fields instead of string entries prefixed STRUCT:/VISUAL: as the wording specifies.",
+      "missing_or_wrong": "Trace entries do not literally start with STRUCT: or VISUAL:; they use a channel field with STRUCT/VISUAL instead.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_mgmt_overview.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_01_mgmt_overview.png`: Management Overview home page; the Queued messages summary panel and the Message rates line chart must both be readable.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "Management Overview home page",
+        "Queued messages summary panel readable",
+        "Message rates line chart readable"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "VLM sees authentic RabbitMQ Management UI at 127.0.0.1:15672, user guest, cluster rabbit@user-virtual-machine."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 212550 bytes and contains complex real UI."},
+        {"clause": "Management Overview home page", "satisfied": true, "evidence": "Overview tab active."},
+        {"clause": "Queued messages summary panel readable", "satisfied": true, "evidence": "Queued messages panel shows Ready 4,633, Unacked 1, Total 4,634."},
+        {"clause": "Message rates line chart readable", "satisfied": true, "evidence": "Message rates chart and legend readable with Publish 17/s and Deliver manual ack 5.0/s."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 real RabbitMQ Overview screenshot with readable queued messages and message rates charts.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_mgmt_rates_tooltip.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_02_mgmt_rates_tooltip.png`: On top of the Overview's Message rates line chart, **overlay a hover tooltip popover** (popover rectangle + numbers); the instantaneous numbers for both the publish and deliver curves must be readable — visually align the publish-vs-deliver gap to the same moment in time.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "Overview Message rates line chart visible",
+        "overlay hover tooltip popover rectangle present",
+        "instantaneous publish number readable",
+        "instantaneous deliver number readable",
+        "publish-vs-deliver gap visually aligned to same moment"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "VLM sees RabbitMQ Overview UI at 127.0.0.1:15672."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 224457 bytes with complex UI."},
+        {"clause": "Overview Message rates line chart visible", "satisfied": true, "evidence": "Message rates chart visible on Overview page."},
+        {"clause": "overlay hover tooltip popover rectangle present", "satisfied": true, "evidence": "Popover rectangle over chart with pale yellow background and red vertical hover marker."},
+        {"clause": "instantaneous publish number readable", "satisfied": true, "evidence": "Tooltip reads Publish: 16.8/s."},
+        {"clause": "instantaneous deliver number readable", "satisfied": true, "evidence": "Tooltip reads Deliver (manual ack): 5.0/s."},
+        {"clause": "publish-vs-deliver gap visually aligned to same moment", "satisfied": true, "evidence": "Tooltip says Message rates @ 10:19:00 and gap=11.8/s with one hover marker."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 Overview screenshot with chart tooltip: Publish 16.8/s, Deliver 5.0/s, gap 11.8/s at 10:19:00.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_mgmt_queues.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_03_mgmt_queues.png`: Queues list page; the three rows `orders.q` / `orders.dlq` / `orders.audit` are laid out together, and the Ready / Total messages columns for `orders.dlq` clearly read near 0.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "Queues list page",
+        "three rows orders.q / orders.dlq / orders.audit laid out together",
+        "Ready messages column for orders.dlq clearly near 0",
+        "Total messages column for orders.dlq clearly near 0"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "RabbitMQ Queues page at 127.0.0.1:15672, guest user."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 162247 bytes and complex UI."},
+        {"clause": "Queues list page", "satisfied": true, "evidence": "Queues tab selected and /queues page visible."},
+        {"clause": "three rows orders.q / orders.dlq / orders.audit laid out together", "satisfied": true, "evidence": "Rows orders.audit, orders.dlq, orders.q visible in same table."},
+        {"clause": "Ready messages column for orders.dlq clearly near 0", "satisfied": true, "evidence": "orders.dlq Ready is 0."},
+        {"clause": "Total messages column for orders.dlq clearly near 0", "satisfied": true, "evidence": "orders.dlq Total is 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 Queues page shows orders.audit/orders.dlq/orders.q together; orders.dlq Ready 0, Total 0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_dlq_bindings.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_04_dlq_bindings.png`: The Bindings sub-panel on the `orders.dlq` queue detail page; the \"From exchange\" column contains `orders.dlx`, and the **broken literal value** (shaped like `dead.routed.*`) in the \"Routing key\" column is directly visible — this single misconfigured binding row is the visual exposure surface.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "Bindings sub-panel on orders.dlq queue detail page",
+        "From exchange column contains orders.dlx",
+        "broken literal value shaped like dead.routed.* directly visible in Routing key column"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "VLM sees live RabbitMQ Management queue detail for orders.dlq."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 178993 bytes with real UI."},
+        {"clause": "Bindings sub-panel on orders.dlq queue detail page", "satisfied": true, "evidence": "Queue orders.dlq detail page with Bindings (2) sub-panel visible."},
+        {"clause": "From exchange column contains orders.dlx", "satisfied": true, "evidence": "Bindings table From column shows orders.dlx."},
+        {"clause": "broken literal value shaped like dead.routed.* directly visible in Routing key column", "satisfied": true, "evidence": "Routing key column shows dead.routed.#, matching the expected broken_rk in gt and the task's dead.routed wildcard shape."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 orders.dlq detail screenshot shows Bindings row From orders.dlx with Routing key dead.routed.#.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_dlx_detail.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_05_dlx_detail.png`: The `orders.dlx` exchange detail page, with the Bindings sub-panel (pointing to `orders.dlq`) and the Message rate sub-panel visible on the same screen.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "orders.dlx exchange detail page",
+        "Bindings sub-panel visible pointing to orders.dlq",
+        "Message rate sub-panel visible on same screen"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "RabbitMQ Exchanges tab and exchange detail page visible."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 164062 bytes and authentic UI."},
+        {"clause": "orders.dlx exchange detail page", "satisfied": true, "evidence": "Title shows Exchange: orders.dlx and type topic."},
+        {"clause": "Bindings sub-panel visible pointing to orders.dlq", "satisfied": true, "evidence": "Bindings section shows This exchange -> orders.dlq with routing key dead.routed.#."},
+        {"clause": "Message rate sub-panel visible on same screen", "satisfied": true, "evidence": "Message rates row/sub-panel is visible near the top, although not populated with a chart."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 orders.dlx exchange detail page shows Message rates area and Bindings section pointing to orders.dlq.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_mgmt_overview_after.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_06_mgmt_overview_after.png`: Same viewpoint as `view_01`, re-captured **after the fix and after waiting ≥ 10 s**; in the Queued messages summary, the `orders.dlq` count is clearly non-zero (≥ 20).",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "same viewpoint as view_01 Overview",
+        "recaptured after fix and after waiting ≥ 10 s",
+        "Queued messages summary shows orders.dlq count clearly non-zero ≥ 20"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "RabbitMQ Overview page at same local management UI visible."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 222513 bytes with complex UI."},
+        {"clause": "same viewpoint as view_01 Overview", "satisfied": true, "evidence": "Overview page with same queued messages and message rates panels."},
+        {"clause": "recaptured after fix and after waiting ≥ 10 s", "satisfied": true, "evidence": "Chat runs remediation, sleeps 15 before post-fix queue dump, then captures post-fix screenshots; timestamp later than pre-fix."},
+        {"clause": "Queued messages summary shows orders.dlq count clearly non-zero ≥ 20", "satisfied": "partial", "evidence": "Overview's native queued summary shows only global Ready/Total; an overlay annotation says orders.dlq after fix messages_ready 185, but the per-queue DLQ count is not a native queued-summary field on Overview."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.92,
+      "evidence_quote": "1920x1080 post-fix Overview with global queued Ready 18,810/Total 18,811 and overlay annotation 'orders.dlq (after fix) messages: 185'; per-queue count is overlay, not native Overview summary.",
+      "missing_or_wrong": "The required orders.dlq ≥20 evidence on Overview is provided by overlay annotation rather than a native per-queue Overview field, so this clause is partial under strict review.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_07_dlq_after.png",
+      "task_says": "Seven workflow screenshots common spec: Real screenshots of the same RabbitMQ Management control panel. Common spec: each ≥ 1024×700 real pixels, ≥ 30 KB, not a flat-color collage. `view_07_dlq_after.png`: Aligned with the viewpoints of `view_03` / `view_04`; after the fix, the Ready / Total messages count for `orders.dlq` is ≥ 20, and the newly added binding row is visible in the Bindings sub-panel.",
+      "spec_clauses": [
+        "Real screenshot of same RabbitMQ Management control panel",
+        "dimensions ≥ 1024×700 real pixels",
+        "file size ≥ 30 KB and not a flat-color collage",
+        "aligned with viewpoints of view_03/view_04",
+        "after fix Ready messages count for orders.dlq ≥ 20",
+        "after fix Total messages count for orders.dlq ≥ 20",
+        "newly added binding row visible in Bindings sub-panel"
+      ],
+      "clause_results": [
+        {"clause": "Real screenshot of same RabbitMQ Management control panel", "satisfied": true, "evidence": "RabbitMQ Management queue detail UI visible."},
+        {"clause": "dimensions ≥ 1024×700 real pixels", "satisfied": true, "evidence": "Image is 1920×1080."},
+        {"clause": "file size ≥ 30 KB and not a flat-color collage", "satisfied": true, "evidence": "File is 196370 bytes with complex UI."},
+        {"clause": "aligned with viewpoints of view_03/view_04", "satisfied": true, "evidence": "orders.dlq queue detail page with queue metrics and Bindings panel, consistent with bindings view."},
+        {"clause": "after fix Ready messages count for orders.dlq ≥ 20", "satisfied": true, "evidence": "Visible Ready count is 272."},
+        {"clause": "after fix Total messages count for orders.dlq ≥ 20", "satisfied": true, "evidence": "Visible Total count is 272."},
+        {"clause": "newly added binding row visible in Bindings sub-panel", "satisfied": true, "evidence": "Bindings row shows From orders.dlx, Routing key dead.unrouted, Destination This queue."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 post-fix orders.dlq detail page shows Ready/Total 272 and binding orders.dlx routing key dead.unrouted.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.96, "reason": "All required deliverables exist and collectively complete diagnosis, fix, and re-verification. Minor issues are limited to cross_channel.json prefix formatting (cross_channel.json) and view_06 relying on an overlay for per-queue DLQ count."},
+    "deliverable_correctness": {"score": 0.98, "reason": "Mean artifact correctness is very high: all structured broker files, diagnosis, remediation, postmortem, and six of seven screenshots fully satisfy clauses; only cross_channel.json (0.83) and view_06 (0.92) are below perfect."},
+    "deliverable_quality": {"score": 0.97, "reason": "Every required file is present, parseable where applicable, and screenshots are 1920x1080 over 30 KB with real UI; small quality deductions for non-literal STRUCT:/VISUAL: trace encoding and a post-fix Overview annotation rather than native per-queue display."},
+    "evidence_authenticity": {"score": 0.96, "reason": "Chat shows broker evidence collected via rabbitmqctl and management API curl, screenshots via gnome-screenshot from Chrome/RabbitMQ UI, and no gt access or PIL/ImageDraw generation. Overlays on view_02 and view_06 appear manually/UI-annotation-like but are transparent and consistent with sampled data, not a fake full UI."},
+    "tool_use_correctness": {"score": 0.97, "reason": "Used rabbitmqctl, management API curl, browser UI, screenshots, and remediation script appropriately; also ran script twice to test re-entrancy and waited 15 seconds before post-fix queue capture."},
+    "final_state_correctness": {"score": 0.98, "reason": "Post-fix binding table shows orders.dlx→orders.dlq dead.unrouted and post-fix queue dump shows orders.dlq 37; view_07 shows Ready/Total 272 and new binding row. Final state matches task intent."},
+    "efficiency_robustness": {"score": 0.95, "reason": "Workflow was methodical, recovered through setup/UI capture, separated t0/t1 by sleep 6 and post-fix wait by sleep 15, and performed sanity checks. Some extra generated helper/source files in results are harmless but not requested."},
+    "instruction_following": {"score": 0.95, "reason": "Explicit constraints were largely followed: producer/consumer evidence stayed live, all artifacts placed under results, no hidden gt copied/read at runtime per chat grep, two channels cross-validated. Deductions for cross_channel.json not using literal STRUCT:/VISUAL: entry prefixes and view_06's overlay dependence."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.02,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.965,
+  "summary": "The rollout is a strong, mostly complete RabbitMQ DLQ diagnosis/fix/reverification package: all required files are present, broker-side evidence matches real rabbitmqctl/API samples, the fix is idempotent, and post-fix DLQ growth is verified. The only strict deductions are that cross_channel.json encodes STRUCT/VISUAL as fields rather than literal prefixed entries, and view_06 uses an overlay annotation for the per-queue DLQ count on an Overview screen. No convincing hack or fabrication signal was found."
+}
