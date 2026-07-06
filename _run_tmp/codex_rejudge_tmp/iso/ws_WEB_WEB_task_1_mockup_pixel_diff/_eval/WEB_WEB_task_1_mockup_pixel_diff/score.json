@@ -1,0 +1,344 @@
+{
+  "artifact_checks": [
+    {
+      "id": "diffs.json",
+      "task_says": "/tmp_workspace/results/diffs.json \u2014 list of deviations, at least 10 entries, each with 5 fields: {\"page\": \"home|pricing|about|contact\", \"element\": \"CSS-selector-or-component-name\", \"property\": \"background|font-size|...\", \"expected\": \"value seen in mockup\", \"actual\": \"value originally rendered by the broken implementation\"}. Grading Criteria: \u5b58\u5728\u3001\u662f\u6709\u6548 JSON\u3001\u957f\u5ea6 \u2265 10; \u6bcf\u6761 diff \u542b page/element/property/expected/actual \u4e94\u4e2a\u5b57\u6bb5; diff \u4e0e GT \u7684 (page, property) \u5339\u914d F1 \u2265 0.6.",
+      "spec_clauses": [
+        "/tmp_workspace/results/diffs.json exists",
+        "is valid JSON and is a list",
+        "length \u2265 10 entries",
+        "each entry contains page/element/property/expected/actual fields",
+        "page values are within home|pricing|about|contact",
+        "diff \u4e0e GT \u7684 (page, property) \u5339\u914d F1 \u2265 0.6",
+        "expected/actual values should be real values seen in mockup/original implementation"
+      ],
+      "clause_results": [
+        {
+          "clause": "/tmp_workspace/results/diffs.json exists",
+          "satisfied": true,
+          "evidence": "results/diffs.json is present (2450 bytes)."
+        },
+        {
+          "clause": "is valid JSON and is a list",
+          "satisfied": true,
+          "evidence": "Parsed successfully as a JSON array."
+        },
+        {
+          "clause": "length \u2265 10 entries",
+          "satisfied": true,
+          "evidence": "Array contains 17 entries."
+        },
+        {
+          "clause": "each entry contains page/element/property/expected/actual fields",
+          "satisfied": true,
+          "evidence": "17/17 entries contain all five required keys."
+        },
+        {
+          "clause": "page values are within home|pricing|about|contact",
+          "satisfied": true,
+          "evidence": "All entries use one of home, pricing, about, contact."
+        },
+        {
+          "clause": "diff \u4e0e GT \u7684 (page, property) \u5339\u914d F1 \u2265 0.6",
+          "satisfied": true,
+          "evidence": "Against gt/expected_diffs.json: 11 true-positive unique (page, property) pairs, precision 0.6875, recall 0.9167, F1 0.7857."
+        },
+        {
+          "clause": "expected/actual values should be real values seen in mockup/original implementation",
+          "satisfied": "partial",
+          "evidence": "10/12 GT rows have exact expected+actual value hits. Missing exact GT value for pricing box-shadow (listed 0 10px 24px with spaces vs GT 0 10px 25px no spaces) and about line-height (GT line-height 1.6/1.35 omitted, while non-GT margin-bottom rows were listed)."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.93,
+      "evidence_quote": "diffs.json has 17 valid rows with required schema; F1=0.7857 vs GT and exact-value hits=10/12, but it omits the about line-height deviation and has an inexact pricing box-shadow value.",
+      "missing_or_wrong": "Partial: expected/actual values not perfect: pricing box-shadow expected value differs from GT; about line-height deviation is missing and replaced by unrelated margin-bottom entries.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "after/home.png",
+      "task_says": "/tmp_workspace/results/after/{home,pricing,about,contact}.png \u2014 the 4 post-fix 1440\u00d7N (full-page) renders. Grading Criteria: 4 \u5f20 after \u622a\u56fe\u5b58\u5728\u4e14\u5c3a\u5bf8\u4e3a 1440\u00d7N; \u6bcf\u9875 after \u622a\u56fe\u4e0e\u5bf9\u5e94 mockup \u7684\u50cf\u7d20\u5dee\u6bd4\u4f8b < 0.8%; \uff08VLM\uff09after \u622a\u56fe\u6574\u4f53\u4e0a\u4e0e mockup \u89c6\u89c9\u4e00\u81f4.",
+      "spec_clauses": [
+        "after/home.png exists",
+        "is a PNG render",
+        "width is 1440 and full-page height N",
+        "post-fix render of home page at fixed 1440\u00d7900 viewport",
+        "pixel difference ratio vs corresponding mockup < 0.8%",
+        "visually matches mockup overall"
+      ],
+      "clause_results": [
+        {
+          "clause": "after/home.png exists",
+          "satisfied": true,
+          "evidence": "results/after/home.png is present (52529 bytes)."
+        },
+        {
+          "clause": "is a PNG render",
+          "satisfied": true,
+          "evidence": "PIL opens it as an image and image-view shows a real Acme home page render."
+        },
+        {
+          "clause": "width is 1440 and full-page height N",
+          "satisfied": true,
+          "evidence": "PIL size is 1440\u00d7900."
+        },
+        {
+          "clause": "post-fix render of home page at fixed 1440\u00d7900 viewport",
+          "satisfied": true,
+          "evidence": "Image shows Acme header, hero 'Ship faster. See clearer.', CTA, feature cards, and footer."
+        },
+        {
+          "clause": "pixel difference ratio vs corresponding mockup < 0.8%",
+          "satisfied": true,
+          "evidence": "PIL ImageChops comparison against results/design/home.png found ratio 0.0."
+        },
+        {
+          "clause": "visually matches mockup overall",
+          "satisfied": true,
+          "evidence": "Visual inspection shows clean SaaS home page with matching nav, hero, blue CTA, feature cards, and footer; pixel diff is exactly zero."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "home after screenshot is 1440\u00d7900, opens as PNG, depicts the correct home page, and has pixel diff ratio 0.0 vs mockup.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "after/pricing.png",
+      "task_says": "/tmp_workspace/results/after/{home,pricing,about,contact}.png \u2014 the 4 post-fix 1440\u00d7N (full-page) renders. Grading Criteria: 4 \u5f20 after \u622a\u56fe\u5b58\u5728\u4e14\u5c3a\u5bf8\u4e3a 1440\u00d7N; \u6bcf\u9875 after \u622a\u56fe\u4e0e\u5bf9\u5e94 mockup \u7684\u50cf\u7d20\u5dee\u6bd4\u4f8b < 0.8%; \uff08VLM\uff09after \u622a\u56fe\u6574\u4f53\u4e0a\u4e0e mockup \u89c6\u89c9\u4e00\u81f4.",
+      "spec_clauses": [
+        "after/pricing.png exists",
+        "is a PNG render",
+        "width is 1440 and full-page height N",
+        "post-fix render of pricing page at fixed 1440\u00d7900 viewport",
+        "pixel difference ratio vs corresponding mockup < 0.8%",
+        "visually matches mockup overall"
+      ],
+      "clause_results": [
+        {
+          "clause": "after/pricing.png exists",
+          "satisfied": true,
+          "evidence": "results/after/pricing.png is present (56946 bytes)."
+        },
+        {
+          "clause": "is a PNG render",
+          "satisfied": true,
+          "evidence": "PIL opens it as an image and image-view shows a real Acme pricing page render."
+        },
+        {
+          "clause": "width is 1440 and full-page height N",
+          "satisfied": true,
+          "evidence": "PIL size is 1440\u00d7900."
+        },
+        {
+          "clause": "post-fix render of pricing page at fixed 1440\u00d7900 viewport",
+          "satisfied": true,
+          "evidence": "Image shows Acme pricing page with 'Simple pricing', three pricing cards, and featured Team card."
+        },
+        {
+          "clause": "pixel difference ratio vs corresponding mockup < 0.8%",
+          "satisfied": true,
+          "evidence": "PIL ImageChops comparison against results/design/pricing.png found ratio 0.0."
+        },
+        {
+          "clause": "visually matches mockup overall",
+          "satisfied": true,
+          "evidence": "Visual inspection shows matching nav, card layout, blue featured border/button and shadow; pixel diff is exactly zero."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pricing after screenshot is 1440\u00d7900, opens as PNG, depicts the correct pricing page, and has pixel diff ratio 0.0 vs mockup.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "after/about.png",
+      "task_says": "/tmp_workspace/results/after/{home,pricing,about,contact}.png \u2014 the 4 post-fix 1440\u00d7N (full-page) renders. Grading Criteria: 4 \u5f20 after \u622a\u56fe\u5b58\u5728\u4e14\u5c3a\u5bf8\u4e3a 1440\u00d7N; \u6bcf\u9875 after \u622a\u56fe\u4e0e\u5bf9\u5e94 mockup \u7684\u50cf\u7d20\u5dee\u6bd4\u4f8b < 0.8%; \uff08VLM\uff09after \u622a\u56fe\u6574\u4f53\u4e0a\u4e0e mockup \u89c6\u89c9\u4e00\u81f4.",
+      "spec_clauses": [
+        "after/about.png exists",
+        "is a PNG render",
+        "width is 1440 and full-page height N",
+        "post-fix render of about page at fixed 1440\u00d7900 viewport",
+        "pixel difference ratio vs corresponding mockup < 0.8%",
+        "visually matches mockup overall"
+      ],
+      "clause_results": [
+        {
+          "clause": "after/about.png exists",
+          "satisfied": true,
+          "evidence": "results/after/about.png is present (39666 bytes)."
+        },
+        {
+          "clause": "is a PNG render",
+          "satisfied": true,
+          "evidence": "PIL opens it as an image and image-view shows a real Acme about page render."
+        },
+        {
+          "clause": "width is 1440 and full-page height N",
+          "satisfied": true,
+          "evidence": "PIL size is 1440\u00d7900."
+        },
+        {
+          "clause": "post-fix render of about page at fixed 1440\u00d7900 viewport",
+          "satisfied": true,
+          "evidence": "Image shows Acme about page with 'About us', centered lead text, team avatars, and footer."
+        },
+        {
+          "clause": "pixel difference ratio vs corresponding mockup < 0.8%",
+          "satisfied": true,
+          "evidence": "PIL ImageChops comparison against results/design/about.png found ratio 0.0."
+        },
+        {
+          "clause": "visually matches mockup overall",
+          "satisfied": true,
+          "evidence": "Visual inspection shows matching centered title, lead, blue avatar borders, team row, and footer; pixel diff is exactly zero."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "about after screenshot is 1440\u00d7900, opens as PNG, depicts the correct about page, and has pixel diff ratio 0.0 vs mockup.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "after/contact.png",
+      "task_says": "/tmp_workspace/results/after/{home,pricing,about,contact}.png \u2014 the 4 post-fix 1440\u00d7N (full-page) renders. Grading Criteria: 4 \u5f20 after \u622a\u56fe\u5b58\u5728\u4e14\u5c3a\u5bf8\u4e3a 1440\u00d7N; \u6bcf\u9875 after \u622a\u56fe\u4e0e\u5bf9\u5e94 mockup \u7684\u50cf\u7d20\u5dee\u6bd4\u4f8b < 0.8%; \uff08VLM\uff09after \u622a\u56fe\u6574\u4f53\u4e0a\u4e0e mockup \u89c6\u89c9\u4e00\u81f4.",
+      "spec_clauses": [
+        "after/contact.png exists",
+        "is a PNG render",
+        "width is 1440 and full-page height N",
+        "post-fix render of contact page at fixed 1440\u00d7900 viewport",
+        "pixel difference ratio vs corresponding mockup < 0.8%",
+        "visually matches mockup overall"
+      ],
+      "clause_results": [
+        {
+          "clause": "after/contact.png exists",
+          "satisfied": true,
+          "evidence": "results/after/contact.png is present (28058 bytes)."
+        },
+        {
+          "clause": "is a PNG render",
+          "satisfied": true,
+          "evidence": "PIL opens it as an image and image-view shows a real Acme contact page render."
+        },
+        {
+          "clause": "width is 1440 and full-page height N",
+          "satisfied": true,
+          "evidence": "PIL size is 1440\u00d7900."
+        },
+        {
+          "clause": "post-fix render of contact page at fixed 1440\u00d7900 viewport",
+          "satisfied": true,
+          "evidence": "Image shows Acme contact page with 'Contact us', form fields, and blue Send message button."
+        },
+        {
+          "clause": "pixel difference ratio vs corresponding mockup < 0.8%",
+          "satisfied": true,
+          "evidence": "PIL ImageChops comparison against results/design/contact.png found ratio 0.0."
+        },
+        {
+          "clause": "visually matches mockup overall",
+          "satisfied": true,
+          "evidence": "Visual inspection shows matching centered form, gray input borders, blue submit button, nav, and footer; pixel diff is exactly zero."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "contact after screenshot is 1440\u00d7900, opens as PNG, depicts the correct contact page, and has pixel diff ratio 0.0 vs mockup.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "styles.css",
+      "task_says": "Core constraints: Only /tmp_workspace/app/styles.css may be modified; do not change the HTML and do not add new dependencies. Task goals: Fix /tmp_workspace/app/styles.css so that each page, rendered at 1440\u00d7900, matches the corresponding mockup visually. Grading Criteria: styles.css \u5b9e\u9645\u88ab\u4fee\u6539\uff08\u4e0e\u521d\u59cb hash \u4e0d\u540c\uff09.",
+      "spec_clauses": [
+        "styles.css exists in the submitted app",
+        "styles.css actual hash differs from initial hash",
+        "CSS changes make each page match the corresponding mockup visually",
+        "only styles.css may be modified; HTML should not be changed and no dependencies added"
+      ],
+      "clause_results": [
+        {
+          "clause": "styles.css exists in the submitted app",
+          "satisfied": true,
+          "evidence": "results/app/styles.css is present and readable."
+        },
+        {
+          "clause": "styles.css actual hash differs from initial hash",
+          "satisfied": true,
+          "evidence": "Current SHA256 0d982eb58aa503a23f5ff54a38d01922d44e533ba5989e4dc069165177e705be differs from stored initial 1254cf4d7ceabd3b4cf7ae412d6c6efa377f605ee14bb3f0b82355dbff295520."
+        },
+        {
+          "clause": "CSS changes make each page match the corresponding mockup visually",
+          "satisfied": true,
+          "evidence": "All four final screenshots have pixel difference ratio 0.0 vs corresponding design image."
+        },
+        {
+          "clause": "only styles.css may be modified; HTML should not be changed and no dependencies added",
+          "satisfied": "partial",
+          "evidence": "The submitted results include app HTML files, app.js, serve.sh and many analysis/before files, but task deliverables only require results files; no original HTML hash is available here to prove HTML was unchanged. Chat evidence shows CSS/render commands and no dependency installation."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.88,
+      "evidence_quote": "styles.css exists, hash changed from the initial hash, and final renders pixel-match mockups; however the evaluator cannot conclusively verify the 'only CSS modified' constraint from hashes for all source files in the staged results.",
+      "missing_or_wrong": "Partial: cannot independently prove HTML was not modified because no original HTML hash is provided, though no chat evidence suggests HTML/dependency changes.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.96,
+      "reason": "Core goal achieved: all four after screenshots exist and pixel-match mockups at 0.0 ratio (after/home.png, after/pricing.png, after/about.png, after/contact.png), styles.css was changed, and diffs.json exceeds count/schema requirements. Minor diagnostic imperfections in diffs.json prevent a perfect score."
+    },
+    "deliverable_correctness": {
+      "score": 0.97,
+      "reason": "Mean artifact correctness is high: four PNG artifacts are perfect, diffs.json is 0.93 due to one omitted GT line-height and one inexact box-shadow value, and styles.css is 0.88 because the only-CSS constraint cannot be fully proven from hashes."
+    },
+    "deliverable_quality": {
+      "score": 0.98,
+      "reason": "All required files are present, parse/open correctly, screenshots are 1440\u00d7900 PNGs, and diffs.json is valid JSON with 17/17 schema-valid entries. Extra staged analysis/before files do not break required deliverables."
+    },
+    "evidence_authenticity": {
+      "score": 0.99,
+      "reason": "No PIL/ImageDraw fake-render signal, no hidden gt access, no LD_PRELOAD/mock service. Chat shows genuine browser screenshots and pixel comparisons against design images; zero pixel diff is explained by CSS tuning, not copying design files."
+    },
+    "tool_use_correctness": {
+      "score": 0.97,
+      "reason": "Agent used headless Chrome to render pages and PIL/numpy to compare screenshots, which matches task needs. It did not use forbidden image proxying in the rollout evidence; minor over-instrumentation/analysis files are harmless."
+    },
+    "final_state_correctness": {
+      "score": 0.96,
+      "reason": "Final results/after screenshots exactly match design images and CSS hash changed. diffs.json F1 passes but is not fully exact, so final diagnostic state is slightly imperfect."
+    },
+    "efficiency_robustness": {
+      "score": 0.92,
+      "reason": "Agent iteratively diagnosed pixel differences and corrected the last pricing shadow mismatch to zero. The trajectory is somewhat long and includes repeated pixel probes, but it recovers effectively and verifies final artifacts."
+    },
+    "instruction_following": {
+      "score": 0.94,
+      "reason": "Explicit deliverables were produced and verified; constraints mostly respected. Minor issues: diffs.json includes extra non-GT/duplicate nav-like deviations and misses exact about line-height, and the staged results contain extra files beyond requested deliverables."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.96125,
+  "summary": "The rollout is very strong: all four required after screenshots are present, 1440\u00d7900, and have a measured 0.0 pixel-difference ratio against their mockups; styles.css was actually modified. The only substantive weakness is diffs.json: it passes schema/count/F1 and has 10/12 exact GT value hits, but omits the about line-height deviation and gives a slightly wrong pricing box-shadow value. No hack pattern was found in the trajectory."
+}
