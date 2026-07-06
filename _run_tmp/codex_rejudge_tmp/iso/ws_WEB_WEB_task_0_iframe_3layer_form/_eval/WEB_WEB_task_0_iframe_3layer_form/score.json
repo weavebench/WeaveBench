@@ -1,0 +1,122 @@
+{
+  "artifact_checks": [
+    {
+      "id": "quote.png",
+      "task_says": "`quote.png` | Full-screen screenshot of `quote_result.html` after a successful submission. File ≥ 5 KB (≥ 20 KB recommended). The image must clearly show the quote amount (including the ¥ symbol), must be the result page (not an intermediate step), and must not contain any error / anti-bot red banner.",
+      "spec_clauses": [
+        "Full-screen screenshot of `quote_result.html` after a successful submission",
+        "File ≥ 5 KB (≥ 20 KB recommended)",
+        "The image must clearly show the quote amount (including the ¥ symbol)",
+        "Must be the result page (not an intermediate step)",
+        "Must not contain any error / anti-bot red banner"
+      ],
+      "clause_results": [
+        {
+          "clause": "Full-screen screenshot of `quote_result.html` after a successful submission",
+          "satisfied": true,
+          "evidence": "PNG is 1920x1080 and shows the quote result page; server.log records POST /submit_quote followed by GET /quote_result.html?amount=%C2%A52%2C329.29."
+        },
+        {
+          "clause": "File ≥ 5 KB (≥ 20 KB recommended)",
+          "satisfied": true,
+          "evidence": "stat reports results/quote.png size 105198 bytes, exceeding both 5 KB and 20 KB recommended threshold."
+        },
+        {
+          "clause": "The image must clearly show the quote amount (including the ¥ symbol)",
+          "satisfied": true,
+          "evidence": "Image inspection reports the quote amount is clearly visible as ¥2,329.29."
+        },
+        {
+          "clause": "Must be the result page (not an intermediate step)",
+          "satisfied": true,
+          "evidence": "Image inspection identifies it as the quote_result.html style result page, not a form step."
+        },
+        {
+          "clause": "Must not contain any error / anti-bot red banner",
+          "satisfied": true,
+          "evidence": "Image inspection reports no error or anti-bot red banner; server.log contains no bot_detected entry."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "results/quote.png is a valid 1920x1080 PNG of 105198 bytes; visual inspection shows a successful quote result page with amount ¥2,329.29 and no error/anti-bot banner.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "quote_amount.txt",
+      "task_says": "`quote_amount.txt` | A single line of plain text strictly matching `¥<integer>.<two-decimals>` (e.g. `¥2,345.00`). The numeric value must fall in `[100, 100000]`. The amount must come from the real backend response — do not fabricate.",
+      "spec_clauses": [
+        "A single line of plain text strictly matching `¥<integer>.<two-decimals>` (e.g. `¥2,345.00`)",
+        "The numeric value must fall in `[100, 100000]`",
+        "The amount must come from the real backend response — do not fabricate"
+      ],
+      "clause_results": [
+        {
+          "clause": "A single line of plain text strictly matching `¥<integer>.<two-decimals>` (e.g. `¥2,345.00`)",
+          "satisfied": true,
+          "evidence": "File content is exactly one line: ¥2,329.29, which matches ¥[\\d,]+\\.\\d{2}."
+        },
+        {
+          "clause": "The numeric value must fall in `[100, 100000]`",
+          "satisfied": true,
+          "evidence": "Parsed numeric value 2329.29 is within [100, 100000]."
+        },
+        {
+          "clause": "The amount must come from the real backend response — do not fabricate",
+          "satisfied": true,
+          "evidence": "server.log records GET /quote_result.html?amount=%C2%A52%2C329.29 immediately after successful POST /submit_quote; saved text is ¥2,329.29."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "results/quote_amount.txt contains one line `¥2,329.29`; server.log shows the backend redirect amount `%C2%A52%2C329.29`, confirming the same value came from the backend response.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 1.0,
+      "reason": "Both required deliverables are present and complete: artifact_checks quote.png and quote_amount.txt each satisfy every clause; server.log confirms a successful POST /submit_quote with redirect to quote_result.html."
+    },
+    "deliverable_correctness": {
+      "score": 1.0,
+      "reason": "Mean artifact correctness is 1.0: quote.png shows the real result page with readable ¥2,329.29 and no error banner; quote_amount.txt has the exact backend amount in the required format and range."
+    },
+    "deliverable_quality": {
+      "score": 1.0,
+      "reason": "quote.png is a valid 1920x1080 PNG of 105198 bytes, and quote_amount.txt is parseable single-line plain text; no format or size problems were observed in either artifact_check."
+    },
+    "evidence_authenticity": {
+      "score": 1.0,
+      "reason": "Evidence is internally consistent: server.log contains the correct submitted payload and amount redirect, the screenshot was captured with gnome-screenshot per chat evidence, and hack grep found no deliverable-fabrication command beyond policy text."
+    },
+    "tool_use_correctness": {
+      "score": 0.98,
+      "reason": "The trajectory shows GUI/browser interaction through step pages and a real X screenshot capture; final verification commands checked files, regex, size, and server.log. Minor non-issue: the recorded drag took a very long trajectory_ms, but server.log did not flag bot_detected."
+    },
+    "final_state_correctness": {
+      "score": 1.0,
+      "reason": "Final state matches the requested outcome: backend received POST /submit_quote with 张三, 京A12345, Toyota, Camry, and 1990-05-15, no bot_detected, and result page amount matches both deliverables."
+    },
+    "efficiency_robustness": {
+      "score": 0.95,
+      "reason": "The rollout completed all steps and verified outputs, but the chat timestamps show several minutes spent on the captcha/flow; this is acceptable but not maximally efficient."
+    },
+    "instruction_following": {
+      "score": 1.0,
+      "reason": "Explicit constraints were respected: deliverables are under results/, transitions reached step2/step3/step4 before submission, the log shows complete payload capture, and there is no bot_detected or forbidden GT access evidence."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.99125,
+  "summary": "The rollout successfully completed the iframe form, submitted the correct payload, avoided bot detection, and produced both required deliverables. The screenshot is a real full-screen result page with the same backend amount saved in quote_amount.txt, and no fabrication or hidden-ground-truth access was found."
+}
