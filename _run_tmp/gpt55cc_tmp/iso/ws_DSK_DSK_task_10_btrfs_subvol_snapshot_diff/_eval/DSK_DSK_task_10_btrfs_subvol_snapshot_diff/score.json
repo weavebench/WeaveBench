@@ -1,0 +1,312 @@
+{
+  "artifact_checks": [
+    {
+      "id": "subvolume_list.txt",
+      "task_says": "`subvolume_list.txt`: list every subvolume on the volume (with path / id / parent); the five entries `data_a`, `data_b`, `data_c`, `snap1`, `snap2` must all be visible.",
+      "spec_clauses": [
+        "list every subvolume on the volume",
+        "with path / id / parent",
+        "the five entries `data_a`, `data_b`, `data_c`, `snap1`, `snap2` must all be visible"
+      ],
+      "clause_results": [
+        {"clause": "list every subvolume on the volume", "satisfied": true, "evidence": "File lists IDs 256-261 including data_a, data_b, data_c, snapshots, snapshots/snap1, snapshots/snap2."},
+        {"clause": "with path / id / parent", "satisfied": true, "evidence": "Each row includes `ID ... parent ... path ...`, e.g. `ID 260 gen 7 parent 259 ... path snapshots/snap1`."},
+        {"clause": "the five entries `data_a`, `data_b`, `data_c`, `snap1`, `snap2` must all be visible", "satisfied": true, "evidence": "All five required names appear in the file."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Observed rows include `ID 256 ... path data_a`, `ID 257 ... path data_b`, `ID 258 ... path data_c`, `ID 260 ... path snapshots/snap1`, and `ID 261 ... path snapshots/snap2`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "subvolume_show_snap1.txt",
+      "task_says": "`subvolume_show_snap1.txt`: metadata for snap1 respectively, content must include the `UUID` and `Generation` fields.",
+      "spec_clauses": [
+        "metadata is for snap1",
+        "content must include the `UUID` field",
+        "content must include the `Generation` field"
+      ],
+      "clause_results": [
+        {"clause": "metadata is for snap1", "satisfied": true, "evidence": "First line is `snapshots/snap1` and Name is `snap1`."},
+        {"clause": "content must include the `UUID` field", "satisfied": true, "evidence": "Contains `UUID: 84f4e78e-e372-3446-8250-bd2c2ceced7f`."},
+        {"clause": "content must include the `Generation` field", "satisfied": true, "evidence": "Contains `Generation: 7`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "snap1 show output includes `Name: snap1`, `UUID: 84f4e78e-e372-3446-8250-bd2c2ceced7f`, and `Generation: 7`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "subvolume_show_snap2.txt",
+      "task_says": "`subvolume_show_snap2.txt`: metadata for snap2 respectively, content must include the `UUID` and `Generation` fields.",
+      "spec_clauses": [
+        "metadata is for snap2",
+        "content must include the `UUID` field",
+        "content must include the `Generation` field"
+      ],
+      "clause_results": [
+        {"clause": "metadata is for snap2", "satisfied": true, "evidence": "First line is `snapshots/snap2` and Name is `snap2`."},
+        {"clause": "content must include the `UUID` field", "satisfied": true, "evidence": "Contains `UUID: d407672f-704b-fe41-8a48-9b852c37c4e8`."},
+        {"clause": "content must include the `Generation` field", "satisfied": true, "evidence": "Contains `Generation: 8`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "snap2 show output includes `Name: snap2`, `UUID: d407672f-704b-fe41-8a48-9b852c37c4e8`, and `Generation: 8`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fs_usage.txt",
+      "task_says": "`fs_usage.txt`: physical usage breakdown for the whole volume, must contain the `Device size` and `Data,single` fields.",
+      "spec_clauses": [
+        "physical usage breakdown for the whole volume",
+        "must contain the `Device size` field",
+        "must contain the `Data,single` field"
+      ],
+      "clause_results": [
+        {"clause": "physical usage breakdown for the whole volume", "satisfied": true, "evidence": "Output has Overall, Data,single, Metadata,DUP, System,DUP, and Unallocated sections for `/dev/loop25`."},
+        {"clause": "must contain the `Device size` field", "satisfied": true, "evidence": "Contains `Device size: 1.00GiB`."},
+        {"clause": "must contain the `Data,single` field", "satisfied": true, "evidence": "Contains `Data,single: Size:120.00MiB, Used:104.00MiB`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The file contains `Device size: 1.00GiB` and `Data,single: Size:120.00MiB, Used:104.00MiB (86.67%)` plus metadata/system/unallocated breakdowns.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fs_du_snap2.txt",
+      "task_says": "`fs_du_snap2.txt`: extent-level usage for `snapshots/snap2`. A line must contain the three column headers `Total` / `Exclusive` / `Set shared` simultaneously, and a row for `payload_alpha_clone.bin` must be visible (its Exclusive byte count is 0, Set shared is non-zero).",
+      "spec_clauses": [
+        "extent-level usage for `snapshots/snap2`",
+        "a line must contain the three column headers `Total` / `Exclusive` / `Set shared` simultaneously",
+        "a row for `payload_alpha_clone.bin` must be visible",
+        "`payload_alpha_clone.bin` Exclusive byte count is 0",
+        "`payload_alpha_clone.bin` Set shared is non-zero"
+      ],
+      "clause_results": [
+        {"clause": "extent-level usage for `snapshots/snap2`", "satisfied": true, "evidence": "Rows are under `/mnt/btrfs_lab/snapshots/snap2` and show Total/Exclusive/Set shared values."},
+        {"clause": "a line must contain the three column headers `Total` / `Exclusive` / `Set shared` simultaneously", "satisfied": true, "evidence": "Header line is `Total   Exclusive  Set shared  Filename`."},
+        {"clause": "a row for `payload_alpha_clone.bin` must be visible", "satisfied": true, "evidence": "There is a row ending `/mnt/btrfs_lab/snapshots/snap2/payload_alpha_clone.bin`."},
+        {"clause": "`payload_alpha_clone.bin` Exclusive byte count is 0", "satisfied": true, "evidence": "Clone row shows `0.00B` in Exclusive."},
+        {"clause": "`payload_alpha_clone.bin` Set shared is non-zero", "satisfied": true, "evidence": "Clone row shows `32.00MiB` in Set shared."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Clone row: `32.00MiB       0.00B    32.00MiB  /mnt/btrfs_lab/snapshots/snap2/payload_alpha_clone.bin`; header contains `Total   Exclusive  Set shared`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "send_dump.txt",
+      "task_says": "`send_dump.txt`: human-readable dump of the incremental send stream from `snap1 → snap2` (≥ 500 bytes). The format should include entries such as `clone offset=... len=...`, `mkfile path=...`, `truncate path=... size=...`, `utimes path=...`. `clone` lines represent reflink reuse; `write` / `update_extent` / `truncate` lines represent genuinely new writes.",
+      "spec_clauses": [
+        "human-readable dump of the incremental send stream from `snap1 → snap2`",
+        "file size is ≥ 500 bytes",
+        "format includes `clone offset=... len=...` entries",
+        "format includes `mkfile path=...`-type entries",
+        "format includes `truncate path=... size=...`-type entries",
+        "format includes `utimes path=...`-type entries",
+        "contains `write` / `update_extent` / `truncate` lines representing genuinely new writes"
+      ],
+      "clause_results": [
+        {"clause": "human-readable dump of the incremental send stream from `snap1 → snap2`", "satisfied": true, "evidence": "Starts with `snapshot ./snap2 ... parent_uuid=... parent_transid=7` and contains textual btrfs receive --dump operations."},
+        {"clause": "file size is ≥ 500 bytes", "satisfied": true, "evidence": "Observed size is 52064 bytes."},
+        {"clause": "format includes `clone offset=... len=...` entries", "satisfied": true, "evidence": "Contains `clone ./snap2/payload_alpha_clone.bin offset=0 len=33554432 from=./snap2/payload_alpha.bin clone_offset=0`."},
+        {"clause": "format includes `mkfile path=...`-type entries", "satisfied": "partial", "evidence": "Contains `mkfile ./snap2/o266-8-0` and later rename to payload_alpha_clone, but not a direct `mkfile path=...` form/name for the final clone file."},
+        {"clause": "format includes `truncate path=... size=...`-type entries", "satisfied": false, "evidence": "No `truncate` lines were found in send_dump.txt."},
+        {"clause": "format includes `utimes path=...`-type entries", "satisfied": true, "evidence": "Contains utimes lines for payload_beta.bin, NOTES.txt, payload_alpha_clone.bin, run6.log, logs, and snap2 root."},
+        {"clause": "contains `write` / `update_extent` / `truncate` lines representing genuinely new writes", "satisfied": true, "evidence": "Contains 685 `write` lines for `payload_beta.bin` with offsets and lengths."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.79,
+      "evidence_quote": "52064-byte textual dump includes many `write` lines, one `clone ... payload_alpha_clone.bin offset=0 len=33554432 ...`, mkfile/rename operations, and utimes; it lacks any `truncate` line and mkfile is only via temporary names.",
+      "missing_or_wrong": "Missing explicit truncate entry; mkfile entries are temporary-name/rename form rather than direct `mkfile path=...` for the final file.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "send_stderr.log",
+      "task_says": "`send_stderr.log`: stderr of the same process, for troubleshooting.",
+      "spec_clauses": [
+        "stderr of the same send/dump process is captured",
+        "usable for troubleshooting"
+      ],
+      "clause_results": [
+        {"clause": "stderr of the same send/dump process is captured", "satisfied": true, "evidence": "File exists and contains btrfs send stderr text `At subvol /mnt/btrfs_lab/snapshots/snap2` plus sudo prompt."},
+        {"clause": "usable for troubleshooting", "satisfied": true, "evidence": "The captured stderr shows the sudo prompt and the subvolume used by btrfs send."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "send_stderr.log contains `[sudo] password for user: At subvol /mnt/btrfs_lab/snapshots/snap2`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_nautilus_snap1.png",
+      "task_says": "`view_nautilus_snap1.png`: browse the \"Properties\" detail panel of any file under `/mnt/btrfs_lab/snapshots/snap1/`. The text must show the word `Properties` or `Size`, and must relate to the snap1 path or a payload name. Visual evidence images: any resolution, all ≥ 4 KB, rendered in a real working environment, no synthetic images.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "rendered in a real working environment, no synthetic images",
+        "browses the Properties detail panel of any file under `/mnt/btrfs_lab/snapshots/snap1/`",
+        "text shows the word `Properties` or `Size`",
+        "text relates to the snap1 path or a payload name"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": false, "evidence": "File is absent from results/."},
+        {"clause": "rendered in a real working environment, no synthetic images", "satisfied": false, "evidence": "No image file exists to verify authenticity."},
+        {"clause": "browses the Properties detail panel of any file under `/mnt/btrfs_lab/snapshots/snap1/`", "satisfied": false, "evidence": "File is absent; chat grep showed no screenshot creation attempt."},
+        {"clause": "text shows the word `Properties` or `Size`", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "text relates to the snap1 path or a payload name", "satisfied": false, "evidence": "No image file exists to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`view_nautilus_snap1.png` is not present in results/, and chat investigation found no strong evidence it was created elsewhere.",
+      "missing_or_wrong": "Missing required PNG; no Properties panel, no Size/Properties text, no snap1/payload visual evidence, no real-environment rendering evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_nautilus_snap2.png",
+      "task_says": "`view_nautilus_snap2.png`: browse the Properties panel of `/mnt/btrfs_lab/snapshots/snap2/payload_alpha_clone.bin`, with `Properties` or `Size` visible and the clone filename identifiable. Visual evidence images: any resolution, all ≥ 4 KB, rendered in a real working environment, no synthetic images.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "rendered in a real working environment, no synthetic images",
+        "browses the Properties panel of `/mnt/btrfs_lab/snapshots/snap2/payload_alpha_clone.bin`",
+        "`Properties` or `Size` is visible",
+        "clone filename is identifiable"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": false, "evidence": "File is absent from results/."},
+        {"clause": "rendered in a real working environment, no synthetic images", "satisfied": false, "evidence": "No image file exists to verify authenticity."},
+        {"clause": "browses the Properties panel of `/mnt/btrfs_lab/snapshots/snap2/payload_alpha_clone.bin`", "satisfied": false, "evidence": "File is absent; chat grep showed no screenshot creation attempt."},
+        {"clause": "`Properties` or `Size` is visible", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "clone filename is identifiable", "satisfied": false, "evidence": "No image file exists to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`view_nautilus_snap2.png` is not present in results/, and chat investigation found no strong evidence it was created elsewhere.",
+      "missing_or_wrong": "Missing required PNG; no snap2 payload_alpha_clone Properties panel, no Size/Properties text, no identifiable clone filename, no real-environment rendering evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_terminal_du.png",
+      "task_says": "`view_terminal_du.png`: image showing the extent-level usage listing. The text must **simultaneously** show the three column headers `Total` / `Exclusive` / `Set shared` and the literal `alpha_clone`. Visual evidence images: any resolution, all ≥ 4 KB, rendered in a real working environment, no synthetic images.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 4 KB",
+        "rendered in a real working environment, no synthetic images",
+        "image shows the extent-level usage listing",
+        "text simultaneously shows `Total` / `Exclusive` / `Set shared`",
+        "text shows the literal `alpha_clone`"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 4 KB", "satisfied": false, "evidence": "File is absent from results/."},
+        {"clause": "rendered in a real working environment, no synthetic images", "satisfied": false, "evidence": "No image file exists to verify authenticity."},
+        {"clause": "image shows the extent-level usage listing", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "text simultaneously shows `Total` / `Exclusive` / `Set shared`", "satisfied": false, "evidence": "No image file exists to inspect."},
+        {"clause": "text shows the literal `alpha_clone`", "satisfied": false, "evidence": "No image file exists to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`view_terminal_du.png` is not present in results/, and chat investigation found no strong evidence it was created elsewhere.",
+      "missing_or_wrong": "Missing required PNG; no terminal extent-usage image, no simultaneous Total/Exclusive/Set shared headers, no alpha_clone visual evidence, no real-environment rendering evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "changes.json",
+      "task_says": "`results/changes.json`, strict schema: `{\"subvolumes\":[\"data_a\",\"data_b\",\"data_c\",\"snapshots/snap1\",\"snapshots/snap2\"], \"added\":[\"payload_alpha_clone.bin\",\"logs/run6.log\"], \"modified\":[\"NOTES.txt\",\"payload_beta.bin\"], \"removed\":[\"logs/run5.log\"], \"reflink_pairs\":[[\"payload_alpha.bin\",\"payload_alpha_clone.bin\"]], \"snap2_apparent_bytes\":<int>, \"snap2_exclusive_bytes\":<int>, \"snap2_shared_bytes\":<int>, \"evidence\":{\"cli\":[\"subvolume_list.txt\",\"fs_du_snap2.txt\",\"send_dump.txt\"], \"gui\":[\"view_nautilus_snap1.png\",\"view_nautilus_snap2.png\",\"view_terminal_du.png\"]}}`. Hard constraints: `snap2_apparent_bytes > snap2_exclusive_bytes > 0` and `snap2_shared_bytes > 0`; `reflink_pairs` must include `(payload_alpha.bin, payload_alpha_clone.bin)`.",
+      "spec_clauses": [
+        "file exists and parses as JSON",
+        "strict schema contains subvolumes, added, modified, removed, reflink_pairs, snap2_apparent_bytes, snap2_exclusive_bytes, snap2_shared_bytes, evidence",
+        "subvolumes equal/include data_a, data_b, data_c, snapshots/snap1, snapshots/snap2",
+        "added equals/includes payload_alpha_clone.bin and logs/run6.log",
+        "modified equals/includes NOTES.txt and payload_beta.bin",
+        "removed equals/includes logs/run5.log",
+        "reflink_pairs includes (payload_alpha.bin, payload_alpha_clone.bin)",
+        "hard constraint `snap2_apparent_bytes > snap2_exclusive_bytes > 0`",
+        "hard constraint `snap2_shared_bytes > 0`",
+        "evidence.cli lists subvolume_list.txt, fs_du_snap2.txt, send_dump.txt and evidence.gui lists the three PNGs"
+      ],
+      "clause_results": [
+        {"clause": "file exists and parses as JSON", "satisfied": false, "evidence": "changes.json is absent from results/."},
+        {"clause": "strict schema contains subvolumes, added, modified, removed, reflink_pairs, snap2_apparent_bytes, snap2_exclusive_bytes, snap2_shared_bytes, evidence", "satisfied": false, "evidence": "No file exists."},
+        {"clause": "subvolumes equal/include data_a, data_b, data_c, snapshots/snap1, snapshots/snap2", "satisfied": false, "evidence": "No JSON file exists."},
+        {"clause": "added equals/includes payload_alpha_clone.bin and logs/run6.log", "satisfied": false, "evidence": "No JSON file exists."},
+        {"clause": "modified equals/includes NOTES.txt and payload_beta.bin", "satisfied": false, "evidence": "No JSON file exists."},
+        {"clause": "removed equals/includes logs/run5.log", "satisfied": false, "evidence": "No JSON file exists."},
+        {"clause": "reflink_pairs includes (payload_alpha.bin, payload_alpha_clone.bin)", "satisfied": false, "evidence": "No JSON file exists."},
+        {"clause": "hard constraint `snap2_apparent_bytes > snap2_exclusive_bytes > 0`", "satisfied": false, "evidence": "No numeric fields exist."},
+        {"clause": "hard constraint `snap2_shared_bytes > 0`", "satisfied": false, "evidence": "No numeric fields exist."},
+        {"clause": "evidence.cli lists subvolume_list.txt, fs_du_snap2.txt, send_dump.txt and evidence.gui lists the three PNGs", "satisfied": false, "evidence": "No JSON file exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`changes.json` is not present in results/; chat grep found no successful write command or final claim that it was produced.",
+      "missing_or_wrong": "Missing entire structured conclusions JSON and every required schema/value/invariant clause.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.md",
+      "task_says": "`results/report.md` (≥ 400 characters, Markdown): Explain why `payload_alpha_clone.bin` appears to \"occupy several MiB\" from the inode/apparent perspective but adds almost no new physical footprint from the extent perspective; Provide a lower-bound estimate of the real new-write bytes from `snap1 → snap2` (the size of the incremental send stream can serve as a reference); Cover at least 4 of the keywords: `reflink` / `extent` / `exclusive` / `shared` / `apparent` / `snapshot`.",
+      "spec_clauses": [
+        "file exists as Markdown",
+        "length is ≥ 400 characters",
+        "explains why payload_alpha_clone.bin appears to occupy several MiB from inode/apparent perspective but adds almost no new physical footprint from extent perspective",
+        "provides a lower-bound estimate of real new-write bytes from snap1 → snap2",
+        "covers at least 4 keywords among reflink, extent, exclusive, shared, apparent, snapshot"
+      ],
+      "clause_results": [
+        {"clause": "file exists as Markdown", "satisfied": false, "evidence": "report.md is absent from results/."},
+        {"clause": "length is ≥ 400 characters", "satisfied": false, "evidence": "No file exists."},
+        {"clause": "explains why payload_alpha_clone.bin appears to occupy several MiB from inode/apparent perspective but adds almost no new physical footprint from extent perspective", "satisfied": false, "evidence": "No report exists."},
+        {"clause": "provides a lower-bound estimate of real new-write bytes from snap1 → snap2", "satisfied": false, "evidence": "No report exists."},
+        {"clause": "covers at least 4 keywords among reflink, extent, exclusive, shared, apparent, snapshot", "satisfied": false, "evidence": "No report exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`report.md` is not present in results/; chat grep found no successful write command or final claim that it was produced.",
+      "missing_or_wrong": "Missing entire narrative report, length, explanation, lower-bound estimate, and keyword coverage.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.55, "reason": "The rollout completed the core CLI evidence chain for subvolume inventory, extent accounting, and send-stream dump (subvolume_list.txt, show files, fs_usage.txt, fs_du_snap2.txt, send_dump.txt), but omitted all three required GUI screenshots plus changes.json and report.md."},
+    "deliverable_correctness": {"score": 0.65, "reason": "Mean per-artifact correctness is about 7.79/12: seven CLI/log artifacts are mostly or fully correct, send_dump.txt is partial for missing truncate/direct mkfile form, and five required artifacts are completely missing."},
+    "deliverable_quality": {"score": 0.58, "reason": "Existing text outputs are parseable and useful, but 5 of 12 required deliverables are absent, including every PNG and both conclusion artifacts."},
+    "evidence_authenticity": {"score": 0.88, "reason": "No fabrication-signal grep hits or synthetic-image artifacts were found; the present evidence comes from real btrfs commands. Score is not perfect because the required visual evidence is missing and the agent relied on the provided setup script rather than only auditing an already-mounted volume."},
+    "tool_use_correctness": {"score": 0.55, "reason": "The agent used appropriate btrfs CLI commands and recovered from an initial stderr redirection error, but never used GUI/screenshot tools and never wrote the required JSON/report conclusions."},
+    "final_state_correctness": {"score": 0.52, "reason": "The final results directory contains a partial CLI audit, but the requested end state was a complete audit chain with structured conclusions, narrative report, and visual evidence; those major components are missing."},
+    "efficiency_robustness": {"score": 0.45, "reason": "It made progress after command failures, but stopped before completing half of the deliverable categories and ended with refusal text instead of finishing the task."},
+    "instruction_following": {"score": 0.50, "reason": "It placed several outputs under results/ and preserved snapshots, but failed explicit deliverable instructions for GUI images, changes.json schema, report.md, and the final audit conclusion."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.585,
+  "summary": "The rollout produced credible CLI evidence for the Btrfs subvolume inventory, extent accounting, and incremental send stream, including the crucial payload_alpha_clone reflink row and clone operation. However, it failed to produce changes.json, report.md, and all three required GUI screenshots, so the audit is materially incomplete despite the strong CLI subset. No clear hack or fabricated-image signal was observed."
+}
