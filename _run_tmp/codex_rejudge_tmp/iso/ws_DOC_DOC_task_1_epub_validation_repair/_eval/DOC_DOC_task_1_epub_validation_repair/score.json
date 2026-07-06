@@ -1,0 +1,546 @@
+{
+  "artifact_checks": [
+    {
+      "id": "fixed_ebook.epub",
+      "task_says": "Hard constraints on the main deliverable `fixed_ebook.epub` (under `/tmp_workspace/ebook/`): `mimetype` must be the first entry in the zip and must be STORE (uncompressed); otherwise PKG-006 triggers; Passes `epubcheck` with errors ≤ 1; Error count reduction vs. the original EPUB (`reduction_ratio`) ≥ 0.8",
+      "spec_clauses": [
+        "fixed_ebook.epub exists under /tmp_workspace/ebook/",
+        "mimetype must be the first entry in the zip",
+        "mimetype must be STORE/uncompressed",
+        "passes epubcheck with errors ≤ 1",
+        "error count reduction vs. original EPUB reduction_ratio ≥ 0.8"
+      ],
+      "clause_results": [
+        {"clause": "fixed_ebook.epub exists under /tmp_workspace/ebook/", "satisfied": true, "evidence": "Staged artifact includes results/ebook/fixed_ebook.epub, 21933 bytes; agent final verification listed /tmp_workspace/ebook/fixed_ebook.epub."},
+        {"clause": "mimetype must be the first entry in the zip", "satisfied": true, "evidence": "Zip inspection shows entry 0 is mimetype."},
+        {"clause": "mimetype must be STORE/uncompressed", "satisfied": true, "evidence": "Zip inspection shows mimetype compress_type 0."},
+        {"clause": "passes epubcheck with errors ≤ 1", "satisfied": true, "evidence": "epubcheck_final.log says 0 errors / 0 warnings / 0 fatals."},
+        {"clause": "error count reduction vs. original EPUB reduction_ratio ≥ 0.8", "satisfied": true, "evidence": "error_diff.json reports initial_errors 4, final_errors 0, reduction_ratio 1.0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Zip order/store verified directly; epubcheck_final.log reports no errors; error_diff.json reports reduction_ratio 1.0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "epubcheck_initial.log",
+      "task_says": "`epubcheck_initial.log` | Full structured validation output for the original EPUB, including ERROR / FATAL entries",
+      "spec_clauses": ["file exists and is readable", "contains full structured validation output for the original EPUB", "includes ERROR / FATAL entries"],
+      "clause_results": [
+        {"clause": "file exists and is readable", "satisfied": true, "evidence": "1005-byte log exists."},
+        {"clause": "contains full structured validation output for the original EPUB", "satisfied": true, "evidence": "Log starts 'Validating using EPUB version 3.2 rules' against ./ebook/broken_ebook.epub and includes final message counts."},
+        {"clause": "includes ERROR / FATAL entries", "satisfied": true, "evidence": "Contains ERROR(OPF-029), ERROR(RSC-001), ERROR(RSC-008), ERROR(RSC-007)."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Messages: 0 fatals / 4 errors / 2 warnings; ERROR codes OPF-029, RSC-001, RSC-008, RSC-007 are present.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "error_summary_initial.json",
+      "task_says": "`error_summary_initial.json` | `{\"errors\": <int>, \"warnings\": <int>, \"fatal\": <int>, \"error_codes\": [\"<CODE>\"]}`; errors ≥ 4",
+      "spec_clauses": ["valid JSON", "has errors integer", "has warnings integer", "has fatal integer", "has error_codes list", "errors ≥ 4"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has errors integer", "satisfied": true, "evidence": "errors: 4."},
+        {"clause": "has warnings integer", "satisfied": true, "evidence": "warnings: 2."},
+        {"clause": "has fatal integer", "satisfied": true, "evidence": "fatal: 0."},
+        {"clause": "has error_codes list", "satisfied": true, "evidence": "error_codes list has OPF-029, RSC-001, RSC-008, RSC-007."},
+        {"clause": "errors ≥ 4", "satisfied": true, "evidence": "errors equals 4."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "JSON exactly contains errors=4, warnings=2, fatal=0, and four error codes.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "xmllint_initial.log",
+      "task_says": "`xmllint_initial.log` | well-formed check output for structural XML such as OPF / NCX / nav.xhtml",
+      "spec_clauses": ["file exists", "contains well-formed check output", "covers OPF", "covers nav.xhtml", "covers NCX or documents NCX status"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "468-byte log exists."},
+        {"clause": "contains well-formed check output", "satisfied": true, "evidence": "Multiple entries say OK."},
+        {"clause": "covers OPF", "satisfied": true, "evidence": "OEBPS/content.opf OK."},
+        {"clause": "covers nav.xhtml", "satisfied": true, "evidence": "OEBPS/nav.xhtml OK."},
+        {"clause": "covers NCX or documents NCX status", "satisfied": true, "evidence": "States 'toc.ncx NCX not present; EPUB 3 nav document is used instead.'"}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The log records OK checks for container.xml, content.opf, nav.xhtml, ch01.xhtml, ch02.xhtml, ch03.xhtml, and notes NCX absence.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "missing_assets.txt",
+      "task_says": "`missing_assets.txt` | ≥ 2 lines, each `<path> <category>` (e.g. `images/cover.jpg MISSING_IN_FS`), listing resources where the filesystem and manifest references disagree",
+      "spec_clauses": ["file exists", "has ≥ 2 non-empty lines", "each line is '<path> <category>'", "lists filesystem/manifest reference disagreements"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "124-byte text file exists."},
+        {"clause": "has ≥ 2 non-empty lines", "satisfied": true, "evidence": "3 non-empty lines present."},
+        {"clause": "each line is '<path> <category>'", "satisfied": true, "evidence": "Lines are 'OEBPS/images/photo.jpg MISSING_IN_FS', 'OEBPS/ch03.xhtml MISSING_IN_MANIFEST', and 'OEBPS/ch04_missing.xhtml NAV_TARGET_MISSING_IN_FS'."},
+        {"clause": "lists filesystem/manifest reference disagreements", "satisfied": true, "evidence": "Categories identify missing file, unmanifested file, and missing nav target."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "missing_assets.txt has three path/category lines, including OEBPS/images/photo.jpg MISSING_IN_FS.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "zip_audit_initial.json",
+      "task_says": "`zip_audit_initial.json` | `{\"mimetype_first\": <bool>, \"mimetype_uncompressed\": <bool>, \"entry_count\": <int>, \"violations\": [\"<reason>\"]}`",
+      "spec_clauses": ["valid JSON", "has mimetype_first bool", "has mimetype_uncompressed bool", "has entry_count int", "has violations list"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has mimetype_first bool", "satisfied": true, "evidence": "mimetype_first: true."},
+        {"clause": "has mimetype_uncompressed bool", "satisfied": true, "evidence": "mimetype_uncompressed: true."},
+        {"clause": "has entry_count int", "satisfied": true, "evidence": "entry_count: 9."},
+        {"clause": "has violations list", "satisfied": true, "evidence": "violations: []."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "zip_audit_initial.json has the exact requested keys and typed values.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "nav_spine_diff.json",
+      "task_says": "`nav_spine_diff.json` | `{\"in_spine_only\": [\"<id>\"], \"in_nav_only\": [\"<href>\"], \"matched\": <int>}`",
+      "spec_clauses": ["valid JSON", "has in_spine_only list", "has in_nav_only list", "has matched int"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has in_spine_only list", "satisfied": true, "evidence": "in_spine_only: []."},
+        {"clause": "has in_nav_only list", "satisfied": true, "evidence": "in_nav_only includes ch03.xhtml and ch04_missing.xhtml."},
+        {"clause": "has matched int", "satisfied": true, "evidence": "matched: 2."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "nav_spine_diff.json has in_spine_only, in_nav_only, and matched with plausible nav-only broken entries.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "epubcheck_mid.log",
+      "task_says": "`epubcheck_mid.log` | Mid-repair validation output against the in-progress EPUB",
+      "spec_clauses": ["file exists", "is validation output", "is against in-progress/mid-repair EPUB"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "147-byte log exists."},
+        {"clause": "is validation output", "satisfied": true, "evidence": "Starts 'Validating using EPUB version 3.2 rules' and has message counts."},
+        {"clause": "is against in-progress/mid-repair EPUB", "satisfied": true, "evidence": "Named mid log; staged work/mid_ebook.epub exists; log says no errors or warnings."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "epubcheck_mid.log reports 'No errors or warnings detected' and EPUBCheck completed.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "zip_audit_fixed.json",
+      "task_says": "`zip_audit_fixed.json` | Same schema as `zip_audit_initial.json`; `mimetype_first` must be true",
+      "spec_clauses": ["valid JSON", "has same schema as zip_audit_initial.json", "mimetype_first must be true", "mimetype_uncompressed is reported"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has same schema as zip_audit_initial.json", "satisfied": true, "evidence": "Contains mimetype_first, mimetype_uncompressed, entry_count, violations."},
+        {"clause": "mimetype_first must be true", "satisfied": true, "evidence": "mimetype_first: true."},
+        {"clause": "mimetype_uncompressed is reported", "satisfied": true, "evidence": "mimetype_uncompressed: true."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "zip_audit_fixed.json reports mimetype_first=true, mimetype_uncompressed=true, entry_count=13, violations=[].",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "final_output.pdf",
+      "task_says": "`final_output.pdf` | PDF converted from the fixed EPUB (with page numbers), page count ≥ 3",
+      "spec_clauses": ["file exists", "is a PDF converted from fixed EPUB", "has page numbers", "page count ≥ 3"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "101737-byte final_output.pdf exists."},
+        {"clause": "is a PDF converted from fixed EPUB", "satisfied": true, "evidence": "ebook_convert.log says input /tmp_workspace/ebook/fixed_ebook.epub and output /tmp_workspace/results/final_output.pdf."},
+        {"clause": "has page numbers", "satisfied": true, "evidence": "ebook_convert.log records pdf_page_numbers: True and Okular page selector shows page 1 of 5 / page 4 of 5."},
+        {"clause": "page count ≥ 3", "satisfied": true, "evidence": "pdfinfo.json and pdfinfo report Pages: 5."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "PDF exists, pdfinfo reports 5 pages, and conversion log shows fixed EPUB input and pdf_page_numbers=True.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "ebook_convert.log",
+      "task_says": "`ebook_convert.log` | stdout / stderr log of the EPUB → PDF conversion",
+      "spec_clauses": ["file exists", "contains stdout/stderr conversion log", "shows EPUB input", "shows PDF output"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "1372-byte log exists."},
+        {"clause": "contains stdout/stderr conversion log", "satisfied": true, "evidence": "Contains Calibre progress percentages and warnings."},
+        {"clause": "shows EPUB input", "satisfied": true, "evidence": "InputFormatPlugin: EPUB Input running on /tmp_workspace/ebook/fixed_ebook.epub."},
+        {"clause": "shows PDF output", "satisfied": true, "evidence": "PDF output written to /tmp_workspace/results/final_output.pdf."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "ebook_convert.log contains Calibre conversion progress from fixed_ebook.epub to final_output.pdf.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pdfinfo.json",
+      "task_says": "`pdfinfo.json` | `{\"pages\": <int>, \"title\": \"<str>\", \"producer\": \"<str>\"}`",
+      "spec_clauses": ["valid JSON", "has pages int", "has title string", "has producer string"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has pages int", "satisfied": true, "evidence": "pages: 5."},
+        {"clause": "has title string", "satisfied": true, "evidence": "title: Fixed Sample Book."},
+        {"clause": "has producer string", "satisfied": true, "evidence": "producer: calibre (5.37.0) [http://calibre-ebook.com]."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pdfinfo.json has pages=5, title='Fixed Sample Book', producer='calibre (5.37.0)'.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "epubcheck_final.log",
+      "task_says": "`epubcheck_final.log` | Final validation output for the fixed EPUB, errors ≤ 1",
+      "spec_clauses": ["file exists", "contains final validation output for fixed EPUB", "errors ≤ 1"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "147-byte log exists."},
+        {"clause": "contains final validation output for fixed EPUB", "satisfied": true, "evidence": "EPUBCheck output with validation rules and completion line."},
+        {"clause": "errors ≤ 1", "satisfied": true, "evidence": "Messages: 0 fatals / 0 errors / 0 warnings / 0 infos."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "epubcheck_final.log says 'No errors or warnings detected' and 0 errors.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "error_summary_final.json",
+      "task_says": "`error_summary_final.json` | Same schema as `error_summary_initial.json`",
+      "spec_clauses": ["valid JSON", "has errors integer", "has warnings integer", "has fatal integer", "has error_codes list"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has errors integer", "satisfied": true, "evidence": "errors: 0."},
+        {"clause": "has warnings integer", "satisfied": true, "evidence": "warnings: 0."},
+        {"clause": "has fatal integer", "satisfied": true, "evidence": "fatal: 0."},
+        {"clause": "has error_codes list", "satisfied": true, "evidence": "error_codes: []."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Final summary schema matches initial summary and reports all zero counts.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "error_diff.json",
+      "task_says": "`error_diff.json` | `{\"initial_errors\": <int>, \"final_errors\": <int>, \"reduction_ratio\": <float>, \"fixed_codes\": [\"<CODE>\"], \"remaining_codes\": [\"<CODE>\"]}`; `reduction_ratio ≥ 0.8`",
+      "spec_clauses": ["valid JSON", "has initial_errors int", "has final_errors int", "has reduction_ratio float", "has fixed_codes list", "has remaining_codes list", "reduction_ratio ≥ 0.8"],
+      "clause_results": [
+        {"clause": "valid JSON", "satisfied": true, "evidence": "Parsed successfully."},
+        {"clause": "has initial_errors int", "satisfied": true, "evidence": "initial_errors: 4."},
+        {"clause": "has final_errors int", "satisfied": true, "evidence": "final_errors: 0."},
+        {"clause": "has reduction_ratio float", "satisfied": true, "evidence": "reduction_ratio: 1.0."},
+        {"clause": "has fixed_codes list", "satisfied": true, "evidence": "fixed_codes lists OPF-029, RSC-001, RSC-007, RSC-008."},
+        {"clause": "has remaining_codes list", "satisfied": true, "evidence": "remaining_codes: []."},
+        {"clause": "reduction_ratio ≥ 0.8", "satisfied": true, "evidence": "1.0 ≥ 0.8."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "error_diff.json reports 4 initial errors, 0 final errors, reduction_ratio 1.0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "repair_report.md",
+      "task_says": "`repair_report.md` | ≥ 350 characters; includes an error-type inventory, description of the fix approach, an initial vs. final error-count comparison markdown table, and a chronological index of the key evidence (screenshots and logs)",
+      "spec_clauses": ["file exists", "≥ 350 characters", "includes an error-type inventory", "includes description of the fix approach", "includes initial vs. final error-count comparison markdown table", "includes chronological index of key evidence screenshots and logs"],
+      "clause_results": [
+        {"clause": "file exists", "satisfied": true, "evidence": "2789-byte Markdown file exists."},
+        {"clause": "≥ 350 characters", "satisfied": true, "evidence": "wc/read length is 2789 bytes/characters-scale."},
+        {"clause": "includes an error-type inventory", "satisfied": true, "evidence": "Section 'Error-Type Inventory' lists OPF-029, RSC-001, RSC-008, RSC-007 and warnings."},
+        {"clause": "includes description of the fix approach", "satisfied": true, "evidence": "Section 'Fix Approach' describes OPF, CSS, asset, nav, packaging, validation, and conversion fixes."},
+        {"clause": "includes initial vs. final error-count comparison markdown table", "satisfied": true, "evidence": "Markdown table with Stage, Errors, Warnings, Fatal rows for Initial and Final."},
+        {"clause": "includes chronological index of key evidence screenshots and logs", "satisfied": true, "evidence": "Section 'Chronological Evidence Index' enumerates logs and screenshots in order."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "repair_report.md is 2789 bytes and contains the required inventory, approach, comparison table, and evidence index.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_calibre_toc_missing.png",
+      "task_says": "`view_01_calibre_toc_missing.png` | The missing/broken Table of Contents in the original EPUB; PNG, resolution ≥ 1280×720; Every screenshot must come from a real, continuous GUI session (pixel differences significant, md5 hashes distinct).",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real GUI screenshot from Calibre/original EPUB", "shows the missing/broken Table of Contents in the original EPUB", "md5 distinct from other screenshots"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_01 exists, 1394589 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "Pillow reports 1920×1080."},
+        {"clause": "real GUI screenshot from Calibre/original EPUB", "satisfied": true, "evidence": "Visible Ubuntu desktop and E-book viewer title 'Broken Sample Book [EPUB]'."},
+        {"clause": "shows the missing/broken Table of Contents in the original EPUB", "satisfied": "partial", "evidence": "The Table of Contents panel is visible and populated, including a stale Chapter 4 entry, so it demonstrates a broken/stale ToC rather than a missing ToC."},
+        {"clause": "md5 distinct from other screenshots", "satisfied": true, "evidence": "MD5 e07fe6ebdaa25eed81baeba0633ac095 is unique among 11 screenshots."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Real Calibre viewer screenshot of original EPUB with ToC panel; ToC is not missing, but includes broken/stale Chapter 4 entry and original broken-image page context.",
+      "missing_or_wrong": "Does not unambiguously show a missing ToC; the ToC is visible and populated, so only the 'broken' aspect is evidenced.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_calibre_broken_image.png",
+      "task_says": "`view_02_calibre_broken_image.png` | A chapter in the original EPUB where the image fails to render (placeholder / broken-image icon); PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real GUI screenshot from original EPUB", "shows a chapter where image fails to render", "shows placeholder / broken-image icon", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_02 exists, 1370364 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real GUI screenshot from original EPUB", "satisfied": true, "evidence": "Window title 'Broken Sample Book [EPUB] — E-book viewer'."},
+        {"clause": "shows a chapter where image fails to render", "satisfied": true, "evidence": "Chapter 1 contains line 'And here is a reference to a missing image'."},
+        {"clause": "shows placeholder / broken-image icon", "satisfied": true, "evidence": "Small broken-image icon and alt text 'Photo that does not exist' are visible."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 d7985b68111f4f7104de86c83d9afe45 is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Original Calibre viewer shows Chapter 1 with a visible broken-image icon and 'Photo that does not exist'.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_calibre_css_overflow.png",
+      "task_says": "`view_03_calibre_css_overflow.png` | Horizontal overflow of a long table / long code block in the original EPUB; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real GUI screenshot from original EPUB", "shows horizontal overflow of a long table or long code block", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_03 exists, 838677 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real GUI screenshot from original EPUB", "satisfied": true, "evidence": "Visible Ubuntu desktop and Broken Sample Book E-book viewer."},
+        {"clause": "shows horizontal overflow of a long table or long code block", "satisfied": true, "evidence": "Chapter 2 table headers and long code line are clipped at the right edge."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 16822d4f972ec694173a54b6b499dc8c is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Original viewer shows Chapter 2 with clipped wide table and code block demonstrating overflow.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_calibre_edit_opf.png",
+      "task_says": "`view_04_calibre_edit_opf.png` | The OPF (manifest / media-type) edit session, including the OPF XML content being fixed; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre Edit Book GUI", "shows OPF edit session", "shows manifest/media-type XML content being fixed", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_04 exists, 263638 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre Edit Book GUI", "satisfied": true, "evidence": "Window title 'Fixed Sample Book [EPUB 3] : fixed_ebook.epub • Edit book' with menus and file browser."},
+        {"clause": "shows OPF edit session", "satisfied": true, "evidence": "content.opf is selected and open in editor."},
+        {"clause": "shows manifest/media-type XML content being fixed", "satisfied": true, "evidence": "Visible manifest includes ch03.xhtml, diagram.png image/png, photo.jpg image/jpeg, nav properties='nav'."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 b2fad981d3284a08dce296e20176234e is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Calibre Edit Book screenshot displays content.opf with corrected manifest and media-type entries.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_calibre_edit_css.png",
+      "task_says": "`view_05_calibre_edit_css.png` | Editing session adding `max-width / overflow-x / word-wrap` rules to fix the CSS horizontal overflow; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre Edit Book GUI", "shows CSS editing session", "shows max-width rule", "shows overflow-x rule", "shows word-wrap or overflow-wrap rule", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_05 exists, 234707 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre Edit Book GUI", "satisfied": true, "evidence": "E-book editor UI with style.css selected."},
+        {"clause": "shows CSS editing session", "satisfied": true, "evidence": "style.css is selected in Styles and code is visible."},
+        {"clause": "shows max-width rule", "satisfied": true, "evidence": "Visible CSS has max-width: 100% and max-width: 14em."},
+        {"clause": "shows overflow-x rule", "satisfied": true, "evidence": "Visible CSS has overflow-x: auto for table/pre."},
+        {"clause": "shows word-wrap or overflow-wrap rule", "satisfied": true, "evidence": "Visible CSS has overflow-wrap: break-word and word-wrap: break-word."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 ec4f2253fda3d38a9a38601d7b2a4708 is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Calibre editor shows style.css with max-width, overflow-x, overflow-wrap, and word-wrap rules.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_calibre_check_panel.png",
+      "task_says": "`view_06_calibre_check_panel.png` | The result panel of the built-in consistency check run against the repaired content; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre Edit Book GUI", "shows built-in consistency/check result panel", "check is against repaired content", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_06 exists, 240261 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre Edit Book GUI", "satisfied": true, "evidence": "Window title references fixed_ebook.epub - Edit book."},
+        {"clause": "shows built-in consistency/check result panel", "satisfied": true, "evidence": "Top split panel labeled Check book."},
+        {"clause": "check is against repaired content", "satisfied": true, "evidence": "Panel says 'No problems found' while fixed_ebook.epub is open."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 1b78e61bcdbdcee1bcc0f0c5b4aadb3d is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Calibre Edit Book Check book panel says 'No problems found' for fixed_ebook.epub.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_07_calibre_toc_fixed.png",
+      "task_says": "`view_07_calibre_toc_fixed.png` | The fixed EPUB displaying all chapter entries correctly in the ToC; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre viewer GUI", "shows fixed EPUB", "ToC displays all chapter entries correctly", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_07 exists, 1392533 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre viewer GUI", "satisfied": true, "evidence": "E-book viewer UI and Ubuntu desktop chrome visible."},
+        {"clause": "shows fixed EPUB", "satisfied": true, "evidence": "Window title 'Fixed Sample Book [EPUB]'."},
+        {"clause": "ToC displays all chapter entries correctly", "satisfied": true, "evidence": "ToC contains Chapter 1: Introduction, Chapter 2: Methods, Chapter 3: Results, with stale Chapter 4 absent."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 d17d91315b69e0fd551b301966a5e4b8 is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Fixed EPUB viewer ToC shows chapters 1-3 only, matching repaired nav.xhtml.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_08_calibre_image_fixed.png",
+      "task_says": "`view_08_calibre_image_fixed.png` | Images rendering correctly after the fix; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre viewer GUI", "shows fixed EPUB", "shows images rendering correctly after the fix", "no broken-image placeholder is visible", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_08 exists, 1375820 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre viewer GUI", "satisfied": true, "evidence": "E-book viewer with fixed title is visible."},
+        {"clause": "shows fixed EPUB", "satisfied": true, "evidence": "Window title 'Fixed Sample Book [EPUB]'."},
+        {"clause": "shows images rendering correctly after the fix", "satisfied": "partial", "evidence": "The diagram image renders correctly, but the screenshot cuts off before showing the second photo image, even though text introduces it."},
+        {"clause": "no broken-image placeholder is visible", "satisfied": true, "evidence": "No broken-image icon is visible in this screenshot."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 dbc46a859bc00cdd5b7fb85d8156a69a is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.93,
+      "evidence_quote": "Fixed viewer screenshot shows the diagram rendering, but not the recovered photo; this only partially proves plural image rendering.",
+      "missing_or_wrong": "Does not show the second photo rendering; only one image is visible.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_09_calibre_layout_fixed.png",
+      "task_says": "`view_09_calibre_layout_fixed.png` | Layout of the previously overflowing chapter renders cleanly with no horizontal scroll; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Calibre viewer GUI", "shows fixed EPUB previously overflowing chapter", "layout renders cleanly", "no horizontal scroll", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_09 exists, 1407457 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Calibre viewer GUI", "satisfied": true, "evidence": "E-book viewer and ToC sidebar visible."},
+        {"clause": "shows fixed EPUB previously overflowing chapter", "satisfied": true, "evidence": "Window title Fixed Sample Book and Chapter 2: Methods selected."},
+        {"clause": "layout renders cleanly", "satisfied": "partial", "evidence": "Overall page no longer overflows at the window level and code is constrained, but table columns remain clipped inside a scrollable table region."},
+        {"clause": "no horizontal scroll", "satisfied": false, "evidence": "A horizontal scrollbar is visibly present directly under the table."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 6c470c1a1838b2859b7a39a415ddff0c is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.79,
+      "evidence_quote": "Fixed Chapter 2 is visible, but a horizontal scrollbar remains under the table; the explicit 'no horizontal scroll' clause is not met.",
+      "missing_or_wrong": "Visible horizontal scrollbar remains; layout cleanliness is only partial because table content is clipped in the scroll region.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_10_okular_pdf_page1.png",
+      "task_says": "`view_10_okular_pdf_page1.png` | Full view of the first page of the final PDF; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Okular GUI", "shows final PDF", "shows full view of first page", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_10 exists, 1048228 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Okular GUI", "satisfied": true, "evidence": "Okular title/menu/toolbar visible."},
+        {"clause": "shows final PDF", "satisfied": true, "evidence": "Window title 'Fixed Sample Book — Okular'."},
+        {"clause": "shows full view of first page", "satisfied": true, "evidence": "Page selector shows 1 of 5 and first page content is visible with full page height in Fit Width view."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 02604478cf8d94d40f90de607fd6c6be is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Okular displays page 1 of 5 of Fixed Sample Book with toolbar and contents sidebar visible.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_11_okular_pdf_toc.png",
+      "task_says": "`view_11_okular_pdf_toc.png` | The Outline / Table of Contents of the final PDF correctly generated and expanded; PNG, resolution ≥ 1280×720; real continuous GUI, md5 distinct.",
+      "spec_clauses": ["PNG exists", "resolution ≥ 1280×720", "real Okular GUI", "shows final PDF", "shows Outline/Table of Contents", "Outline/Table of Contents is correctly generated", "expanded outline is demonstrated", "md5 distinct"],
+      "clause_results": [
+        {"clause": "PNG exists", "satisfied": true, "evidence": "view_11 exists, 1047252 bytes."},
+        {"clause": "resolution ≥ 1280×720", "satisfied": true, "evidence": "1920×1080."},
+        {"clause": "real Okular GUI", "satisfied": true, "evidence": "Okular title/menu/toolbar visible."},
+        {"clause": "shows final PDF", "satisfied": true, "evidence": "Window title 'Fixed Sample Book — Okular' and page 4 of 5."},
+        {"clause": "shows Outline/Table of Contents", "satisfied": true, "evidence": "Left Contents sidebar lists Chapter 1, Chapter 2, and Chapter 3 with page numbers."},
+        {"clause": "Outline/Table of Contents is correctly generated", "satisfied": true, "evidence": "Selected Chapter 3 entry maps to displayed Chapter 3 page 4; entries have pages 1, 3, and 4."},
+        {"clause": "expanded outline is demonstrated", "satisfied": "partial", "evidence": "The ToC is visible, but it is a flat list with no disclosure arrows/nested expanded hierarchy to demonstrate expansion."},
+        {"clause": "md5 distinct", "satisfied": true, "evidence": "MD5 939344fee1a53142a0b12dc68300535c is unique."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.94,
+      "evidence_quote": "Okular Contents sidebar is visible and correct, but expansion is only partially evidenced because the outline is flat.",
+      "missing_or_wrong": "Expanded hierarchical state is not clearly shown; only a flat contents list is visible.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.92, "reason": "All required CLI/PDF/EPUB artifacts exist and pass core gates (fixed_ebook.epub, epubcheck_final.log, error_diff.json, final_output.pdf). Minor task-completion gaps are in screenshot evidence: view_01 does not unambiguously show a missing ToC, view_08 only shows one fixed image, and view_09 still shows horizontal scroll."},
+    "deliverable_correctness": {"score": 0.96, "reason": "Most artifact_checks are fully correct; only view_01_calibre_toc_missing.png, view_08_calibre_image_fixed.png, view_09_calibre_layout_fixed.png, and view_11_okular_pdf_toc.png have partial clauses. Core structured artifacts and fixed_ebook.epub are correct."},
+    "deliverable_quality": {"score": 0.97, "reason": "All required files are present, parse/read successfully, screenshots are 1920×1080 with distinct md5s, JSON schemas parse, and PDF/EPUB are usable. Quality deductions are limited to visual specificity in view_08 and residual table scroll in view_09."},
+    "evidence_authenticity": {"score": 0.93, "reason": "Screenshots appear to be real GNOME/Calibre/Okular captures, md5s are distinct, and chat shows gnome-screenshot capture commands. Chat also shows PIL used to generate replacement EPUB image assets, but not to fabricate GUI screenshots, so this is not scored as a hack."},
+    "tool_use_correctness": {"score": 0.9, "reason": "The rollout used appropriate CLI tools (epubcheck, xmllint, ebook-convert, pdfinfo, zip inspection) and real GUI capture via gnome-screenshot/Calibre/Okular. Some visual states were not perfectly chosen (view_08 missing second photo; view_09 retains scroll)."},
+    "final_state_correctness": {"score": 0.92, "reason": "Final EPUB passes EPUBCheck with 0 errors, zip mimetype is first/uncompressed, error reduction is 1.0, and PDF has 5 pages. Final visual state is not flawless because the fixed layout screenshot still has a horizontal scrollbar and fixed image screenshot does not show all images."},
+    "efficiency_robustness": {"score": 0.88, "reason": "The agent recovered from screenshot permission issues, produced all files, and verified outputs. It did spend extra attempts recapturing screenshots and some captures still missed exact required visual states."},
+    "instruction_following": {"score": 0.91, "reason": "Required filenames, output locations, GUI evidence, and structured logs were produced; the final verification was thorough. Deductions: view_09 conflicts with explicit 'no horizontal scroll', view_01 is not clearly missing ToC, and view_08 does not show both image repairs."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.05,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.92375,
+  "summary": "The rollout successfully repaired the EPUB, produced strong structured evidence, converted a 5-page PDF, and captured real Calibre/Okular screenshots. The main shortcomings are visual-evidence precision: the original ToC is visible rather than clearly missing, the fixed image screenshot shows only one image, and the fixed layout screenshot still contains a horizontal scrollbar. No GUI screenshot fabrication or hidden-ground-truth use was found."
+}
