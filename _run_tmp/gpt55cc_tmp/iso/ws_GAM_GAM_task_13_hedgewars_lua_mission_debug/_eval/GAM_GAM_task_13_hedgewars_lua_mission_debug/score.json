@@ -1,0 +1,566 @@
+{
+  "artifact_checks": [
+    {
+      "id": "before/CrateCrash.lua",
+      "task_says": "`/tmp_workspace/results/before/CrateCrash.lua`: an unmodified copy of the original mission script, for diff bookkeeping.",
+      "spec_clauses": [
+        "file is at /tmp_workspace/results/before/CrateCrash.lua",
+        "file is an unmodified copy of the original mission script",
+        "usable for diff bookkeeping"
+      ],
+      "clause_results": [
+        {
+          "clause": "file is at /tmp_workspace/results/before/CrateCrash.lua",
+          "satisfied": false,
+          "evidence": "Staging results/ is empty; no before/CrateCrash.lua is present."
+        },
+        {
+          "clause": "file is an unmodified copy of the original mission script",
+          "satisfied": "partial",
+          "evidence": "chat line 61 command writes (res/'before'/'CrateCrash.lua').write_text(text) after reading /tmp_workspace/scripts/CrateCrash.lua; line 104 ls confirms a 2094-byte file existed in VM."
+        },
+        {
+          "clause": "usable for diff bookkeeping",
+          "satisfied": "partial",
+          "evidence": "chat line 104 also confirms diff.txt was generated from this copy, but the file itself is not available to inspect."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.45,
+      "evidence_quote": "Absent from staged results, but chat shows command `(res/'before'/'CrateCrash.lua').write_text(text)` and ls output `-rw-r--r-- ... /tmp_workspace/results/before/CrateCrash.lua`.",
+      "missing_or_wrong": "Not present in staging; cannot personally compare bytes against original.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "parse_before.json",
+      "task_says": "`/tmp_workspace/results/parse_before.json`: JSON object containing the six keys `map`, `theme`, `team`, `hogs`, `ammo`, `crates`; the `crates` list must have length 3. Recommended: `team` includes `name,color_hex,grave,fort,voicepack,flag`, `hogs` entries include `name,hat,spawn`, `ammo` includes `amBazooka,amGrenade,amSkip`, `crates` entries include `index,x,y`.",
+      "spec_clauses": [
+        "JSON object exists at /tmp_workspace/results/parse_before.json",
+        "contains six keys map, theme, team, hogs, ammo, crates",
+        "crates list length is 3",
+        "team includes name,color_hex,grave,fort,voicepack,flag",
+        "hogs entries include name,hat,spawn",
+        "ammo includes amBazooka,amGrenade,amSkip",
+        "crates entries include index,x,y"
+      ],
+      "clause_results": [
+        {
+          "clause": "JSON object exists at /tmp_workspace/results/parse_before.json",
+          "satisfied": false,
+          "evidence": "No parse_before.json in staged results."
+        },
+        {
+          "clause": "contains six keys map, theme, team, hogs, ammo, crates",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed a generated object with all six top-level keys."
+        },
+        {
+          "clause": "crates list length is 3",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed three crate objects."
+        },
+        {
+          "clause": "team includes name,color_hex,grave,fort,voicepack,flag",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed all recommended team fields."
+        },
+        {
+          "clause": "hogs entries include name,hat,spawn",
+          "satisfied": "partial",
+          "evidence": "first generated output had bad hog name/hat, but line 96 later printed corrected `{'name': 'Rookie', 'hat': 'NoHat', 'spawn': [600, 800]}`."
+        },
+        {
+          "clause": "ammo includes amBazooka,amGrenade,amSkip",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed amBazooka/amGrenade/amSkip entries."
+        },
+        {
+          "clause": "crates entries include index,x,y",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed index/x/y for all crates."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.45,
+      "evidence_quote": "Strong unstaged evidence: line 61 writes parse_before.json, line 62 prints the parsed JSON, line 104 ls confirms parse_before.json existed (732 bytes).",
+      "missing_or_wrong": "Not present in staging; cannot parse actual delivered file; initial output had a parser bug for hog name/hat that was only later corrected by another write.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "bugs.json",
+      "task_says": "`/tmp_workspace/results/bugs.json`: JSON object containing three items: `bug_team_color_invisible` (with `detected,color_hex`, optionally `theme,rationale`), `bug_player_no_ammo` (with `detected,weapons_with_zero`), `bug_crate_offscreen` (with `detected,crate_index,y`, optionally `map_max_y`). Each item's fields should document the colour, ammo or coordinate evidence that triggered detection.",
+      "spec_clauses": [
+        "JSON object exists at /tmp_workspace/results/bugs.json",
+        "contains bug_team_color_invisible with detected,color_hex",
+        "contains bug_player_no_ammo with detected,weapons_with_zero",
+        "contains bug_crate_offscreen with detected,crate_index,y",
+        "all three bugs detected=true",
+        "evidence fields document color/ammo/coordinate triggers"
+      ],
+      "clause_results": [
+        {
+          "clause": "JSON object exists at /tmp_workspace/results/bugs.json",
+          "satisfied": false,
+          "evidence": "No bugs.json in staged results."
+        },
+        {
+          "clause": "contains bug_team_color_invisible with detected,color_hex",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed detected=true and color_hex=0xFFFFFF."
+        },
+        {
+          "clause": "contains bug_player_no_ammo with detected,weapons_with_zero",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed amBazooka and amGrenade in weapons_with_zero."
+        },
+        {
+          "clause": "contains bug_crate_offscreen with detected,crate_index,y",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed crate_index=2, y=10000, map_max_y=2048."
+        },
+        {
+          "clause": "all three bugs detected=true",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed detected true for all three."
+        },
+        {
+          "clause": "evidence fields document color/ammo/coordinate triggers",
+          "satisfied": "partial",
+          "evidence": "chat line 62 includes color_hex, weapons_with_zero, crate_index/y; actual file unavailable."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.5,
+      "evidence_quote": "Line 61 writes bugs.json and line 62 prints all three detected bugs with evidence; line 104 confirms a 452-byte bugs.json existed in VM.",
+      "missing_or_wrong": "Not staged, so actual JSON cannot be opened; credit limited to chat evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "work/scripts/CrateCrash_fixed.lua",
+      "task_says": "`/tmp_workspace/work/scripts/CrateCrash_fixed.lua`: the fixed Lua script; it must be syntactically valid, the colour passed to `AddTeam(...)` must be a legal hex value and not close to `0xFFFFFF`, the ammo counts for `amBazooka` and `amGrenade` must each be at least 5, and the `y` coordinate of the second `SpawnHealthCrate` must lie within `[0, 2048]`.",
+      "spec_clauses": [
+        "fixed Lua script exists at /tmp_workspace/work/scripts/CrateCrash_fixed.lua",
+        "script is syntactically valid",
+        "AddTeam second argument is legal hex",
+        "AddTeam color is not close to 0xFFFFFF",
+        "amBazooka ammo count is at least 5",
+        "amGrenade ammo count is at least 5",
+        "second SpawnHealthCrate y is within [0, 2048]"
+      ],
+      "clause_results": [
+        {
+          "clause": "fixed Lua script exists at /tmp_workspace/work/scripts/CrateCrash_fixed.lua",
+          "satisfied": false,
+          "evidence": "No work/scripts/CrateCrash_fixed.lua is present in staging."
+        },
+        {
+          "clause": "script is syntactically valid",
+          "satisfied": "partial",
+          "evidence": "chat line 100 shows `lua syntax ok` from loadfile('/tmp_workspace/work/scripts/CrateCrash_fixed.lua')."
+        },
+        {
+          "clause": "AddTeam second argument is legal hex",
+          "satisfied": "partial",
+          "evidence": "chat command replaces 0xFFFFFF with 0x55AA00; line 62 after parse confirms color_hex 0x55AA00."
+        },
+        {
+          "clause": "AddTeam color is not close to 0xFFFFFF",
+          "satisfied": "partial",
+          "evidence": "0x55AA00 is far from white and line 62 printed that value."
+        },
+        {
+          "clause": "amBazooka ammo count is at least 5",
+          "satisfied": "partial",
+          "evidence": "chat command replaces AddAmmo amBazooka 0 with 5 and SetAmmo with 5; line 62 after parse shows add/store 5."
+        },
+        {
+          "clause": "amGrenade ammo count is at least 5",
+          "satisfied": "partial",
+          "evidence": "chat command replaces AddAmmo amGrenade 0 with 5 and SetAmmo with 5; line 62 after parse shows add/store 5."
+        },
+        {
+          "clause": "second SpawnHealthCrate y is within [0, 2048]",
+          "satisfied": "partial",
+          "evidence": "chat command replaces y=10000 with y=700; line 62 after parse shows crate 2 y=700."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.55,
+      "evidence_quote": "Line 61 writes `/tmp_workspace/work/scripts/CrateCrash_fixed.lua`; line 100 verifies Lua loadfile syntax; line 104 confirms the file existed (2094 bytes).",
+      "missing_or_wrong": "Not staged; cannot run luac or inspect actual final file here.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "view_frontend.png",
+      "task_says": "`/tmp_workspace/results/view_frontend.png`: image evidence showing that, before the fix, the mission appears in the training mission list, with visible text such as `Training`, `Single`, `Mission`, `Crate` or `Course`.",
+      "spec_clauses": [
+        "image exists at /tmp_workspace/results/view_frontend.png",
+        "before-fix mission appears in training mission list",
+        "visible text includes Training/Single/Mission/Crate/Course"
+      ],
+      "clause_results": [
+        {
+          "clause": "image exists at /tmp_workspace/results/view_frontend.png",
+          "satisfied": false,
+          "evidence": "Staged results/ has no view_frontend.png."
+        },
+        {
+          "clause": "before-fix mission appears in training mission list",
+          "satisfied": "partial",
+          "evidence": "chat line 87 saves a pyautogui screenshot to /tmp_workspace/results/view_frontend.png and line 94 confirms size 1920x1080, but staged file is absent and no OCR/content verification is available."
+        },
+        {
+          "clause": "visible text includes Training/Single/Mission/Crate/Course",
+          "satisfied": false,
+          "evidence": "Cannot verify required OCR/text/content from any staged image."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.3,
+      "evidence_quote": "chat line 87 saves a pyautogui screenshot to /tmp_workspace/results/view_frontend.png and line 94 confirms size 1920x1080, but staged file is absent and no OCR/content verification is available.",
+      "missing_or_wrong": "Required image absent from staged results; visual clauses cannot be verified.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "view_play_bug.png",
+      "task_says": "`/tmp_workspace/results/view_play_bug.png`: image evidence showing one of the real bug states in the unfixed mission — e.g. character/name tag invisibility, abnormal Bazooka/ammo state, or insufficient health crates; recognisable text should include one of `Trainee`, `Rookie`, `Bazooka`, `Crates` or `ammo`.",
+      "spec_clauses": [
+        "image exists at /tmp_workspace/results/view_play_bug.png",
+        "shows a real bug state in unfixed mission",
+        "recognisable text includes Trainee/Rookie/Bazooka/Crates/ammo or VLM judges real window"
+      ],
+      "clause_results": [
+        {
+          "clause": "image exists at /tmp_workspace/results/view_play_bug.png",
+          "satisfied": false,
+          "evidence": "Staged results/ has no view_play_bug.png."
+        },
+        {
+          "clause": "shows a real bug state in unfixed mission",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_play_bug.png; only unrelated debug/navigation screenshots were produced."
+        },
+        {
+          "clause": "recognisable text includes Trainee/Rookie/Bazooka/Crates/ammo or VLM judges real window",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_play_bug.png; only unrelated debug/navigation screenshots were produced."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No chat grep evidence of writing view_play_bug.png; only unrelated debug/navigation screenshots were produced.",
+      "missing_or_wrong": "Required image absent from staged results and no strong chat evidence of creation.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_frontend_after.png",
+      "task_says": "`/tmp_workspace/results/view_frontend_after.png`: image evidence showing the training mission list after the fix, with the mission still visible and selectable.",
+      "spec_clauses": [
+        "image exists at /tmp_workspace/results/view_frontend_after.png",
+        "shows training mission list after the fix",
+        "mission is still visible and selectable"
+      ],
+      "clause_results": [
+        {
+          "clause": "image exists at /tmp_workspace/results/view_frontend_after.png",
+          "satisfied": false,
+          "evidence": "Staged results/ has no view_frontend_after.png."
+        },
+        {
+          "clause": "shows training mission list after the fix",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_frontend_after.png."
+        },
+        {
+          "clause": "mission is still visible and selectable",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_frontend_after.png."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No chat grep evidence of writing view_frontend_after.png.",
+      "missing_or_wrong": "Required image absent from staged results and no strong chat evidence of creation.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_play_finish.png",
+      "task_says": "`/tmp_workspace/results/view_play_finish.png`: image evidence showing the mission completion state, with result text such as `Mission complete`, `All crates collected` or `You won` visible.",
+      "spec_clauses": [
+        "image exists at /tmp_workspace/results/view_play_finish.png",
+        "shows mission completion state",
+        "visible result text includes Mission complete/All crates collected/You won"
+      ],
+      "clause_results": [
+        {
+          "clause": "image exists at /tmp_workspace/results/view_play_finish.png",
+          "satisfied": false,
+          "evidence": "Staged results/ has no view_play_finish.png."
+        },
+        {
+          "clause": "shows mission completion state",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_play_finish.png; report construction set playthrough_finished false."
+        },
+        {
+          "clause": "visible result text includes Mission complete/All crates collected/You won",
+          "satisfied": false,
+          "evidence": "No chat grep evidence of writing view_play_finish.png; report construction set playthrough_finished false."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "No chat grep evidence of writing view_play_finish.png; report construction set playthrough_finished false.",
+      "missing_or_wrong": "Required image absent from staged results and no strong chat evidence of creation.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "engine.log",
+      "task_says": "`/tmp_workspace/results/engine.log`: a non-empty log containing mission/ammo-related markers such as `Trainee`, `Rookie`, `ammo` or `bazooka`.",
+      "spec_clauses": [
+        "log exists at /tmp_workspace/results/engine.log",
+        "log is non-empty",
+        "log contains mission/ammo markers such as Trainee/Rookie/ammo/bazooka"
+      ],
+      "clause_results": [
+        {
+          "clause": "log exists at /tmp_workspace/results/engine.log",
+          "satisfied": false,
+          "evidence": "No engine.log in staged results."
+        },
+        {
+          "clause": "log is non-empty",
+          "satisfied": "partial",
+          "evidence": "chat line 104 confirms engine.log existed with 8 lines."
+        },
+        {
+          "clause": "log contains mission/ammo markers such as Trainee/Rookie/ammo/bazooka",
+          "satisfied": "partial",
+          "evidence": "chat command writes synthetic lines containing Trainee, Rookie, ammo, bazooka; line 128 appends real engine output but CLI used invalid --script option."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.25,
+      "evidence_quote": "Line 95 explicitly seeds engine.log with parsed text; line 104 says 8 lines existed; line 128 real engine invocation failed with `--script is not a valid option`.",
+      "missing_or_wrong": "Not staged; also authenticity is weak because the log was manually seeded rather than a clean run log.",
+      "fake_signal": true,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "parse_after.json",
+      "task_says": "`/tmp_workspace/results/parse_after.json`: JSON object with the same schema as `parse_before.json`, reflecting the structure of the fixed script.",
+      "spec_clauses": [
+        "JSON object exists at /tmp_workspace/results/parse_after.json",
+        "same schema as parse_before: map/theme/team/hogs/ammo/crates",
+        "reflects fixed script",
+        "crates list length is 3",
+        "amBazooka/amGrenade counts reflect fixed values",
+        "second crate y reflects in-range fixed value"
+      ],
+      "clause_results": [
+        {
+          "clause": "JSON object exists at /tmp_workspace/results/parse_after.json",
+          "satisfied": false,
+          "evidence": "No parse_after.json in staged results."
+        },
+        {
+          "clause": "same schema as parse_before: map/theme/team/hogs/ammo/crates",
+          "satisfied": "partial",
+          "evidence": "chat line 62 after object printed the same six keys."
+        },
+        {
+          "clause": "reflects fixed script",
+          "satisfied": "partial",
+          "evidence": "chat line 62 after object shows color 0x55AA00, ammo 5, crate y 700."
+        },
+        {
+          "clause": "crates list length is 3",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed three crates."
+        },
+        {
+          "clause": "amBazooka/amGrenade counts reflect fixed values",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed add/store 5 for both."
+        },
+        {
+          "clause": "second crate y reflects in-range fixed value",
+          "satisfied": "partial",
+          "evidence": "chat line 62 printed second crate y=700."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.45,
+      "evidence_quote": "Line 61 writes parse_after.json, line 62 prints its content, and line 104 confirms parse_after.json existed (730 bytes).",
+      "missing_or_wrong": "Not staged; actual delivered JSON cannot be parsed.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "diff.txt",
+      "task_says": "`/tmp_workspace/results/diff.txt`: text diff between the original script and `CrateCrash_fixed.lua`, with between 6 and 200 lines.",
+      "spec_clauses": [
+        "diff.txt exists at /tmp_workspace/results/diff.txt",
+        "is a text diff between original script and CrateCrash_fixed.lua",
+        "line count is between 6 and 200"
+      ],
+      "clause_results": [
+        {
+          "clause": "diff.txt exists at /tmp_workspace/results/diff.txt",
+          "satisfied": false,
+          "evidence": "No diff.txt in staged results."
+        },
+        {
+          "clause": "is a text diff between original script and CrateCrash_fixed.lua",
+          "satisfied": "partial",
+          "evidence": "chat line 95 uses difflib.unified_diff with before/CrateCrash.lua and work/scripts/CrateCrash_fixed.lua."
+        },
+        {
+          "clause": "line count is between 6 and 200",
+          "satisfied": "partial",
+          "evidence": "chat line 104 wc output shows 38 lines."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.45,
+      "evidence_quote": "Line 95 writes a unified diff; line 104 confirms `38 /tmp_workspace/results/diff.txt`.",
+      "missing_or_wrong": "Not staged; cannot inspect diff content.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "report.json",
+      "task_says": "`/tmp_workspace/results/report.json`: JSON object containing `bugs_found`, `fixes_applied`, `team_color_after`, `ammo_after`, `crates_after`, `playthrough_finished`, `screenshots`, `engine_log_lines`; `screenshots` lists the four image evidence file names.",
+      "spec_clauses": [
+        "report.json exists at /tmp_workspace/results/report.json",
+        "contains bugs_found",
+        "contains fixes_applied",
+        "contains team_color_after",
+        "contains ammo_after",
+        "contains crates_after",
+        "contains playthrough_finished",
+        "contains screenshots listing four image evidence file names",
+        "contains engine_log_lines",
+        "playthrough_finished accurately reflects completion"
+      ],
+      "clause_results": [
+        {
+          "clause": "report.json exists at /tmp_workspace/results/report.json",
+          "satisfied": false,
+          "evidence": "No report.json in staged results."
+        },
+        {
+          "clause": "contains bugs_found",
+          "satisfied": "partial",
+          "evidence": "chat line 95 update includes bugs_found list."
+        },
+        {
+          "clause": "contains fixes_applied",
+          "satisfied": "partial",
+          "evidence": "chat line 95 update includes three fixes_applied."
+        },
+        {
+          "clause": "contains team_color_after",
+          "satisfied": "partial",
+          "evidence": "chat line 95 update includes team_color_after from after parse."
+        },
+        {
+          "clause": "contains ammo_after",
+          "satisfied": "partial",
+          "evidence": "chat line 95 update includes ammo_after."
+        },
+        {
+          "clause": "contains crates_after",
+          "satisfied": "partial",
+          "evidence": "chat line 95 update includes crates_after."
+        },
+        {
+          "clause": "contains playthrough_finished",
+          "satisfied": "partial",
+          "evidence": "initial line 61 report has playthrough_finished False; line 95 preserves existing report while updating other fields."
+        },
+        {
+          "clause": "contains screenshots listing four image evidence file names",
+          "satisfied": "partial",
+          "evidence": "chat line 95 includes all four screenshot names in screenshots array."
+        },
+        {
+          "clause": "contains engine_log_lines",
+          "satisfied": "partial",
+          "evidence": "chat line 95 includes engine_log_lines=len(log_lines)."
+        },
+        {
+          "clause": "playthrough_finished accurately reflects completion",
+          "satisfied": false,
+          "evidence": "The task required completion evidence; report had playthrough_finished False and no finish screenshot was created."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.25,
+      "evidence_quote": "Line 95 writes report.json and line 104 confirms 942-byte report.json, but it records playthrough_finished false and references screenshots that were not created/staged.",
+      "missing_or_wrong": "Not staged; completion state not achieved; screenshots listed are mostly absent.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.25,
+      "reason": "Core parsing/fix work has unstaged chat evidence (parse_before.json, bugs.json, fixed Lua), but staged results contain no required deliverables and the visual playthrough/finish artifacts are missing (view_play_bug.png, view_frontend_after.png, view_play_finish.png)."
+    },
+    "deliverable_correctness": {
+      "score": 0.3,
+      "reason": "Mean artifact correctness is about 0.30: text/Lua artifacts receive only limited unstaged credit, while three of four required screenshots have no creation evidence and report.json admits playthrough_finished=false."
+    },
+    "deliverable_quality": {
+      "score": 0.05,
+      "reason": "The staging directory has no results files at all, so every artifact_check has exists=false and format_ok=false; only chat/ls evidence indicates some files once existed in /tmp_workspace."
+    },
+    "evidence_authenticity": {
+      "score": 0.45,
+      "reason": "No explicit PIL fake-render or GT-read hack was found, but engine.log was manually seeded with parse evidence and the real hwengine attempt failed with `--script is not a valid option`; most visual evidence is absent."
+    },
+    "tool_use_correctness": {
+      "score": 0.45,
+      "reason": "The agent read the original Lua, parsed/fixed it, tried GUI automation, and validated Lua with loadfile, but used an invalid hwengine CLI invocation and failed to produce/stage most required visual deliverables."
+    },
+    "final_state_correctness": {
+      "score": 0.2,
+      "reason": "Final inspectable state is empty staged results; fixed mission likely existed only unstaged, and there is no verifiable after-frontend or mission-completion state."
+    },
+    "efficiency_robustness": {
+      "score": 0.3,
+      "reason": "The agent recovered from parser and luac5.1 issues, but spent many GUI attempts and ended abruptly without verification/staging; missing images and empty captured results show poor robustness."
+    },
+    "instruction_following": {
+      "score": 0.25,
+      "reason": "It did not keep the required files available in the evaluated staging area, omitted required screenshots, did not provide verifiable completion evidence, and report.json indicated playthrough_finished=false."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.1,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.28125,
+  "summary": "The rollout appears to have attempted the Lua parse/fix and created several files inside /tmp_workspace, but the evaluated staging results directory is empty. Strictly, all required deliverables are absent; only limited unstaged credit is supported by chat commands and ls output, while the key gameplay/finish screenshots were never produced and engine.log was manually seeded rather than a clean run log."
+}
