@@ -14,7 +14,6 @@
 
 ## 📰 News
 
-- **2026-07-08** 🧵 **Per-case agent trajectories released** — browse the best hybrid GUI+CLI rollout for every one of the 114 tasks (thinking · actions · screenshots · deliverables · judge scores), bilingual viewer. [Trajectory gallery](https://weavebench.github.io/trajectories/)
 - **2026-06-30** 🚀 **OSWorld-V2 hybrid GUI+CLI harness** — GPT-5.5 gains **+5.5 pt** Binary (13.0→18.5%) at ~2× tool-call efficiency. [`experiments/osworld_v2_hybrid/`](./experiments/osworld_v2_hybrid)
 - **2026-06-12** 🎉 Ranked **#4 on [HF Daily Papers](https://huggingface.co/papers/2606.09426)** with **104 upvotes**.
 - **2026-06-08** Initial preprint + [project website](https://weavebench.github.io) live.
