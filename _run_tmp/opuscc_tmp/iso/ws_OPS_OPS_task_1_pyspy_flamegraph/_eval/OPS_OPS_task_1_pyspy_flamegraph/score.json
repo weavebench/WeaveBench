@@ -1,0 +1,173 @@
+{
+  "artifact_checks": [
+    {
+      "id": "profile.json",
+      "task_says": "`profile.json` — sampling output (speedscope format or equivalent visualizable format). Grading Criteria: profile.json 存在 ≥ 8KB(真录到样本)",
+      "spec_clauses": [
+        "profile.json exists in /tmp_workspace/results/",
+        "sampling output is speedscope format or equivalent visualizable format",
+        "profile.json 存在 ≥ 8KB(真录到样本)"
+      ],
+      "clause_results": [
+        {
+          "clause": "profile.json exists in /tmp_workspace/results/",
+          "satisfied": true,
+          "evidence": "results/profile.json exists."
+        },
+        {
+          "clause": "sampling output is speedscope format or equivalent visualizable format",
+          "satisfied": true,
+          "evidence": "JSON parses and has speedscope schema https://www.speedscope.app/file-format-schema.json with 1 sampled profile and shared frames."
+        },
+        {
+          "clause": "profile.json 存在 ≥ 8KB(真录到样本)",
+          "satisfied": true,
+          "evidence": "profile.json is 97500 bytes, above 8KB; chat shows py-spy wrote 5999 samples."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "profile.json parses as speedscope JSON; size=97500 bytes; frames include worker_a, worker_b, worker_c.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "flame.png",
+      "task_says": "`flame.png` — screenshot of the flame graph viewer UI. Grading Criteria: flame.png 存在 ≥ 30KB(真截图,非占位); (VLM HARD GATE) flame.png 真显示 3 条 hot frame + 函数名",
+      "spec_clauses": [
+        "flame.png exists in /tmp_workspace/results/",
+        "flame.png 存在 ≥ 30KB(真截图,非占位)",
+        "screenshot of the flame graph viewer UI",
+        "(VLM HARD GATE) flame.png 真显示 3 条 hot frame + 函数名",
+        "flame graph should support distinguishing the three close self-time hotspots by bar widths and exact percentages"
+      ],
+      "clause_results": [
+        {
+          "clause": "flame.png exists in /tmp_workspace/results/",
+          "satisfied": true,
+          "evidence": "results/flame.png exists."
+        },
+        {
+          "clause": "flame.png 存在 ≥ 30KB(真截图,非占位)",
+          "satisfied": true,
+          "evidence": "flame.png is 131676 bytes and visually is a real Chrome screenshot, not a placeholder."
+        },
+        {
+          "clause": "screenshot of the flame graph viewer UI",
+          "satisfied": "partial",
+          "evidence": "Image shows Chrome rendering a local py-spy/inferno flame.svg flamegraph, not the expected speedscope UI from profile.json."
+        },
+        {
+          "clause": "(VLM HARD GATE) flame.png 真显示 3 条 hot frame + 函数名",
+          "satisfied": false,
+          "evidence": "Visual inspection shows worker_b and worker_c labels; worker_a is not visibly readable, and there are not three comparable hot worker frames."
+        },
+        {
+          "clause": "flame graph should support distinguishing the three close self-time hotspots by bar widths and exact percentages",
+          "satisfied": false,
+          "evidence": "The displayed bars are extremely unbalanced (worker_c roughly 75-85%, worker_b roughly 10-15%, worker_a not visible), not three close 20-35% hotspots with readable percentages."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "Image inspection: Chrome displays local flame.svg with py-spy command title; visible names include worker_b and worker_c, but not worker_a; it is not a speedscope viewer screenshot and fails the VLM hard gate for 3 hot frames + names.",
+      "missing_or_wrong": "Not speedscope UI; worker_a not visibly readable; only two worker names visible; no three close-width hot frames; no exact percentages visible.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.md",
+      "task_says": "`report.md` — must contain: `top_hotspots: <name1>=<pct1>%, <name2>=<pct2>%, <name3>=<pct3>%`. Sorted by **self time, descending**: 3 function names + their percentages (integers are fine; percentages should fall within a reasonable hotspot range, tolerance ±5pp). Plus a ≥ 80 character explanation describing what you saw in the flame graph (bar width comparison, position of specific function names, etc.). Grading Criteria: report.md 存在且解释段 ≥ 80 字符; top_hotspots 字段 3 个名字都对; 3 个百分比合理 (20-35%); 排序正确(3/3 才不被 cap)",
+      "spec_clauses": [
+        "report.md exists and is non-empty",
+        "contains exact top_hotspots field format with three name=percentage entries",
+        "top_hotspots 字段 3 个名字都对: worker_a, worker_b, worker_c",
+        "Sorted by self time, descending; expected rank order is worker_a, worker_b, worker_c",
+        "3 个百分比合理 (20-35%) with tolerance ±5pp",
+        "Plus a ≥ 80 character explanation describing what you saw in the flame graph (bar width comparison, position of specific function names, etc.)"
+      ],
+      "clause_results": [
+        {
+          "clause": "report.md exists and is non-empty",
+          "satisfied": true,
+          "evidence": "results/report.md exists and is 1514 bytes."
+        },
+        {
+          "clause": "contains exact top_hotspots field format with three name=percentage entries",
+          "satisfied": true,
+          "evidence": "First line is `top_hotspots: worker_c=87%, worker_b=11%, worker_a=1%`."
+        },
+        {
+          "clause": "top_hotspots 字段 3 个名字都对: worker_a, worker_b, worker_c",
+          "satisfied": true,
+          "evidence": "All three expected names appear in the top_hotspots line."
+        },
+        {
+          "clause": "Sorted by self time, descending; expected rank order is worker_a, worker_b, worker_c",
+          "satisfied": false,
+          "evidence": "GT expected_hot.txt gives worker_a, worker_b, worker_c, but report orders worker_c, worker_b, worker_a."
+        },
+        {
+          "clause": "3 个百分比合理 (20-35%) with tolerance ±5pp",
+          "satisfied": false,
+          "evidence": "Reported percentages are 87%, 11%, and 1%, all outside the required 20-35% hotspot range."
+        },
+        {
+          "clause": "Plus a ≥ 80 character explanation describing what you saw in the flame graph (bar width comparison, position of specific function names, etc.)",
+          "satisfied": "partial",
+          "evidence": "Explanation is well over 80 characters and discusses bar widths, but it describes an incorrect/unexpected unbalanced flamegraph and relies on JSON self-sample summing rather than the intended three close hot frames."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "report.md line: `top_hotspots: worker_c=87%, worker_b=11%, worker_a=1%`; GT rank is worker_a > worker_b > worker_c and required percentages are 20-35% each.",
+      "missing_or_wrong": "Wrong rank order; all three percentages outside 20-35%; explanation is based on incorrect visual/profile interpretation.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.45,
+      "reason": "Required files exist, but report.md fails the core goal: wrong expected top-3 order and implausible percentages; flame.png fails the hard visual gate for three hot frames/names."
+    },
+    "deliverable_correctness": {
+      "score": 0.6,
+      "reason": "Mean artifact correctness: profile.json=1.00, flame.png=0.40, report.md=0.40. The core report/flame artifacts are materially wrong."
+    },
+    "deliverable_quality": {
+      "score": 0.8,
+      "reason": "All named files exist, parse/open, and meet size thresholds, but flame.png is the wrong viewer type and report values violate spec."
+    },
+    "evidence_authenticity": {
+      "score": 0.55,
+      "reason": "py-spy profile and screenshot appear genuine, but the agent used json.load/import json to analyze profile.json despite the audit warning, and the visual evidence does not substantiate the claimed three hotspots."
+    },
+    "tool_use_correctness": {
+      "score": 0.55,
+      "reason": "Agent installed and used py-spy and took a browser screenshot, but did not use speedscope as requested and used direct JSON parsing of profile.json, an explicitly audited/forbidden approach."
+    },
+    "final_state_correctness": {
+      "score": 0.45,
+      "reason": "Final state has files, but the final answer/report names the correct set in reverse order with noncompliant percentages, so the requested identification is not achieved."
+    },
+    "efficiency_robustness": {
+      "score": 0.55,
+      "reason": "Agent recovered from some py-spy and screenshot issues, but ignored the mismatch with the task hint/expected close hotspots and proceeded with a clearly inconsistent profile interpretation."
+    },
+    "instruction_following": {
+      "score": 0.5,
+      "reason": "File placement mostly followed, but it did not produce a speedscope UI screenshot, violated the no JSON-profile-analysis audit expectation, and did not provide values in the required reasonable hotspot range/order."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.25,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.556,
+  "summary": "The rollout produced all three required files, and profile.json is a real speedscope-format py-spy sample. However, the core answer is wrong: report.md orders worker_c, worker_b, worker_a with 87/11/1%, while the ground-truth order is worker_a, worker_b, worker_c with close 20-35% hotspots, and flame.png does not visibly show three hot worker frames/names in a speedscope UI."
+}

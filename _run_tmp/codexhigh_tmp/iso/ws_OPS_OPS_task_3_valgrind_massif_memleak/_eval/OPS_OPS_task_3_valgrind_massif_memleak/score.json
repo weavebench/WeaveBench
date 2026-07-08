@@ -1,0 +1,962 @@
+{
+  "artifact_checks": [
+    {
+      "id": "massif_baseline.out",
+      "task_says": "`massif_baseline.out` / `massif_fixed.out`: valid massif output containing `snapshot=` and `mem_heap_B=` fields (≥ 5 each); the peak `mem_heap_B` of fixed must be < 50% of the baseline peak.",
+      "spec_clauses": [
+        "file exists and is valid massif output",
+        "contains snapshot= fields ≥ 5",
+        "contains mem_heap_B= fields ≥ 5"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and is valid massif output",
+          "satisfied": true,
+          "evidence": "massif_baseline.out exists, size 268172 bytes, Valgrind Massif format with snapshots."
+        },
+        {
+          "clause": "contains snapshot= fields ≥ 5",
+          "satisfied": true,
+          "evidence": "Parsed 120 snapshot/mem_heap_B entries."
+        },
+        {
+          "clause": "contains mem_heap_B= fields ≥ 5",
+          "satisfied": true,
+          "evidence": "Parsed 120 mem_heap_B entries; peak 187046."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Baseline massif has 120 snapshots/mem_heap_B entries; peak mem_heap_B=187046.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "massif_fixed.out",
+      "task_says": "`massif_baseline.out` / `massif_fixed.out`: valid massif output containing `snapshot=` and `mem_heap_B=` fields (≥ 5 each); the peak `mem_heap_B` of fixed must be < 50% of the baseline peak.",
+      "spec_clauses": [
+        "file exists and is valid massif output",
+        "contains snapshot= fields ≥ 5",
+        "contains mem_heap_B= fields ≥ 5",
+        "fixed peak < 50% of baseline peak"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and is valid massif output",
+          "satisfied": true,
+          "evidence": "massif_fixed.out exists, size 198367 bytes, Valgrind Massif format."
+        },
+        {
+          "clause": "contains snapshot= fields ≥ 5",
+          "satisfied": true,
+          "evidence": "Parsed 106 snapshot entries."
+        },
+        {
+          "clause": "contains mem_heap_B= fields ≥ 5",
+          "satisfied": true,
+          "evidence": "Parsed 106 mem_heap_B entries; peak 21848."
+        },
+        {
+          "clause": "fixed peak < 50% of baseline peak",
+          "satisfied": true,
+          "evidence": "Fixed peak 21848 is 11.68% of baseline 187046."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Fixed massif has 106 entries; peak 21848 < 0.5*187046.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "ms_print_baseline.txt",
+      "task_says": "`ms_print_baseline.txt` / `ms_print_fixed.txt`: ≥ 200 bytes, containing ASCII heap-graph characters (`#` `:` `@`).",
+      "spec_clauses": [
+        "file exists",
+        "size/content length ≥ 200 bytes",
+        "contains ASCII heap-graph characters # : @"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "ms_print_baseline.txt exists."
+        },
+        {
+          "clause": "size/content length ≥ 200 bytes",
+          "satisfied": true,
+          "evidence": "Size 357676 bytes."
+        },
+        {
+          "clause": "contains ASCII heap-graph characters # : @",
+          "satisfied": true,
+          "evidence": "Contains graph characters; counts include #=20, :=9697, @=1123."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "ms_print_baseline.txt is 357676 bytes and contains ms_print graph characters.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "ms_print_fixed.txt",
+      "task_says": "`ms_print_baseline.txt` / `ms_print_fixed.txt`: ≥ 200 bytes, containing ASCII heap-graph characters (`#` `:` `@`).",
+      "spec_clauses": [
+        "file exists",
+        "size/content length ≥ 200 bytes",
+        "contains ASCII heap-graph characters # : @"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "ms_print_fixed.txt exists."
+        },
+        {
+          "clause": "size/content length ≥ 200 bytes",
+          "satisfied": true,
+          "evidence": "Size 265337 bytes."
+        },
+        {
+          "clause": "contains ASCII heap-graph characters # : @",
+          "satisfied": true,
+          "evidence": "Contains graph characters; counts include #=19, :=5995, @=1686."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "ms_print_fixed.txt is 265337 bytes and contains ms_print graph characters.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "memcheck_baseline.txt",
+      "task_says": "`memcheck_baseline.txt`: contains at least one of `definitely lost` / `indirectly lost` / `possibly lost` blocks + ≥ 1 `at 0x...` call-stack frame.",
+      "spec_clauses": [
+        "file exists",
+        "contains lost block wording",
+        "contains ≥1 at 0x call-stack frame"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "memcheck_baseline.txt exists, 4813 bytes."
+        },
+        {
+          "clause": "contains lost block wording",
+          "satisfied": true,
+          "evidence": "Contains \"64,000 bytes in 500 blocks are definitely lost\" and LEAK SUMMARY."
+        },
+        {
+          "clause": "contains ≥1 at 0x call-stack frame",
+          "satisfied": true,
+          "evidence": "Stack frames include \"at 0x4848899\" and \"by 0x109630: build_response\"."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Memcheck baseline reports definitely lost: 64,000 bytes, with at 0x stack frames through build_response.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "memcheck_final.txt",
+      "task_says": "`memcheck_final.txt`: the `definitely lost: <bytes> bytes` byte count is substantially reduced from baseline (< 20% is best).",
+      "spec_clauses": [
+        "file exists",
+        "contains parseable definitely lost byte count",
+        "definitely lost substantially reduced from baseline"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "memcheck_final.txt exists, 983 bytes."
+        },
+        {
+          "clause": "contains parseable definitely lost byte count",
+          "satisfied": "partial",
+          "evidence": "Valgrind says \"All heap blocks were freed -- no leaks are possible\"; a non-Valgrind appended line says \"Derived leak summary: definitely lost: 0 bytes\"."
+        },
+        {
+          "clause": "definitely lost substantially reduced from baseline",
+          "satisfied": true,
+          "evidence": "Baseline definitely lost 64,000 bytes; final no leaks/derived 0 bytes."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.833,
+      "evidence_quote": "Final Memcheck is clean but the exact definitely-lost line is manually appended rather than native Valgrind LEAK SUMMARY.",
+      "missing_or_wrong": "contains parseable definitely lost byte count",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "memcheck_topfuncs.txt",
+      "task_says": "`memcheck_topfuncs.txt`: a list of function names extracted from the baseline `definitely lost` section, ≥ 1 line.",
+      "spec_clauses": [
+        "file exists",
+        "≥1 line",
+        "function names are extracted from baseline definitely lost section"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "memcheck_topfuncs.txt exists."
+        },
+        {
+          "clause": "≥1 line",
+          "satisfied": true,
+          "evidence": "Contains 4 lines: ['build_response', 'handle_client', 'run_test_mode', 'main']."
+        },
+        {
+          "clause": "function names are extracted from baseline definitely lost section",
+          "satisfied": true,
+          "evidence": "The definitely-lost block contains build_response, handle_client, run_test_mode, main; file lists those names."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Lists build_response, handle_client, run_test_mode, main from the definitely-lost stack.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "cross_validation.json",
+      "task_says": "`cross_validation.json`: contains exactly the fields `topfuncs_from_memcheck` / `matched_in_massif_tree` / `match_ratio` / `confirmed_leak_funcs` / `confirmed_screenshot`; `match_ratio` ∈ [0,1] and ≥ 0.5.",
+      "spec_clauses": [
+        "file exists and parses JSON",
+        "contains exactly required five fields",
+        "match_ratio is in [0,1] and ≥0.5",
+        "fields cross-reference Memcheck/Massif/screenshot evidence"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and parses JSON",
+          "satisfied": true,
+          "evidence": "cross_validation.json parses."
+        },
+        {
+          "clause": "contains exactly required five fields",
+          "satisfied": true,
+          "evidence": "Keys are ['confirmed_leak_funcs', 'confirmed_screenshot', 'match_ratio', 'matched_in_massif_tree', 'topfuncs_from_memcheck']."
+        },
+        {
+          "clause": "match_ratio is in [0,1] and ≥0.5",
+          "satisfied": true,
+          "evidence": "match_ratio=1.0."
+        },
+        {
+          "clause": "fields cross-reference Memcheck/Massif/screenshot evidence",
+          "satisfied": true,
+          "evidence": "topfuncs match memcheck_topfuncs; view_04 visibly shows build_response, handle_client, run_test_mode, main rows."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Schema exact and match_ratio=1.0; view_04 shows all listed top funcs.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "leak_analysis.json",
+      "task_says": "`leak_analysis.json`: contains `peak_snapshot_index` / `peak_heap_bytes` / `leak_sites`; `leak_sites` must contain ≥ 3 entries with **mutually distinct function names**, each entry having all fields: `function` (≥ 2 chars), `file`, `line_approx` (int, 1–1000), `alloc_bytes_at_peak` (positive int, taken from a real Allocation Tree node number), `alloc_percentage` (>0 float), `leak_type` (must be one of `unbounded_growth` / `missing_free` / `realloc_without_shrink` / `double_alloc_no_free`), `evidence_screenshot`, `evidence_memcheck_line` (≥ 5-char fragment).",
+      "spec_clauses": [
+        "file exists and parses JSON",
+        "contains peak_snapshot_index / peak_heap_bytes / leak_sites",
+        "leak_sites contains ≥3 entries",
+        "leak_site functions are mutually distinct",
+        "each entry has function/file/line_approx/alloc_bytes_at_peak/alloc_percentage/leak_type/evidence fields",
+        "line_approx int 1-1000, alloc bytes positive, alloc percentage >0, valid leak_type",
+        "alloc_bytes_at_peak/alloc_percentage come from real Allocation Tree/Massif node numbers",
+        "evidence_memcheck_line is a ≥5-char fragment from Memcheck evidence"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and parses JSON",
+          "satisfied": true,
+          "evidence": "leak_analysis.json parses."
+        },
+        {
+          "clause": "contains peak_snapshot_index / peak_heap_bytes / leak_sites",
+          "satisfied": true,
+          "evidence": "Has top-level keys ['leak_sites', 'peak_heap_bytes', 'peak_snapshot_index']; peak_snapshot_index=119, peak_heap_bytes=187046."
+        },
+        {
+          "clause": "leak_sites contains ≥3 entries",
+          "satisfied": true,
+          "evidence": "Contains 3 leak_sites."
+        },
+        {
+          "clause": "leak_site functions are mutually distinct",
+          "satisfied": true,
+          "evidence": "Functions are ['build_response', 'log_append', 'register_client']."
+        },
+        {
+          "clause": "each entry has function/file/line_approx/alloc_bytes_at_peak/alloc_percentage/leak_type/evidence fields",
+          "satisfied": true,
+          "evidence": "All three entries include all required fields."
+        },
+        {
+          "clause": "line_approx int 1-1000, alloc bytes positive, alloc percentage >0, valid leak_type",
+          "satisfied": true,
+          "evidence": "line_approx values are 67/54/88, bytes positive, percentages positive, leak_type values are allowed."
+        },
+        {
+          "clause": "alloc_bytes_at_peak/alloc_percentage come from real Allocation Tree/Massif node numbers",
+          "satisfied": true,
+          "evidence": "Numbers match baseline Massif peak rows: build_response 64000/34.22, log_append 67060/35.85, register_client 8000/4.28."
+        },
+        {
+          "clause": "evidence_memcheck_line is a ≥5-char fragment from Memcheck evidence",
+          "satisfied": "partial",
+          "evidence": "build_response and register_client fragments appear in Memcheck; log_append is only still-reachable, not definitely/possibly/indirectly lost, but appears in baseline Memcheck stack records."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.938,
+      "evidence_quote": "JSON has 3 distinct sites with real Massif node numbers; log_append evidence comes from still-reachable Memcheck records rather than definitely-lost.",
+      "missing_or_wrong": "evidence_memcheck_line is a ≥5-char fragment from Memcheck evidence",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "server.patch",
+      "task_says": "`server.patch`: a valid unified diff produced by `diff -u server.c server_fixed.c` (containing `---` `+++` `@@`), with a combined ± line count ≥ 6.",
+      "spec_clauses": [
+        "file exists",
+        "valid unified diff contains --- +++ @@",
+        "combined +/- line count ≥6",
+        "patch plausibly fixes all identified defects"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "server.patch exists, 3368 bytes."
+        },
+        {
+          "clause": "valid unified diff contains --- +++ @@",
+          "satisfied": true,
+          "evidence": "Patch begins with --- server.c / +++ server_fixed.c and contains @@ hunks."
+        },
+        {
+          "clause": "combined +/- line count ≥6",
+          "satisfied": true,
+          "evidence": "Counted 86 changed +/- lines excluding headers."
+        },
+        {
+          "clause": "patch plausibly fixes all identified defects",
+          "satisfied": true,
+          "evidence": "Adds free(response), log trim/free_all_logs, free_client_record/free_all_clients/unregister_client, and client slot overwrite cleanup."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Unified diff with 86 changed lines and targeted memory frees.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fix_summary.md",
+      "task_says": "`fix_summary.md`: ≥ 350 words, describing one-by-one how each of the ≥ 3 leak_sites was fixed, with concrete numbers for the peak and `definitely lost` bytes before vs. after the fix (≥ 2 numbers of 4+ digits), and referencing ≥ 3 `view_*.png` screenshots.",
+      "spec_clauses": [
+        "file exists",
+        "≥350 words",
+        "describes one-by-one fixes for ≥3 leak_sites",
+        "includes concrete before/after peak and definitely lost numbers with ≥2 four-digit numbers",
+        "references ≥3 view_*.png screenshots"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "fix_summary.md exists."
+        },
+        {
+          "clause": "≥350 words",
+          "satisfied": true,
+          "evidence": "Approximate word count 465."
+        },
+        {
+          "clause": "describes one-by-one fixes for ≥3 leak_sites",
+          "satisfied": true,
+          "evidence": "Separate paragraphs cover build_response, log_append, register_client."
+        },
+        {
+          "clause": "includes concrete before/after peak and definitely lost numbers with ≥2 four-digit numbers",
+          "satisfied": true,
+          "evidence": "Mentions 187046, 21848, 64000, 118950, and 0."
+        },
+        {
+          "clause": "references ≥3 view_*.png screenshots",
+          "satisfied": true,
+          "evidence": "References 5 unique screenshot files: ['view_02_peak_snapshot.png', 'view_03_top_allocator_expanded.png', 'view_04_xref_function_node.png', 'view_05_iter1_alloctree.png', 'view_06_fixed_timeline.png']."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Summary has 465 words and references 5 screenshots.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build_baseline.log",
+      "task_says": "`build_baseline.log`: Baseline build output (`-g -O0`, binary `server`).",
+      "spec_clauses": [
+        "file exists",
+        "contains build command/output",
+        "uses -g -O0",
+        "builds expected binary"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "build_baseline.log exists."
+        },
+        {
+          "clause": "contains build command/output",
+          "satisfied": true,
+          "evidence": "rm -f server server_fixed *.o"
+        },
+        {
+          "clause": "uses -g -O0",
+          "satisfied": true,
+          "evidence": "Build line contains -g -O0."
+        },
+        {
+          "clause": "builds expected binary",
+          "satisfied": true,
+          "evidence": "Build line targets server/server_fixed."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "build_baseline.log contains compile line: rm -f server server_fixed *.o\ncc -g -O0 -Wall -include stdarg.h -o server server.c -lpthread\nserver.c:43:12: warning: ‘g_client_count’ defined but not used [-Wunused-variable]\n   4",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build_fixed_iter1.log",
+      "task_says": "`build_fixed_iter1.log`: Build log for first single-point fix iteration; final binary is `server_fixed`.",
+      "spec_clauses": [
+        "file exists",
+        "contains build command/output",
+        "uses -g -O0",
+        "builds expected binary"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "build_fixed_iter1.log exists."
+        },
+        {
+          "clause": "contains build command/output",
+          "satisfied": true,
+          "evidence": "cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread"
+        },
+        {
+          "clause": "uses -g -O0",
+          "satisfied": true,
+          "evidence": "Build line contains -g -O0."
+        },
+        {
+          "clause": "builds expected binary",
+          "satisfied": true,
+          "evidence": "Build line targets server/server_fixed."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "build_fixed_iter1.log contains compile line: cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread\nserver_fixed.c:44:12: warning: ‘g_client_count’ defined but not used [-Wunused-variable]\n   44 | static int g_client_count ",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build_fixed_iter2.log",
+      "task_says": "`build_fixed_iter2.log`: Build log for second single-point fix iteration; final binary is `server_fixed`.",
+      "spec_clauses": [
+        "file exists",
+        "contains build command/output",
+        "uses -g -O0",
+        "builds expected binary"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "build_fixed_iter2.log exists."
+        },
+        {
+          "clause": "contains build command/output",
+          "satisfied": true,
+          "evidence": "cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread"
+        },
+        {
+          "clause": "uses -g -O0",
+          "satisfied": true,
+          "evidence": "Build line contains -g -O0."
+        },
+        {
+          "clause": "builds expected binary",
+          "satisfied": true,
+          "evidence": "Build line targets server/server_fixed."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "build_fixed_iter2.log contains compile line: cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread\nserver_fixed.c:44:12: warning: ‘g_client_count’ defined but not used [-Wunused-variable]\n   44 | static int g_client_count ",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build_fixed_iter3.log",
+      "task_says": "`build_fixed_iter3.log`: Build log for third single-point fix iteration; final binary is `server_fixed`.",
+      "spec_clauses": [
+        "file exists",
+        "contains build command/output",
+        "uses -g -O0",
+        "builds expected binary"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "build_fixed_iter3.log exists."
+        },
+        {
+          "clause": "contains build command/output",
+          "satisfied": true,
+          "evidence": "cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread"
+        },
+        {
+          "clause": "uses -g -O0",
+          "satisfied": true,
+          "evidence": "Build line contains -g -O0."
+        },
+        {
+          "clause": "builds expected binary",
+          "satisfied": true,
+          "evidence": "Build line targets server/server_fixed."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "build_fixed_iter3.log contains compile line: cc -g -O0 -Wall -o server_fixed server_fixed.c -lpthread",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "memcheck_iter1.txt",
+      "task_says": "`memcheck_iter1.txt`: memcheck re-verification log after fixing the 1st leak_site; the corresponding function should have disappeared or its byte count dropped significantly.",
+      "spec_clauses": [
+        "file exists",
+        "is Memcheck re-verification after first fix",
+        "first leak_site function build_response disappeared or byte count dropped significantly"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists",
+          "satisfied": true,
+          "evidence": "memcheck_iter1.txt exists, 4617 bytes."
+        },
+        {
+          "clause": "is Memcheck re-verification after first fix",
+          "satisfied": true,
+          "evidence": "Command is ./server_fixed --test-mode; total frees increased to 501."
+        },
+        {
+          "clause": "first leak_site function build_response disappeared or byte count dropped significantly",
+          "satisfied": true,
+          "evidence": "No build_response loss record remains; LEAK SUMMARY definitely lost: 0 bytes vs baseline 64,000."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Iteration-1 Memcheck removes build_response definitely-lost block and reports definitely lost 0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_heap_timeline.png",
+      "task_says": "`view_01_heap_timeline.png` | Main timeline view of the heap-profile visualization window (snapshot × bytes stacked chart + sidebar snapshot list). General specs: each PNG ≥ 8 KB, resolution ≥ 1280 × 720; images must differ; pure-text terminal screenshots not allowed; OCR/VLM should verify real visualization window chrome.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "shows heap-profile visualization window with chrome",
+        "shows snapshot × bytes timeline/stacked chart",
+        "shows sidebar snapshot list",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "shows heap-profile visualization window with chrome",
+          "satisfied": true,
+          "evidence": "VLM saw Massif Visualizer title/menu/chrome."
+        },
+        {
+          "clause": "shows snapshot × bytes timeline/stacked chart",
+          "satisfied": "partial",
+          "evidence": "partial: image mainly shows allocator table and sidebar; memory chart mostly obscured/not full stacked chart."
+        },
+        {
+          "clause": "shows sidebar snapshot list",
+          "satisfied": true,
+          "evidence": "VLM saw Massif Data sidebar with snapshot list to peak #119."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and not terminal."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.917,
+      "evidence_quote": "view_01_heap_timeline.png: 275034 bytes, resolution (1920, 1080), md5 3aa96ed85ba959e7bb0d166206bbf90a. Exists >8KB. 1920x1080. VLM saw Massif Visualizer title/menu/chrome. partial: image mainly shows allocator table and sidebar; memory chart mostly obscured/not full stacked chart. VLM saw Massif Data sidebar with snapshot list to peak #119. Unique md5 and not terminal.",
+      "missing_or_wrong": "shows snapshot × bytes timeline/stacked chart",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_peak_snapshot.png",
+      "task_says": "`view_02_peak_snapshot.png` | Detail panel after selecting the peak snapshot (must include the Allocation Tree area). General specs: each PNG ≥ 8 KB, resolution ≥ 1280 × 720; images must differ; OCR/VLM should verify visualization GUI.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "peak snapshot is selected/details visible",
+        "includes Allocation Tree area",
+        "shows real node names/bytes/percentages",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "peak snapshot is selected/details visible",
+          "satisfied": true,
+          "evidence": "Header says baseline peak snapshot #119 - 187,046 heap bytes."
+        },
+        {
+          "clause": "includes Allocation Tree area",
+          "satisfied": true,
+          "evidence": "Allocation Tree table visible."
+        },
+        {
+          "clause": "shows real node names/bytes/percentages",
+          "satisfied": true,
+          "evidence": "Rows include build_response 64,000 34.22, log_append 36,000 19.25, register_client 8,000 4.28."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and GUI screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_02_peak_snapshot.png: 247268 bytes, resolution (1920, 1080), md5 2fe92ea1791d1485ac55e30a1d996d3c. Exists >8KB. 1920x1080. Header says baseline peak snapshot #119 - 187,046 heap bytes. Allocation Tree table visible. Rows include build_response 64,000 34.22, log_append 36,000 19.25, register_client 8,000 4.28. Unique md5 and GUI screenshot.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_top_allocator_expanded.png",
+      "task_says": "`view_03_top_allocator_expanded.png` | Top-most largest node in the Allocation Tree expanded across multiple levels, showing real tree-indented function name + byte count + percentage. General specs apply.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "top-most largest node expanded",
+        "multiple tree-indented levels visible",
+        "function names + byte count + percentage visible",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "top-most largest node expanded",
+          "satisfied": true,
+          "evidence": "strdup top allocator is expanded."
+        },
+        {
+          "clause": "multiple tree-indented levels visible",
+          "satisfied": true,
+          "evidence": "Tree shows nested log_append -> handle_client -> run_test_mode -> main levels."
+        },
+        {
+          "clause": "function names + byte count + percentage visible",
+          "satisfied": true,
+          "evidence": "Rows include bytes and percentages such as 74,950/40.07 and 67,060/35.85."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and GUI screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_03_top_allocator_expanded.png: 291407 bytes, resolution (1920, 1080), md5 1d5139eab7111b431e20b6e65913d2f0. Exists >8KB. 1920x1080. strdup top allocator is expanded. Tree shows nested log_append -> handle_client -> run_test_mode -> main levels. Rows include bytes and percentages such as 74,950/40.07 and 67,060/35.85. Unique md5 and GUI screenshot.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_xref_function_node.png",
+      "task_says": "`view_04_xref_function_node.png` | On the same screen, ≥ 2 function names from `memcheck_topfuncs.txt` are visible on Allocation Tree node rows. General specs apply.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "≥2 memcheck_topfuncs visible on same screen",
+        "visible rows are Allocation Tree node rows",
+        "bytes/percentages/source shown",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "≥2 memcheck_topfuncs visible on same screen",
+          "satisfied": true,
+          "evidence": "build_response, handle_client, run_test_mode, and main are all visible."
+        },
+        {
+          "clause": "visible rows are Allocation Tree node rows",
+          "satisfied": true,
+          "evidence": "They are visible in Allocation Tree rows."
+        },
+        {
+          "clause": "bytes/percentages/source shown",
+          "satisfied": true,
+          "evidence": "Rows show 64,000/34.22/server.c:67 etc."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and GUI screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_04_xref_function_node.png: 295034 bytes, resolution (1920, 1080), md5 44a49c2467baee6df5c0badceb04933f. Exists >8KB. 1920x1080. build_response, handle_client, run_test_mode, and main are all visible. They are visible in Allocation Tree rows. Rows show 64,000/34.22/server.c:67 etc. Unique md5 and GUI screenshot.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_iter1_alloctree.png",
+      "task_says": "`view_05_iter1_alloctree.png` | Allocation Tree after reloading massif post first-fix; the original function node's share is visibly lower than in `view_03` (or has disappeared). General specs apply.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "shows post-first-fix/iter1 Allocation Tree",
+        "original build_response node share lower or disappeared",
+        "real tree rows/bytes/percentages visible",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "shows post-first-fix/iter1 Allocation Tree",
+          "satisfied": true,
+          "evidence": "Header/file indicate iter1 profile / massif_iter1.out."
+        },
+        {
+          "clause": "original build_response node share lower or disappeared",
+          "satisfied": true,
+          "evidence": "build_response node is not visible; baseline 64,000/34.22 hotspot disappeared from visible peak tree."
+        },
+        {
+          "clause": "real tree rows/bytes/percentages visible",
+          "satisfied": true,
+          "evidence": "Tree rows show strdup/log_append/register_client bytes and percentages."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and GUI screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_05_iter1_alloctree.png: 292175 bytes, resolution (1920, 1080), md5 736843b3f2a23fa7d292cc131385ea7e. Exists >8KB. 1920x1080. Header/file indicate iter1 profile / massif_iter1.out. build_response node is not visible; baseline 64,000/34.22 hotspot disappeared from visible peak tree. Tree rows show strdup/log_append/register_client bytes and percentages. Unique md5 and GUI screenshot.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_fixed_timeline.png",
+      "task_says": "`view_06_fixed_timeline.png` | Timeline after loading `massif_fixed.out`: overall flat or decreasing, no longer continuously climbing in a staircase pattern. General specs apply.",
+      "spec_clauses": [
+        "file exists and PNG ≥8KB",
+        "resolution ≥1280x720",
+        "loads massif_fixed.out/fixed profile",
+        "timeline overall flat or decreasing/not staircase",
+        "visualization GUI with chart/snapshot list/tree visible",
+        "not duplicate/pure terminal screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "file exists and PNG ≥8KB",
+          "satisfied": true,
+          "evidence": "Exists >8KB."
+        },
+        {
+          "clause": "resolution ≥1280x720",
+          "satisfied": true,
+          "evidence": "1920x1080."
+        },
+        {
+          "clause": "loads massif_fixed.out/fixed profile",
+          "satisfied": true,
+          "evidence": "Header/file indicate fixed profile / massif_fixed.out."
+        },
+        {
+          "clause": "timeline overall flat or decreasing/not staircase",
+          "satisfied": true,
+          "evidence": "Chart rises to 21,848 then plateaus/declines sharply at end, not staircase."
+        },
+        {
+          "clause": "visualization GUI with chart/snapshot list/tree visible",
+          "satisfied": true,
+          "evidence": "GUI shows chart, Massif Data list, Allocation Tree."
+        },
+        {
+          "clause": "not duplicate/pure terminal screenshot",
+          "satisfied": true,
+          "evidence": "Unique md5 and GUI screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_06_fixed_timeline.png: 242949 bytes, resolution (1920, 1080), md5 552bffb6c14d0161d35fc5eb1a1699e3. Exists >8KB. 1920x1080. Header/file indicate fixed profile / massif_fixed.out. Chart rises to 21,848 then plateaus/declines sharply at end, not staircase. GUI shows chart, Massif Data list, Allocation Tree. Unique md5 and GUI screenshot.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.9,
+      "reason": "All required artifacts exist; key gates met: massif peaks 187046→21848 (<50%), Memcheck lost 64000→0, ≥3 leak sites, patch and summary present. Minor concerns: view_01 only partially shows the requested timeline, and GUI evidence mostly uses a custom viewer rather than Massif Visualizer for tree views (artifact_checks view_01, view_02..view_06)."
+    },
+    "deliverable_correctness": {
+      "score": 0.986,
+      "reason": "Mean artifact correctness is 0.986. Only notable deductions are memcheck_final exact native definitely-lost line being appended (memcheck_final.txt), log_append evidence from still-reachable rather than definitely-lost (leak_analysis.json), and partial timeline visibility in view_01_heap_timeline.png."
+    },
+    "deliverable_quality": {
+      "score": 0.94,
+      "reason": "Files are present, parseable, and mostly well-formed: JSON schemas pass, patch is valid, images are 1920x1080/>8KB/unique. Minor quality issue is custom viewer/helper file in results and view_01 chart obscurity."
+    },
+    "evidence_authenticity": {
+      "score": 0.82,
+      "reason": "Valgrind/memcheck/massif outputs appear genuine and screenshots are real captured windows. However, screenshots 02-06 are from a custom Tkinter \"Massif Allocation Tree Explorer\" written by the agent, not an established profiler GUI; this is allowed as an equivalent visualization but weaker authenticity than direct massif-visualizer, and the custom GUI adds explanatory status text."
+    },
+    "tool_use_correctness": {
+      "score": 0.88,
+      "reason": "Agent used gcc, valgrind massif/memcheck, ms_print, Massif Visualizer, GUI actions, and gnome-screenshot appropriately. It also created a custom Tk viewer to display the real Massif allocation tree after Massif Visualizer showed a flat allocator table; acceptable but less ideal."
+    },
+    "final_state_correctness": {
+      "score": 0.93,
+      "reason": "Final state meets the operational goal: server.patch frees response, trims/frees logs, unregisters/frees clients; final Memcheck says all heap blocks freed and Massif peak is 11.68% of baseline. Iteration logs and screenshots demonstrate closed-loop verification."
+    },
+    "efficiency_robustness": {
+      "score": 0.86,
+      "reason": "Recovered from Xauthority/desktop overlay/tree rendering issues and validated final files. Some inefficiency and fragility from writing a custom GUI and recapturing screenshots, but final artifacts are coherent."
+    },
+    "instruction_following": {
+      "score": 0.88,
+      "reason": "Followed artifact naming/location, GUI screenshots one-by-one, no forbidden gt access observed, and verified results. Minor deviations: final definitely-lost line appended manually; custom GUI rather than recommended massif-visualizer for most screenshot evidence; extra helper artifacts in results."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.05,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.899,
+  "summary": "The rollout is largely successful: all required deliverables are present, Valgrind/Massif evidence is genuine, three distinct leak sites are identified, and the final patch reduces peak heap from 187,046 to 21,848 bytes with Memcheck clean. Strict deductions apply because the main allocation-tree screenshots are from an agent-written Tkinter viewer rather than standard Massif Visualizer, view_01 only partially shows the requested timeline, and the final definitely-lost line is manually appended rather than native Valgrind summary."
+}

@@ -1,0 +1,453 @@
+{
+  "artifact_checks": [
+    {
+      "id": "header_audit.json",
+      "task_says": "Hard constraints on the primary deliverable `header_audit.json`: Must contain the four origin keys `main` / `widget` / `static` / `thirdp`, plus a `summary` field (1-2 sentences of natural-language conclusion). Each origin object must contain a `needs_change` field that truthfully lists the missing/wrong header names on that origin: main must include at least `Cross-Origin-Opener-Policy`; widget / static / thirdp must each include at least `Cross-Origin-Resource-Policy`. Header names are listed as plain strings (values are allowed but matching is done on the header-name prefix).",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as header_audit.json",
+        "contains the four origin keys main / widget / static / thirdp",
+        "contains a summary field with 1-2 sentences of natural-language conclusion",
+        "each origin object contains a needs_change field",
+        "main needs_change includes at least Cross-Origin-Opener-Policy",
+        "widget needs_change includes at least Cross-Origin-Resource-Policy",
+        "static needs_change includes at least Cross-Origin-Resource-Policy",
+        "thirdp needs_change includes at least Cross-Origin-Resource-Policy",
+        "header names are listed as plain strings"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as header_audit.json", "satisfied": false, "evidence": "results/header_audit.json is absent from the staged results directory."},
+        {"clause": "contains the four origin keys main / widget / static / thirdp", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "contains a summary field with 1-2 sentences of natural-language conclusion", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "each origin object contains a needs_change field", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "main needs_change includes at least Cross-Origin-Opener-Policy", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "widget needs_change includes at least Cross-Origin-Resource-Policy", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "static needs_change includes at least Cross-Origin-Resource-Policy", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "thirdp needs_change includes at least Cross-Origin-Resource-Policy", "satisfied": false, "evidence": "No JSON file exists to inspect."},
+        {"clause": "header names are listed as plain strings", "satisfied": false, "evidence": "No JSON file exists to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`ls` reported: cannot access results/header_audit.json: No such file or directory. Chat grep showed no creation attempt for header_audit.json.",
+      "missing_or_wrong": "Missing entire required primary deliverable; all structure and needs_change clauses unverifiable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_main_before.txt",
+      "task_says": "`curl_main_before.txt` / `curl_widget_before.txt` / `curl_static_before.txt` / `curl_3p_before.txt`: Pre-fix full response headers for all 4 origins; must include the `HTTP/` start line and at least one `Cross-Origin-*` line",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_main_before.txt",
+        "contains pre-fix full response headers for the main origin",
+        "includes the HTTP/ start line",
+        "includes at least one Cross-Origin-* line"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_main_before.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains pre-fix full response headers for the main origin", "satisfied": true, "evidence": "Headers show HTTP/2 200 from Caddy before fix with COOP same-origin-allow-popups."},
+        {"clause": "includes the HTTP/ start line", "satisfied": true, "evidence": "First line is `HTTP/2 200`."},
+        {"clause": "includes at least one Cross-Origin-* line", "satisfied": true, "evidence": "Contains `cross-origin-embedder-policy: require-corp` and `cross-origin-opener-policy: same-origin-allow-popups`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "curl_main_before.txt begins `HTTP/2 200` and includes `cross-origin-embedder-policy: require-corp` plus `cross-origin-opener-policy: same-origin-allow-popups`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_widget_before.txt",
+      "task_says": "`curl_main_before.txt` / `curl_widget_before.txt` / `curl_static_before.txt` / `curl_3p_before.txt`: Pre-fix full response headers for all 4 origins; must include the `HTTP/` start line and at least one `Cross-Origin-*` line",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_widget_before.txt",
+        "contains pre-fix full response headers for the widget origin/route",
+        "includes the HTTP/ start line",
+        "includes at least one Cross-Origin-* line"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_widget_before.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains pre-fix full response headers for the widget origin/route", "satisfied": "partial", "evidence": "It is from `/widget`, but the response is `HTTP/2 404`, not a successful widget resource response."},
+        {"clause": "includes the HTTP/ start line", "satisfied": true, "evidence": "First line is `HTTP/2 404`."},
+        {"clause": "includes at least one Cross-Origin-* line", "satisfied": true, "evidence": "Contains `cross-origin-opener-policy: same-origin-allow-popups`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.875,
+      "evidence_quote": "curl_widget_before.txt has `HTTP/2 404`, `cache-control: no-store`, and `cross-origin-opener-policy: same-origin-allow-popups`; it is not a successful widget content response.",
+      "missing_or_wrong": "Pre-fix widget evidence is a 404 rather than full headers for the actual widget resource.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_static_before.txt",
+      "task_says": "`curl_main_before.txt` / `curl_widget_before.txt` / `curl_static_before.txt` / `curl_3p_before.txt`: Pre-fix full response headers for all 4 origins; must include the `HTTP/` start line and at least one `Cross-Origin-*` line",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_static_before.txt",
+        "contains pre-fix full response headers for the static resource origin/route",
+        "includes the HTTP/ start line",
+        "includes at least one Cross-Origin-* line"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_static_before.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains pre-fix full response headers for the static resource origin/route", "satisfied": true, "evidence": "Headers show HTTP/2 200 for a JavaScript static resource."},
+        {"clause": "includes the HTTP/ start line", "satisfied": true, "evidence": "First line is `HTTP/2 200`."},
+        {"clause": "includes at least one Cross-Origin-* line", "satisfied": false, "evidence": "No Cross-Origin-* header appears in the file."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "curl_static_before.txt begins `HTTP/2 200` but only has cache/content/server/date-style headers; no `Cross-Origin-*` line is present.",
+      "missing_or_wrong": "Missing required at least one Cross-Origin-* line.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_3p_before.txt",
+      "task_says": "`curl_main_before.txt` / `curl_widget_before.txt` / `curl_static_before.txt` / `curl_3p_before.txt`: Pre-fix full response headers for all 4 origins; must include the `HTTP/` start line and at least one `Cross-Origin-*` line",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_3p_before.txt",
+        "contains pre-fix full response headers for the third-party origin",
+        "includes the HTTP/ start line",
+        "includes at least one Cross-Origin-* line"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_3p_before.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains pre-fix full response headers for the third-party origin", "satisfied": true, "evidence": "Headers show Python SimpleHTTP response for the 3p badge resource."},
+        {"clause": "includes the HTTP/ start line", "satisfied": true, "evidence": "First line is `HTTP/1.0 200 OK`."},
+        {"clause": "includes at least one Cross-Origin-* line", "satisfied": false, "evidence": "No Cross-Origin-* header appears in the file."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "curl_3p_before.txt begins `HTTP/1.0 200 OK` and shows SimpleHTTP headers plus Cache-Control, but no Cross-Origin-* header.",
+      "missing_or_wrong": "Missing required at least one Cross-Origin-* line.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_main_after.txt",
+      "task_says": "`curl_main_after.txt`: Post-fix main-site response headers; must include `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp` or `credentialless`",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_main_after.txt",
+        "contains post-fix main-site response headers",
+        "includes Cross-Origin-Opener-Policy: same-origin",
+        "includes Cross-Origin-Embedder-Policy: require-corp or credentialless"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_main_after.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains post-fix main-site response headers", "satisfied": true, "evidence": "Headers show HTTP/2 200 from Caddy after the edit timestamp."},
+        {"clause": "includes Cross-Origin-Opener-Policy: same-origin", "satisfied": true, "evidence": "Contains `cross-origin-opener-policy: same-origin`."},
+        {"clause": "includes Cross-Origin-Embedder-Policy: require-corp or credentialless", "satisfied": true, "evidence": "Contains `cross-origin-embedder-policy: require-corp`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "curl_main_after.txt has `cross-origin-embedder-policy: require-corp` and `cross-origin-opener-policy: same-origin`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_widget_after.txt",
+      "task_says": "`curl_widget_after.txt`: Must include `Cross-Origin-Resource-Policy:` with a same-origin / same-site valid value",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_widget_after.txt",
+        "contains post-fix widget response headers",
+        "includes Cross-Origin-Resource-Policy",
+        "CORP value is same-origin or same-site"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_widget_after.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains post-fix widget response headers", "satisfied": true, "evidence": "Headers show HTTP/2 200 for text/html widget response."},
+        {"clause": "includes Cross-Origin-Resource-Policy", "satisfied": true, "evidence": "Contains `cross-origin-resource-policy: same-origin`."},
+        {"clause": "CORP value is same-origin or same-site", "satisfied": true, "evidence": "Value is `same-origin`, which is valid for same-site/same-origin widget."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "curl_widget_after.txt has `HTTP/2 200` and `cross-origin-resource-policy: same-origin`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_static_after.txt",
+      "task_says": "`curl_static_after.txt`: Must include `Cross-Origin-Resource-Policy:` with a same-origin / same-site valid value",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_static_after.txt",
+        "contains post-fix static response headers",
+        "includes Cross-Origin-Resource-Policy",
+        "CORP value is same-origin or same-site"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_static_after.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains post-fix static response headers", "satisfied": true, "evidence": "Headers show HTTP/2 200 for text/javascript static resource."},
+        {"clause": "includes Cross-Origin-Resource-Policy", "satisfied": true, "evidence": "Contains `cross-origin-resource-policy: same-origin`."},
+        {"clause": "CORP value is same-origin or same-site", "satisfied": true, "evidence": "Value is `same-origin`, which is valid."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "curl_static_after.txt has `HTTP/2 200` and `cross-origin-resource-policy: same-origin`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "curl_3p_after.txt",
+      "task_says": "`curl_3p_after.txt`: Must include `Cross-Origin-Resource-Policy: cross-origin`",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as curl_3p_after.txt",
+        "contains post-fix third-party response headers",
+        "includes Cross-Origin-Resource-Policy: cross-origin"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as curl_3p_after.txt", "satisfied": true, "evidence": "File exists and is readable."},
+        {"clause": "contains post-fix third-party response headers", "satisfied": true, "evidence": "Headers show HTTP/1.0 200 OK from Python SimpleHTTP."},
+        {"clause": "includes Cross-Origin-Resource-Policy: cross-origin", "satisfied": true, "evidence": "Contains exact `Cross-Origin-Resource-Policy: cross-origin`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "curl_3p_after.txt has `Cross-Origin-Resource-Policy: cross-origin`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "patch.diff",
+      "task_says": "`patch.diff`: A `diff -u` that covers both `Caddyfile` and `cdn/server.py` (including the `/tmp_workspace/coop_site/` mirror sync), ≥ 2 hunks, and hits at least 1 of the target files",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as patch.diff",
+        "is a diff -u",
+        "covers Caddyfile",
+        "covers cdn/server.py",
+        "includes the /tmp_workspace/coop_site/ mirror sync",
+        "contains at least 2 hunks",
+        "hits at least 1 target file"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as patch.diff", "satisfied": false, "evidence": "results/patch.diff is absent."},
+        {"clause": "is a diff -u", "satisfied": false, "evidence": "No patch.diff file exists."},
+        {"clause": "covers Caddyfile", "satisfied": false, "evidence": "No patch.diff file exists, although staged Caddyfile differs from baseline."},
+        {"clause": "covers cdn/server.py", "satisfied": false, "evidence": "No patch.diff file exists, although staged cdn/server.py differs from baseline."},
+        {"clause": "includes the /tmp_workspace/coop_site/ mirror sync", "satisfied": false, "evidence": "No patch.diff file exists and no diff hunk for coop_site mirror is provided."},
+        {"clause": "contains at least 2 hunks", "satisfied": false, "evidence": "No patch.diff file exists."},
+        {"clause": "hits at least 1 target file", "satisfied": false, "evidence": "No patch.diff file exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`ls` reported: cannot access results/patch.diff: No such file or directory. Chat grep showed no creation attempt for patch.diff, though manual baseline diffs show source edits occurred.",
+      "missing_or_wrong": "Missing entire required patch.diff deliverable; all diff coverage/hunk clauses unverifiable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.md",
+      "task_says": "`report.md`: ≥ 30 lines + ≥ 3 `### ` subsections; for each spot, explain what each bug is missing, why it must be present, and how it is fixed, and quote the key hunks from `patch.diff`; cover the keywords COOP / COEP / CORP and the three kinds of origins",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as report.md",
+        "contains at least 30 lines",
+        "contains at least 3 `### ` subsections",
+        "for each spot, explains what each bug is missing",
+        "for each spot, explains why the missing header must be present",
+        "for each spot, explains how it is fixed",
+        "quotes the key hunks from patch.diff",
+        "covers the keyword COOP",
+        "covers the keyword COEP",
+        "covers the keyword CORP",
+        "covers the three kinds of origins"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as report.md", "satisfied": false, "evidence": "results/report.md is absent."},
+        {"clause": "contains at least 30 lines", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "contains at least 3 `### ` subsections", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "for each spot, explains what each bug is missing", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "for each spot, explains why the missing header must be present", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "for each spot, explains how it is fixed", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "quotes the key hunks from patch.diff", "satisfied": false, "evidence": "No report.md file exists and patch.diff is also absent."},
+        {"clause": "covers the keyword COOP", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "covers the keyword COEP", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "covers the keyword CORP", "satisfied": false, "evidence": "No report.md file exists."},
+        {"clause": "covers the three kinds of origins", "satisfied": false, "evidence": "No report.md file exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "`ls` reported: cannot access results/report.md: No such file or directory. Chat grep showed no creation attempt for report.md.",
+      "missing_or_wrong": "Missing entire required report; all content, length, subsection, explanation, and patch-quote clauses fail.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_banner_before.png",
+      "task_says": "`view_01_banner_before.png`: browser rendering of the target page, showing the NOT isolated banner and `crossOriginIsolated: false` status. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_01_banner_before.png",
+        "is a browser rendering of the target page",
+        "shows the NOT isolated banner",
+        "shows crossOriginIsolated false status",
+        "native resolution is at least 1280x800",
+        "browser UI and page text are clearly legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_01_banner_before.png", "satisfied": true, "evidence": "File exists."},
+        {"clause": "is a browser rendering of the target page", "satisfied": true, "evidence": "Image shows Chrome displaying `SharedArrayBuffer cross-origin-isolation demo` at localhost:8443."},
+        {"clause": "shows the NOT isolated banner", "satisfied": true, "evidence": "Red/pink badge reads `STATUS: NOT isolated`."},
+        {"clause": "shows crossOriginIsolated false status", "satisfied": true, "evidence": "Table row shows `self.crossOriginIsolated` value `false`."},
+        {"clause": "native resolution is at least 1280x800", "satisfied": true, "evidence": "PIL reports image size 1920x1080."},
+        {"clause": "browser UI and page text are clearly legible", "satisfied": true, "evidence": "Chrome UI, address bar, and page diagnostics are legible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "VLM observed Chrome at `https://localhost:8443`, title `SharedArrayBuffer cross-origin-isolation demo`, `STATUS: NOT isolated`, `self.crossOriginIsolated = false`; PIL size 1920x1080.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_devtools_app_frames.png",
+      "task_says": "`view_02_devtools_app_frames.png`: browser DevTools frame-tree view, containing the top-level frame + child frames, each frame annotated with isolation / COOP / COEP status. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_02_devtools_app_frames.png",
+        "shows browser DevTools frame-tree view",
+        "contains the top-level frame",
+        "contains child frames",
+        "each frame is annotated with isolation / COOP / COEP status",
+        "native resolution is at least 1280x800 and text legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_02_devtools_app_frames.png", "satisfied": false, "evidence": "No fixed-filename view_02 file is present in results/."},
+        {"clause": "shows browser DevTools frame-tree view", "satisfied": false, "evidence": "No file exists. Extra _screenshots sampled show desktop/connection/cert pages, not the required frame tree."},
+        {"clause": "contains the top-level frame", "satisfied": false, "evidence": "No file exists to verify."},
+        {"clause": "contains child frames", "satisfied": false, "evidence": "No file exists to verify."},
+        {"clause": "each frame is annotated with isolation / COOP / COEP status", "satisfied": false, "evidence": "No file exists to verify."},
+        {"clause": "native resolution is at least 1280x800 and text legible", "satisfied": false, "evidence": "No file exists to verify under the required name."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/view_02_devtools_app_frames.png is absent. Chat grep showed no attempt to save this fixed filename; sampled `_screenshots/screenshot_0009_wait.png` shows a Chrome certificate interstitial with Elements, not Application > Frames.",
+      "missing_or_wrong": "Missing entire required screenshot: no DevTools Application frame tree, top frame, child frames, or COOP/COEP/isolation annotations.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_devtools_console_sab_error.png",
+      "task_says": "`view_03_devtools_console_sab_error.png`: browser console showing the red `SharedArrayBuffer` creation-failure error. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_03_devtools_console_sab_error.png",
+        "shows browser DevTools Console",
+        "shows a red SharedArrayBuffer creation-failure error",
+        "native resolution is at least 1280x800 and text legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_03_devtools_console_sab_error.png", "satisfied": false, "evidence": "No fixed-filename view_03 file is present in results/."},
+        {"clause": "shows browser DevTools Console", "satisfied": false, "evidence": "No file exists. Sampled extra screenshots do not show the Console panel."},
+        {"clause": "shows a red SharedArrayBuffer creation-failure error", "satisfied": false, "evidence": "No file exists to verify; sampled screenshots do not show this error."},
+        {"clause": "native resolution is at least 1280x800 and text legible", "satisfied": false, "evidence": "No file exists under required name."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/view_03_devtools_console_sab_error.png is absent. Chat grep showed no save attempt for this fixed filename.",
+      "missing_or_wrong": "Missing entire required console SAB error screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_devtools_network_3p.png",
+      "task_says": "`view_04_devtools_network_3p.png`: in the browser Network panel, the 3p request to `localhost:9090`, with the Response Headers section showing no `Cross-Origin-Resource-Policy`. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_04_devtools_network_3p.png",
+        "shows browser DevTools Network panel",
+        "shows the 3p request to localhost:9090",
+        "Response Headers section is visible",
+        "Response Headers show no Cross-Origin-Resource-Policy before fix",
+        "native resolution is at least 1280x800 and text legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_04_devtools_network_3p.png", "satisfied": false, "evidence": "No fixed-filename view_04 file is present in results/."},
+        {"clause": "shows browser DevTools Network panel", "satisfied": false, "evidence": "No file exists. Sampled extra screenshots do not show the Network panel."},
+        {"clause": "shows the 3p request to localhost:9090", "satisfied": false, "evidence": "No file exists to verify."},
+        {"clause": "Response Headers section is visible", "satisfied": false, "evidence": "No file exists to verify."},
+        {"clause": "Response Headers show no Cross-Origin-Resource-Policy before fix", "satisfied": false, "evidence": "No screenshot exists to verify this browser Network evidence."},
+        {"clause": "native resolution is at least 1280x800 and text legible", "satisfied": false, "evidence": "No file exists under required name."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/view_04_devtools_network_3p.png is absent. Chat grep showed no save attempt for this fixed filename.",
+      "missing_or_wrong": "Missing entire required Network 3p headers screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_banner_after.png",
+      "task_says": "`view_05_banner_after.png`: the main page after a hard reload, showing the isolated positive banner and `crossOriginIsolated: true`. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_05_banner_after.png",
+        "shows the main page after a hard reload",
+        "shows the isolated positive banner",
+        "shows crossOriginIsolated true",
+        "native resolution is at least 1280x800 and text legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_05_banner_after.png", "satisfied": false, "evidence": "No fixed-filename view_05 file is present in results/."},
+        {"clause": "shows the main page after a hard reload", "satisfied": false, "evidence": "No file exists; sampled extra screenshot after reload was not saved under required name and available samples do not show positive state."},
+        {"clause": "shows the isolated positive banner", "satisfied": false, "evidence": "No screenshot evidence of positive isolated banner exists."},
+        {"clause": "shows crossOriginIsolated true", "satisfied": false, "evidence": "No screenshot evidence of `true` runtime status exists."},
+        {"clause": "native resolution is at least 1280x800 and text legible", "satisfied": false, "evidence": "No file exists under required name."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/view_05_banner_after.png is absent. The only fixed screenshot is before-state view_01; no final positive browser rendering was staged.",
+      "missing_or_wrong": "Missing entire required after banner screenshot, so isolated/true runtime state is not visually verified.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_devtools_app_frames_after.png",
+      "task_says": "`view_06_devtools_app_frames_after.png`: the frame tree opened again, with every frame showing Cross-Origin Isolated as Yes/true. General specs: native resolution ≥ 1280×800; browser / DevTools UI and text must be clearly legible; evaluation will run OCR.",
+      "spec_clauses": [
+        "file exists in /tmp_workspace/results/ as view_06_devtools_app_frames_after.png",
+        "shows the DevTools frame tree opened again after fix",
+        "every frame shows Cross-Origin Isolated as Yes/true",
+        "native resolution is at least 1280x800 and text legible"
+      ],
+      "clause_results": [
+        {"clause": "file exists in /tmp_workspace/results/ as view_06_devtools_app_frames_after.png", "satisfied": false, "evidence": "No fixed-filename view_06 file is present in results/."},
+        {"clause": "shows the DevTools frame tree opened again after fix", "satisfied": false, "evidence": "No file exists; sampled extra screenshots do not show Application > Frames after fix."},
+        {"clause": "every frame shows Cross-Origin Isolated as Yes/true", "satisfied": false, "evidence": "No screenshot exists to verify all frames."},
+        {"clause": "native resolution is at least 1280x800 and text legible", "satisfied": false, "evidence": "No file exists under required name."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/view_06_devtools_app_frames_after.png is absent. Chat grep showed no save attempt for this fixed filename.",
+      "missing_or_wrong": "Missing entire required after frame-tree screenshot.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.42, "reason": "The source header fixes and after curl artifacts are mostly correct (curl_main_after/widget/static/3p_after all pass), but the primary audit JSON, patch.diff, report.md, and five of six required screenshots are missing, including all after visual proof."},
+    "deliverable_correctness": {"score": 0.41, "reason": "Mean artifact correctness is about 0.41: several curl artifacts pass, view_01 passes, but header_audit.json, patch.diff, report.md, view_02, view_03, view_04, view_05, and view_06 are 0.0; before static/3p also miss required Cross-Origin lines."},
+    "deliverable_quality": {"score": 0.45, "reason": "Existing text files are readable and after headers are well-formed, but multiple required deliverables are absent. Missing primary JSON/report/patch and missing fixed screenshot names dominate quality."},
+    "evidence_authenticity": {"score": 0.72, "reason": "No fabrication grep hits or PIL/ImageDraw fake screenshot signals were found, and the curl evidence appears genuine. However the rollout lacks most required browser evidence, so authenticity of claimed browser final state cannot be established."},
+    "tool_use_correctness": {"score": 0.62, "reason": "The agent used curl and edited the real Caddyfile and cdn/server.py, which is appropriate, but spent substantial effort on TLS workaround and failed to produce required DevTools captures, audit JSON, patch, or report."},
+    "final_state_correctness": {"score": 0.50, "reason": "HTTP header final state is largely correct, but no staged runtime screenshot proves self.crossOriginIsolated flipped true, and required final frame-tree evidence is absent."},
+    "efficiency_robustness": {"score": 0.38, "reason": "The rollout recovered enough to get after curl headers, but it did not recover from missing fixed deliverables and stopped without header_audit.json, patch.diff, report.md, or five screenshots."},
+    "instruction_following": {"score": 0.32, "reason": "It violated many explicit deliverable instructions: missing primary JSON, missing companion report/patch, missing fixed screenshot filenames view_02-view_06, and before curl files for static/3p fail the stated Cross-Origin-* requirement."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.41,
+  "summary": "The agent successfully edited the real Caddyfile and Python CDN source enough for the after curl headers to show the expected COOP/COEP/CORP values. However, it failed to stage the primary audit JSON, patch.diff, report.md, and five of six required screenshots, so the rollout lacks most required process and runtime evidence and cannot score above the low mean deliverable correctness."
+}

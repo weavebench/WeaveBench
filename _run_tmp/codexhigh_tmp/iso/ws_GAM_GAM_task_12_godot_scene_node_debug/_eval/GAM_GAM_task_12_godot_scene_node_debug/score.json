@@ -1,0 +1,332 @@
+{
+  "artifact_checks": [
+    {
+      "id": "before/main.tscn",
+      "task_says": "- `/tmp_workspace/results/before/main.tscn`: an unmodified copy of the original main scene, used for diff records.",
+      "spec_clauses": [
+        "file exists at `/tmp_workspace/results/before/main.tscn`",
+        "is an unmodified copy of the original main scene",
+        "is usable for diff records"
+      ],
+      "clause_results": [
+        {"clause": "file exists at `/tmp_workspace/results/before/main.tscn`", "satisfied": true, "evidence": "results/before/main.tscn exists and is 2472 bytes."},
+        {"clause": "is an unmodified copy of the original main scene", "satisfied": true, "evidence": "cmp against staged results/scenes/main.tscn returned cmp:0; content still has ExtResource(2), offscreen GoalLabel, and zero extents."},
+        {"clause": "is usable for diff records", "satisfied": true, "evidence": "diff.txt uses before/main.tscn as the minus side and shows the expected changed lines."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "before/main.tscn matches the staged original exactly and includes the original broken texture id, offscreen margins, and zero FloorShape extents.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_before.json",
+      "task_says": "- `/tmp_workspace/results/parse_before.json`: JSON object containing the three keys\n  `ext_resources`, `sub_resources`, `nodes`; `nodes` has at least 6 items. Suggested structure:\n  `ext_resources` entries contain `id,path,type`, `sub_resources` entries contain `id,type,props`,\n  `nodes` entries contain `name,type,parent,props`.",
+      "spec_clauses": [
+        "JSON object is parseable",
+        "contains the three keys `ext_resources`, `sub_resources`, `nodes`",
+        "`nodes` has at least 6 items",
+        "`ext_resources` entries contain `id,path,type`",
+        "`sub_resources` entries contain `id,type,props`",
+        "`nodes` entries contain `name,type,parent,props`",
+        "reflects the original broken scene structure"
+      ],
+      "clause_results": [
+        {"clause": "JSON object is parseable", "satisfied": true, "evidence": "read as valid JSON."},
+        {"clause": "contains the three keys `ext_resources`, `sub_resources`, `nodes`", "satisfied": true, "evidence": "top-level keys are exactly ext_resources, sub_resources, nodes."},
+        {"clause": "`nodes` has at least 6 items", "satisfied": true, "evidence": "nodes list contains 10 nodes: Main, Background, Floor, FloorShape, FloorVisual, Player, PlayerSprite, PlayerShape, GoalLabel, HUD."},
+        {"clause": "`ext_resources` entries contain `id,path,type`", "satisfied": true, "evidence": "entry has id 1, path res://assets/player.png, type Texture."},
+        {"clause": "`sub_resources` entries contain `id,type,props`", "satisfied": true, "evidence": "each shown sub_resource has id/type/props, including RectangleShape2D id=1 extents Vector2( 0, 0 )."},
+        {"clause": "`nodes` entries contain `name,type,parent,props`", "satisfied": true, "evidence": "node entries include all four fields."},
+        {"clause": "reflects the original broken scene structure", "satisfied": true, "evidence": "captures PlayerSprite.texture ExtResource(2), GoalLabel margins 20000/20000/20128/20064, FloorShape SubResource(1) with zero extents."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_before.json is valid JSON with 1 ext_resource, 4 sub_resources, 10 nodes, and records the three original broken values.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "bugs.json",
+      "task_says": "- `/tmp_workspace/results/bugs.json`: JSON object containing three items:\n  `bug_dangling_extresource` (contains `detected,referenced_id,defined_ids`, may attach `node,missing_id`),\n  `bug_label_offscreen` (contains `detected,margin_left,margin_top,viewport`, may attach `node`),\n  `bug_collision_zero_extents` (contains `detected,subresource_id,extents`, may attach `node`).\n  Each item's fields should describe the corresponding triggering evidence.",
+      "spec_clauses": [
+        "JSON object is parseable and contains exactly the three bug items",
+        "`bug_dangling_extresource` contains detected, referenced_id, defined_ids and evidence matches dangling id",
+        "`bug_label_offscreen` contains detected, margin_left, margin_top, viewport and evidence matches offscreen label",
+        "`bug_collision_zero_extents` contains detected, subresource_id, extents and evidence matches zero collision extents",
+        "each bug has `detected=true` and non-empty triggering evidence fields"
+      ],
+      "clause_results": [
+        {"clause": "JSON object is parseable and contains exactly the three bug items", "satisfied": true, "evidence": "valid JSON with bug_dangling_extresource, bug_label_offscreen, bug_collision_zero_extents."},
+        {"clause": "`bug_dangling_extresource` contains detected, referenced_id, defined_ids and evidence matches dangling id", "satisfied": true, "evidence": "detected true, referenced_id 2, defined_ids [1], node PlayerSprite, missing_id 2; matches expected broken referenced id 2 and defined id 1."},
+        {"clause": "`bug_label_offscreen` contains detected, margin_left, margin_top, viewport and evidence matches offscreen label", "satisfied": true, "evidence": "detected true, margin_left/top 20000.0, viewport [640,480], node GoalLabel; matches GT thresholds."},
+        {"clause": "`bug_collision_zero_extents` contains detected, subresource_id, extents and evidence matches zero collision extents", "satisfied": true, "evidence": "detected true, subresource_id 1, extents [0.0,0.0], node FloorShape; matches expected."},
+        {"clause": "each bug has `detected=true` and non-empty triggering evidence fields", "satisfied": true, "evidence": "all three objects have detected true plus numeric ids/margins/extents and node references."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "bugs.json gives detected=true for all three expected bugs with exact ids/margins/extents from expected.json.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "proj/scenes/main_fixed.tscn",
+      "task_says": "- `/tmp_workspace/proj/scenes/main_fixed.tscn`: the fixed scene file; it must be parseable by the scene format,\n  `PlayerSprite.texture` must reference a defined `ExtResource` id, `GoalLabel`'s\n  `margin_left,margin_top,margin_right,margin_bottom` must all fall within a reasonable range of the 640×480 viewport,\n  and the `RectangleShape2D` extents referenced by `FloorShape` must both be greater than 0 on each axis.",
+      "spec_clauses": [
+        "fixed scene file exists at `/tmp_workspace/proj/scenes/main_fixed.tscn`",
+        "scene is parseable by Godot .tscn text format",
+        "`PlayerSprite.texture` references a defined `ExtResource` id",
+        "`GoalLabel` margin_left, margin_top, margin_right, margin_bottom are within a reasonable range of 640×480 viewport",
+        "`FloorShape` references a `RectangleShape2D` whose extents are both greater than 0",
+        "preserves other node/script semantics except the requested fixes"
+      ],
+      "clause_results": [
+        {"clause": "fixed scene file exists at `/tmp_workspace/proj/scenes/main_fixed.tscn`", "satisfied": true, "evidence": "staged results/proj/scenes/main_fixed.tscn exists and is 2467 bytes."},
+        {"clause": "scene is parseable by Godot .tscn text format", "satisfied": true, "evidence": "file has [gd_scene], [ext_resource], [sub_resource], and [node] blocks; chat shows Godot started the fixed project and logged [player]/[main] ready."},
+        {"clause": "`PlayerSprite.texture` references a defined `ExtResource` id", "satisfied": true, "evidence": "defined ext_resource id=1; PlayerSprite block says texture = ExtResource( 1 )."},
+        {"clause": "`GoalLabel` margin_left, margin_top, margin_right, margin_bottom are within a reasonable range of 640×480 viewport", "satisfied": true, "evidence": "GoalLabel margins are 512.0, 392.0, 632.0, 456.0, all inside 640×480 bounds."},
+        {"clause": "`FloorShape` references a `RectangleShape2D` whose extents are both greater than 0", "satisfied": true, "evidence": "FloorShape shape = SubResource( 1 ); sub_resource id=1 RectangleShape2D extents = Vector2( 320, 16 )."},
+        {"clause": "preserves other node/script semantics except the requested fixes", "satisfied": true, "evidence": "diff.txt only changes extents, PlayerSprite texture id, and GoalLabel margins; scripts and other nodes are unchanged."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "main_fixed.tscn changes only the three requested values: FloorShape extents to 320,16; PlayerSprite texture to ExtResource(1); GoalLabel margins to 512/392/632/456.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_editor_before.png",
+      "task_says": "- `/tmp_workspace/results/view_editor_before.png`: image evidence showing the editor view of the original project;\n  the scene tree / node panel and 2D viewport should be visible, with text such as `Scene`, `Node`, `Inspector`,\n  `FileSystem`, or `Godot` recognizable.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "shows the editor view of the original project",
+        "scene tree / node panel is visible",
+        "2D viewport should be visible",
+        "recognizable text such as `Scene`, `Node`, `Inspector`, `FileSystem`, or `Godot` is visible",
+        "evidence is a real editor screenshot, not fabricated"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "file is a 1920×1080 RGB PNG."},
+        {"clause": "shows the editor view of the original project", "satisfied": "partial", "evidence": "screenshot shows Godot Engine - ScenePlay, but the original main.tscn failed to parse and an Alert says Error while parsing 'main.tscn', so the scene itself is not loaded."},
+        {"clause": "scene tree / node panel is visible", "satisfied": "partial", "evidence": "left Scene panel is visible, but it shows Create Root Node options rather than the original loaded node tree."},
+        {"clause": "2D viewport should be visible", "satisfied": "partial", "evidence": "central viewport is visible but appears to be a 3D perspective grid, not a loaded 2D viewport."},
+        {"clause": "recognizable text such as `Scene`, `Node`, `Inspector`, `FileSystem`, or `Godot` is visible", "satisfied": true, "evidence": "visible text includes Godot Engine - ScenePlay, Scene, Node, Inspector, FileSystem, Project, Debug."},
+        {"clause": "evidence is a real editor screenshot, not fabricated", "satisfied": true, "evidence": "chat shows gnome-screenshot captured the X11 desktop; image has coherent Ubuntu/Godot UI with no fake rendering signs."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "The screenshot is a real Godot editor view with Scene/Node/Inspector/FileSystem/Godot text, but the original scene is not loaded because an alert reports Error while parsing 'main.tscn', and the viewport is a 3D grid rather than a clear 2D scene view.",
+      "missing_or_wrong": "Partial: original scene view/tree not loaded; 2D viewport requirement only partially met.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_play_bug.png",
+      "task_says": "- `/tmp_workspace/results/view_play_bug.png`: image evidence showing at least one of the issues during pre-fix runtime,\n  for example a missing texture, the character falling out of the playable area, or `GOAL` not being visible; the frame should be a real game state, with one of the HUD/hint texts\n  `ScenePlay`, `GOAL`, `arrows`, `reach`, or `left/right` visible.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "shows at least one pre-fix issue during runtime",
+        "frame is a real game state",
+        "one HUD/hint text among `ScenePlay`, `GOAL`, `arrows`, `reach`, or `left/right` is visible",
+        "pre-fix evidence corresponds to the original broken state rather than an unrelated scene"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "file is a 1920×1080 RGB PNG."},
+        {"clause": "shows at least one pre-fix issue during runtime", "satisfied": true, "evidence": "runtime window shows player and floor but no GOAL visible while HUD says reach GOAL, demonstrating the offscreen label issue."},
+        {"clause": "frame is a real game state", "satisfied": true, "evidence": "screenshot shows a Godot ScenePlay (DEBUG) runtime window on a real Ubuntu desktop."},
+        {"clause": "one HUD/hint text among `ScenePlay`, `GOAL`, `arrows`, `reach`, or `left/right` is visible", "satisfied": true, "evidence": "visible HUD text includes ScenePlay, use Left/Right arrows, reach GOAL."},
+        {"clause": "pre-fix evidence corresponds to the original broken state rather than an unrelated scene", "satisfied": "partial", "evidence": "chat shows the agent created a temporary bugrun scene to make the original loadable by fixing only the dangling ExtResource while preserving offscreen GOAL/zero floor, so it is not the exact unmodified original runtime."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "view_play_bug.png is a real Godot runtime screenshot with ScenePlay/use Left-Right arrows/reach GOAL text and the GOAL label absent, but it was captured from a temporary loadable bugrun copy rather than the strictly unmodified scene.",
+      "missing_or_wrong": "Partial: runtime evidence used a temporary bugrun variant because the original scene could not load with the dangling ExtResource.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_editor_after.png",
+      "task_says": "- `/tmp_workspace/results/view_editor_after.png`: image evidence showing the post-fix editor view; it should be apparent that\n  the Player texture is normal, `GoalLabel` is inside the viewport, and the Floor collision shape is no longer a degenerate point.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "shows the post-fix editor view",
+        "Player texture is apparent and normal",
+        "`GoalLabel` is inside the viewport",
+        "Floor collision shape is no longer a degenerate point",
+        "evidence is a real editor screenshot, not fabricated"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "file is a 1920×1080 RGB PNG."},
+        {"clause": "shows the post-fix editor view", "satisfied": true, "evidence": "Godot window title and tab show ScenePlay - main_fixed.tscn; scene tree contains Main, Floor, Player, GoalLabel, HUD."},
+        {"clause": "Player texture is apparent and normal", "satisfied": "partial", "evidence": "Player/PlayerSprite nodes are visible and no missing-texture warning is shown, but the player texture itself is not clearly distinguishable; the prominent visible mark is the PlayerShape/collision label."},
+        {"clause": "`GoalLabel` is inside the viewport", "satisfied": true, "evidence": "GOAL text is visible inside the blue viewport near the lower-right."},
+        {"clause": "Floor collision shape is no longer a degenerate point", "satisfied": true, "evidence": "a wide floor is visible and Inspector shows selected FloorShape with RectangleShape2D, consistent with non-degenerate floor shape."},
+        {"clause": "evidence is a real editor screenshot, not fabricated", "satisfied": true, "evidence": "chat shows gnome-screenshot desktop capture; image has coherent Godot editor panels and UI."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9167,
+      "evidence_quote": "view_editor_after.png is a real Godot editor view of main_fixed.tscn with GOAL in the viewport and FloorShape/Rectangle visible; Player texture normality is only partially visually confirmed.",
+      "missing_or_wrong": "Partial: Player texture is not clearly visible enough to unambiguously confirm it is normal from the screenshot alone.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_play_finish.png",
+      "task_says": "- `/tmp_workspace/results/view_play_finish.png`: image evidence showing that the level can be completed after the fix, with\n  the Player, the floor, and the `GOAL` text all visible in the frame.",
+      "spec_clauses": [
+        "PNG exists and is viewable",
+        "shows post-fix runtime completion or player reaching goal",
+        "Player is visible in the frame",
+        "floor is visible in the frame",
+        "`GOAL` text is visible in the frame",
+        "evidence is a real runtime screenshot, not fabricated"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is viewable", "satisfied": true, "evidence": "file is a 1920×1080 RGB PNG."},
+        {"clause": "shows post-fix runtime completion or player reaching goal", "satisfied": true, "evidence": "player appears at/near the GOAL marker in the ScenePlay (DEBUG) runtime window."},
+        {"clause": "Player is visible in the frame", "satisfied": true, "evidence": "small blue player is visible near bottom center-right."},
+        {"clause": "floor is visible in the frame", "satisfied": true, "evidence": "brown platform/floor spans the lower part of the game window."},
+        {"clause": "`GOAL` text is visible in the frame", "satisfied": true, "evidence": "GOAL text is visible near the player."},
+        {"clause": "evidence is a real runtime screenshot, not fabricated", "satisfied": true, "evidence": "chat shows gnome-screenshot capture of real Godot runtime; image has coherent desktop/window context."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "view_play_finish.png shows ScenePlay runtime with Player, floor, and GOAL all visible and the player at/near the goal.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "runtime.log",
+      "task_says": "- `/tmp_workspace/results/runtime.log`: non-empty runtime log containing scene/character initialization markers such as `scene ready`, `player`, or `main`.",
+      "spec_clauses": [
+        "runtime.log exists",
+        "runtime.log is non-empty",
+        "contains scene/character initialization markers such as `scene ready`, `player`, or `main`",
+        "log is genuine runtime output rather than a fabricated stub",
+        "log does not contain serious unresolved runtime errors"
+      ],
+      "clause_results": [
+        {"clause": "runtime.log exists", "satisfied": true, "evidence": "runtime.log exists and is 1216 bytes."},
+        {"clause": "runtime.log is non-empty", "satisfied": true, "evidence": "wc -l reports 20 lines."},
+        {"clause": "contains scene/character initialization markers such as `scene ready`, `player`, or `main`", "satisfied": true, "evidence": "contains `[player] ready @ (80, 80)` and `[main] scene ready, children=5`."},
+        {"clause": "log is genuine runtime output rather than a fabricated stub", "satisfied": true, "evidence": "log includes Godot Engine v3.2.3, OpenGL renderer, ALSA messages, and Godot script output; chat shows stdout redirected from real godot3 process."},
+        {"clause": "log does not contain serious unresolved runtime errors", "satisfied": "partial", "evidence": "log includes SCRIPT ERROR: Invalid get index 'position' on base ColorRect during _ready, though it does not prevent the required screenshots/play state."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "runtime.log has real Godot startup output plus [player] ready and [main] scene ready, but also contains a script error about ColorRect.position.",
+      "missing_or_wrong": "Partial: contains a runtime script error even though required markers are present.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_after.json",
+      "task_says": "- `/tmp_workspace/results/parse_after.json`: JSON object with the same schema as `parse_before.json`,\n  reflecting the post-fix scene structure.",
+      "spec_clauses": [
+        "JSON object is parseable",
+        "uses the same `ext_resources`, `sub_resources`, `nodes` schema as parse_before.json",
+        "`nodes` has at least 6 items",
+        "reflects post-fix PlayerSprite texture id",
+        "reflects post-fix GoalLabel margins",
+        "reflects post-fix FloorShape RectangleShape2D extents"
+      ],
+      "clause_results": [
+        {"clause": "JSON object is parseable", "satisfied": true, "evidence": "read as valid JSON."},
+        {"clause": "uses the same `ext_resources`, `sub_resources`, `nodes` schema as parse_before.json", "satisfied": true, "evidence": "same three top-level keys and same entry shapes id/path/type, id/type/props, name/type/parent/props."},
+        {"clause": "`nodes` has at least 6 items", "satisfied": true, "evidence": "nodes list contains 10 nodes."},
+        {"clause": "reflects post-fix PlayerSprite texture id", "satisfied": true, "evidence": "PlayerSprite props texture is ExtResource( 1 )."},
+        {"clause": "reflects post-fix GoalLabel margins", "satisfied": true, "evidence": "GoalLabel margins are 512.0, 392.0, 632.0, 456.0."},
+        {"clause": "reflects post-fix FloorShape RectangleShape2D extents", "satisfied": true, "evidence": "sub_resource id=1 extents is Vector2( 320, 16 )."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_after.json is valid and records the fixed ExtResource(1), in-viewport GoalLabel margins, and FloorShape extents Vector2(320,16).",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "diff.txt",
+      "task_says": "- `/tmp_workspace/results/diff.txt`: text diff between the original main scene and `main_fixed.tscn`, with line count between 6 and 200.",
+      "spec_clauses": [
+        "diff.txt exists",
+        "is a text diff between original main scene and main_fixed.tscn",
+        "line count is between 6 and 200",
+        "diff captures the requested fixed values"
+      ],
+      "clause_results": [
+        {"clause": "diff.txt exists", "satisfied": true, "evidence": "diff.txt exists and is 885 bytes."},
+        {"clause": "is a text diff between original main scene and main_fixed.tscn", "satisfied": true, "evidence": "header shows --- results/before/main.tscn and +++ proj/scenes/main_fixed.tscn."},
+        {"clause": "line count is between 6 and 200", "satisfied": true, "evidence": "wc reports 34 lines, within [6,200]."},
+        {"clause": "diff captures the requested fixed values", "satisfied": true, "evidence": "diff shows extents 0,0 to 320,16; PlayerSprite ExtResource(2) to ExtResource(1); GoalLabel margins 20000-range to 512/392/632/456."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "diff.txt is a 34-line unified diff showing exactly the floor extents, texture id, and GoalLabel margin fixes.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.json",
+      "task_says": "- `/tmp_workspace/results/report.json`: JSON object containing `bugs_found`, `fixes_applied`,\n  `extresource_id_after`, `label_margin_after`, `floor_extents_after`, `playthrough_finished`,\n  `screenshots`, `runtime_log_lines`; `screenshots` lists the four image-evidence file names.",
+      "spec_clauses": [
+        "report.json is parseable JSON",
+        "contains `bugs_found`",
+        "contains `fixes_applied`",
+        "contains `extresource_id_after`, `label_margin_after`, `floor_extents_after` with post-fix values",
+        "contains `playthrough_finished`",
+        "contains `screenshots` listing the four image-evidence file names",
+        "contains `runtime_log_lines`"
+      ],
+      "clause_results": [
+        {"clause": "report.json is parseable JSON", "satisfied": true, "evidence": "read as valid JSON."},
+        {"clause": "contains `bugs_found`", "satisfied": true, "evidence": "bugs_found lists all three bug keys."},
+        {"clause": "contains `fixes_applied`", "satisfied": true, "evidence": "fixes_applied lists texture id, GoalLabel margins, and FloorShape extents fixes."},
+        {"clause": "contains `extresource_id_after`, `label_margin_after`, `floor_extents_after` with post-fix values", "satisfied": true, "evidence": "extresource_id_after 1; label margins 512/392/632/456; floor_extents_after [320.0,16.0]."},
+        {"clause": "contains `playthrough_finished`", "satisfied": true, "evidence": "playthrough_finished is true."},
+        {"clause": "contains `screenshots` listing the four image-evidence file names", "satisfied": true, "evidence": "screenshots lists view_editor_before.png, view_play_bug.png, view_editor_after.png, view_play_finish.png."},
+        {"clause": "contains `runtime_log_lines`", "satisfied": true, "evidence": "runtime_log_lines is 20, matching wc -l."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "report.json contains all required summary keys and correct fixed values/screenshots/runtime log line count.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.91, "reason": "All required artifacts exist and the file-side repairs are complete (before/main.tscn, parse_before.json, bugs.json, proj/scenes/main_fixed.tscn, parse_after.json, diff.txt, report.json). Minor gaps: view_editor_before.png shows a parse alert/3D grid rather than a loaded 2D original scene, view_editor_after.png only partially proves the player texture visually, and runtime.log contains a script error."},
+    "deliverable_correctness": {"score": 0.96, "reason": "Mean artifact correctness is high: most structured deliverables are 1.0, with deductions concentrated in view_editor_before.png (0.75), view_play_bug.png (0.90 due temporary bugrun), view_editor_after.png (0.9167), and runtime.log (0.90)."},
+    "deliverable_quality": {"score": 0.92, "reason": "Every file is present, parseable/viewable, and non-empty where expected. Quality deductions are for the before editor screenshot not loading the original scene tree/2D view, the script error in runtime.log, and the after-editor screenshot not making the player sprite texture unmistakable."},
+    "evidence_authenticity": {"score": 0.91, "reason": "Screenshots were captured via gnome-screenshot from the X11 desktop and look like real Godot editor/runtime windows. `make_artifacts.py` uses PIL only to create a small player asset, not screenshot evidence; no gt reads or metric hardcoding were found. Deducted because view_play_bug.png was captured from a temporary loadable bugrun variant rather than the exact unmodified original scene."},
+    "tool_use_correctness": {"score": 0.88, "reason": "The rollout installed/used real godot3, imported assets, captured real desktop screenshots, generated JSON/diff from scene text, and verified artifacts. Deductions: the agent worked around the broken pre-fix runtime with a temporary scene and left a runtime script error unresolved."},
+    "final_state_correctness": {"score": 0.91, "reason": "The fixed scene final state satisfies the key invariants: defined ExtResource id, in-viewport label margins, positive FloorShape extents, and post-fix completion screenshot with player/floor/GOAL. Runtime still logs a script error and some visual proof is less than perfect."},
+    "efficiency_robustness": {"score": 0.83, "reason": "The agent recovered from missing Godot, X11 authorization, import-cache issues, and process cleanup, and completed the artifact set. It took several corrective attempts and used a workaround bugrun scene; robustness is good but not clean."},
+    "instruction_following": {"score": 0.88, "reason": "File names/fields were preserved, final verification was performed, screenshots were real captures, and results were written in the requested places. Deductions: pre-fix runtime screenshot used a modified bugrun copy, and before editor evidence does not fully satisfy the requested original-project 2D viewport view."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.05,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.9,
+  "summary": "The rollout successfully repairs the Godot scene in files and produces all required JSON, diff, log, and screenshot deliverables. The main weaknesses are visual-evidence fidelity: the before editor screenshot shows a parse-error editor state rather than the loaded 2D scene, the pre-fix runtime screenshot comes from a temporary loadable variant, and runtime.log contains a script error. No screenshot fabrication or GT leakage was found."
+}

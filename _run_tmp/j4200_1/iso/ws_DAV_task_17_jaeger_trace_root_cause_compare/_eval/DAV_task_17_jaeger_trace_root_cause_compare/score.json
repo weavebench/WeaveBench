@@ -1,0 +1,382 @@
+{
+  "artifact_checks": [
+    {
+      "id": "jaeger_services.json",
+      "task_says": "`jaeger_services.json`: the raw JSON of Jaeger's currently known service list; once parsed, `checkout-api` must be findable in it.",
+      "spec_clauses": [
+        "file is named jaeger_services.json and exists under results/",
+        "content is raw JSON of Jaeger's currently known service list",
+        "once parsed, checkout-api must be findable in it"
+      ],
+      "clause_results": [
+        {"clause": "file is named jaeger_services.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 90 bytes."},
+        {"clause": "content is raw JSON of Jaeger's currently known service list", "satisfied": true, "evidence": "Parsed JSON has Jaeger service-list shape: {\"data\": [\"checkout-api\", \"jaeger-all-in-one\"], \"total\": 2, ...}."},
+        {"clause": "once parsed, checkout-api must be findable in it", "satisfied": true, "evidence": "The parsed data array contains checkout-api exactly."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Parsed JSON data contains checkout-api and jaeger-all-in-one.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "jaeger_operations.json",
+      "task_says": "`jaeger_operations.json`: the raw JSON of the operation list for `checkout-api`; once parsed, `POST /checkout` (or at least something containing the `checkout` substring) must be findable.",
+      "spec_clauses": [
+        "file is named jaeger_operations.json and exists under results/",
+        "content is raw JSON of the operation list for checkout-api",
+        "once parsed, POST /checkout or at least checkout substring must be findable"
+      ],
+      "clause_results": [
+        {"clause": "file is named jaeger_operations.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 298 bytes."},
+        {"clause": "content is raw JSON of the operation list for checkout-api", "satisfied": true, "evidence": "Parsed JSON data array contains operation objects for checkout-api, including auth.verify, inventory.reserve, payments.charge, payments.gateway.http."},
+        {"clause": "once parsed, POST /checkout or at least checkout substring must be findable", "satisfied": true, "evidence": "Parsed data includes {\"name\": \"POST /checkout\", \"spanKind\": \"\"}."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Parsed operation list includes POST /checkout exactly.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "raw_traces.json",
+      "task_says": "`raw_traces.json`: a raw JSON batch of traces for `service=checkout-api & operation=POST /checkout` (Jaeger `/api/traces` return structure, with a top-level `data` array); the `data` array must have length ≥ 60.",
+      "spec_clauses": [
+        "file is named raw_traces.json and exists under results/",
+        "content is a Jaeger /api/traces return structure with a top-level data array",
+        "batch is for service=checkout-api and operation=POST /checkout",
+        "data array length is ≥ 60"
+      ],
+      "clause_results": [
+        {"clause": "file is named raw_traces.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 584850 bytes."},
+        {"clause": "content is a Jaeger /api/traces return structure with a top-level data array", "satisfied": true, "evidence": "Parsed JSON has top-level data array; first trace has keys traceID, spans, processes, warnings."},
+        {"clause": "batch is for service=checkout-api and operation=POST /checkout", "satisfied": true, "evidence": "Companion service/operation exports show checkout-api / POST /checkout; raw trace spans include POST /checkout roots."},
+        {"clause": "data array length is ≥ 60", "satisfied": true, "evidence": "Parsed data_len is 173 traces."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "raw_traces.json parses with top-level data length 173 and total_spans 969.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "trace_durations.csv",
+      "task_says": "`trace_durations.csv`: a CSV sorted by root span duration in descending order; the header must be `traceID,duration_us,span_count`; the row count must match the number of traces in `raw_traces.json` (tolerance ±10%).",
+      "spec_clauses": [
+        "file is named trace_durations.csv and exists under results/",
+        "CSV header must be traceID,duration_us,span_count",
+        "CSV is sorted by root span duration in descending order",
+        "row count matches number of traces in raw_traces.json within ±10%"
+      ],
+      "clause_results": [
+        {"clause": "file is named trace_durations.csv and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 7483 bytes."},
+        {"clause": "CSV header must be traceID,duration_us,span_count", "satisfied": true, "evidence": "csv.DictReader keys are exactly traceID, duration_us, span_count."},
+        {"clause": "CSV is sorted by root span duration in descending order", "satisfied": true, "evidence": "Programmatic check sorted_desc returned True; first durations begin 3610144, 3607806, 3574904."},
+        {"clause": "row count matches number of traces in raw_traces.json within ±10%", "satisfied": true, "evidence": "CSV has 173 rows and raw_traces.json data has 173 traces."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Header is correct, rows=173, raw trace count=173, descending duration check passed.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "duration_summary.json",
+      "task_says": "`duration_summary.json`: root-span latency summary, schema: `{\"p50_ms\": <float>, \"p95_ms\": <float>, \"p99_ms\": <float>, \"n\": <int>}`. `p95_ms` must be ≥ 2000 (this is the incident-detection threshold).",
+      "spec_clauses": [
+        "file is named duration_summary.json and exists under results/",
+        "JSON schema has p50_ms, p95_ms, p99_ms floats and n int",
+        "summary is root-span latency summary",
+        "p95_ms must be ≥ 2000",
+        "n should align with raw trace count"
+      ],
+      "clause_results": [
+        {"clause": "file is named duration_summary.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 78 bytes."},
+        {"clause": "JSON schema has p50_ms, p95_ms, p99_ms floats and n int", "satisfied": true, "evidence": "Parsed as {p50_ms: 120.01, p95_ms: 3405.026, p99_ms: 3584.117, n: 173}."},
+        {"clause": "summary is root-span latency summary", "satisfied": true, "evidence": "Values align with trace_durations.csv root duration rows and n=173."},
+        {"clause": "p95_ms must be ≥ 2000", "satisfied": true, "evidence": "p95_ms is 3405.026."},
+        {"clause": "n should align with raw trace count", "satisfied": true, "evidence": "n=173 equals raw_traces.json data length 173."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "duration_summary.json parsed values are p50=120.01 ms, p95=3405.026 ms, p99=3584.117 ms, n=173.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "slow_trace.json",
+      "task_says": "`slow_trace.json`: the complete Jaeger trace JSON for the slowest trace picked from the top of `trace_durations.csv` (a single trace, including the `spans` array), with span count ≥ 5.",
+      "spec_clauses": [
+        "file is named slow_trace.json and exists under results/",
+        "content is complete Jaeger trace JSON for a single trace",
+        "traceID matches the slowest trace at the top of trace_durations.csv",
+        "includes spans array",
+        "span count ≥ 5"
+      ],
+      "clause_results": [
+        {"clause": "file is named slow_trace.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 7352 bytes."},
+        {"clause": "content is complete Jaeger trace JSON for a single trace", "satisfied": true, "evidence": "Parsed as Jaeger trace response with data[0] and processes/warnings structure."},
+        {"clause": "traceID matches the slowest trace at the top of trace_durations.csv", "satisfied": true, "evidence": "CSV first traceID is 4d4ef61f76b882386d59523c4dd7a006 and slow_trace data[0].traceID is the same."},
+        {"clause": "includes spans array", "satisfied": true, "evidence": "slow_trace data[0].spans exists."},
+        {"clause": "span count ≥ 5", "satisfied": true, "evidence": "spans array has 6 spans."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "slow_trace is trace 4d4ef61f76b882386d59523c4dd7a006, the top CSV trace, with 6 spans.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "slow_span.json",
+      "task_says": "`slow_span.json`: the \"deepest, longest\" leaf span dug out of `slow_trace.json` by reconstructing the parent-child chain along `references`, schema: `{\"trace_id\": \"<hex>\", \"span_name\": \"<full service.subsystem.protocol name; must contain payments.gateway.http>\", \"duration_us\": <int>, \"tags\": {\"http.status_code\": 504, \"otel.status_code\": \"ERROR\", \"peer.service\": \"...\"}, \"operation_path\": [\"<root op>\", \"...\", \"<leaf op>\"]}`. `duration_us / 1000 ≥ 2400`; `tags` must contain both `504` and the `ERROR`/`status_code` wording.",
+      "spec_clauses": [
+        "file is named slow_span.json and exists under results/",
+        "JSON has trace_id, span_name, duration_us, tags, operation_path schema",
+        "span_name is full service.subsystem.protocol form and must contain payments.gateway.http",
+        "duration_us / 1000 ≥ 2400",
+        "tags contain http.status_code 504",
+        "tags contain otel.status_code ERROR and peer.service",
+        "span is a real leaf computed from slow_trace.json references with operation_path from root to leaf"
+      ],
+      "clause_results": [
+        {"clause": "file is named slow_span.json and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 485 bytes."},
+        {"clause": "JSON has trace_id, span_name, duration_us, tags, operation_path schema", "satisfied": true, "evidence": "Parsed object has all required keys with duration_us integer and tags object."},
+        {"clause": "span_name is full service.subsystem.protocol form and must contain payments.gateway.http", "satisfied": true, "evidence": "span_name is payments.gateway.http exactly."},
+        {"clause": "duration_us / 1000 ≥ 2400", "satisfied": true, "evidence": "duration_us is 3501833, i.e. 3501.833 ms."},
+        {"clause": "tags contain http.status_code 504", "satisfied": true, "evidence": "tags.http.status_code is numeric 504."},
+        {"clause": "tags contain otel.status_code ERROR and peer.service", "satisfied": true, "evidence": "tags.otel.status_code is ERROR and tags.peer.service is payments-gateway."},
+        {"clause": "span is a real leaf computed from slow_trace.json references with operation_path from root to leaf", "satisfied": true, "evidence": "Cross-check found matching span in slow_trace with same operationName and duration; it has no children. operation_path is POST /checkout -> payments.charge -> payments.gateway.http."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "slow_span matches a leaf in slow_trace: payments.gateway.http, 3501833 us, http.status_code=504, otel.status_code=ERROR, peer.service=payments-gateway.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "otlp_capture.pcap",
+      "task_says": "`otlp_capture.pcap`: a stretch of emitter traffic captured on the `:4318` (OTLP/HTTP collector) port (≥ 30 s or ≥ 60 packets), file ≥ 200 B; after `strings` extraction it must hit `POST /checkout` or `checkout-api`, serving as hard evidence that \"traces really are being fed in\".",
+      "spec_clauses": [
+        "file is named otlp_capture.pcap and exists under results/",
+        "pcap captures emitter traffic on :4318 OTLP/HTTP collector port",
+        "capture is ≥ 30 s or ≥ 60 packets",
+        "file size is ≥ 200 B",
+        "strings extraction hits POST /checkout or checkout-api"
+      ],
+      "clause_results": [
+        {"clause": "file is named otlp_capture.pcap and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 119597 bytes."},
+        {"clause": "pcap captures emitter traffic on :4318 OTLP/HTTP collector port", "satisfied": true, "evidence": "chat command captured with tcpdump filter 'tcp port 4318'; file parses as pcap."},
+        {"clause": "capture is ≥ 30 s or ≥ 60 packets", "satisfied": true, "evidence": "tcpdump -r counted 509 packets, exceeding 60."},
+        {"clause": "file size is ≥ 200 B", "satisfied": true, "evidence": "File size is 119597 bytes."},
+        {"clause": "strings extraction hits POST /checkout or checkout-api", "satisfied": true, "evidence": "strings output contains both checkout-api and POST /checkout."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pcap size 119597 bytes, 509 packets, strings contains checkout-api and POST /checkout.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_jaeger_search.png",
+      "task_says": "`view_jaeger_search.png`: the Jaeger Search page result under the conditions service=checkout-api, operation=POST /checkout — the image must simultaneously show the top duration-vs-time scatter plot (**two clusters**: dense fast traces at the lower left + isolated slow-trace cluster at the upper right) and the trace list entries below it.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 5 KB",
+        "screenshot is from actually rendered Jaeger UI, not stitching or placeholder",
+        "Jaeger Search page result is visible",
+        "conditions service=checkout-api and operation=POST /checkout are visible",
+        "top duration-vs-time scatter plot is visible",
+        "scatter shows two clusters: dense fast traces at lower left + isolated slow-trace cluster at upper right",
+        "trace list entries below scatter are visible simultaneously"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 5 KB", "satisfied": true, "evidence": "File exists, 1920x1080, size 208903 bytes."},
+        {"clause": "screenshot is from actually rendered Jaeger UI, not stitching or placeholder", "satisfied": true, "evidence": "Image shows real localhost:16686 Jaeger UI in Chrome with native controls and result rows; chat shows gnome-screenshot capture from desktop."},
+        {"clause": "Jaeger Search page result is visible", "satisfied": true, "evidence": "Search/results view is visible with Jaeger navigation and results area."},
+        {"clause": "conditions service=checkout-api and operation=POST /checkout are visible", "satisfied": true, "evidence": "Service dropdown shows checkout-api and Operation dropdown shows POST /checkout."},
+        {"clause": "top duration-vs-time scatter plot is visible", "satisfied": true, "evidence": "Scatter plot with duration axis and time axis is visible at top of results."},
+        {"clause": "scatter shows two clusters: dense fast traces at lower left + isolated slow-trace cluster at upper right", "satisfied": "partial", "evidence": "There is a dense fast group near the lower portion and slow outlier(s) high on the plot, but the slow cluster is not cleanly upper-right; it appears more upper-left/upper-center and fast points are spread along the bottom."},
+        {"clause": "trace list entries below scatter are visible simultaneously", "satisfied": true, "evidence": "Trace list rows are visible below the plot, including checkout-api: POST /checkout entries and durations."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.93,
+      "evidence_quote": "Rendered Jaeger Search screenshot shows checkout-api / POST /checkout, scatter plot and trace rows; two-cluster geometry is present but not cleanly lower-left vs upper-right.",
+      "missing_or_wrong": "scatter two-cluster placement is only partial: isolated slow cluster is not clearly upper-right",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_trace_waterfall.png",
+      "task_says": "`view_trace_waterfall.png`: the Trace timeline waterfall after opening any one slow trace — the `payments` subtree must be expanded, and the image must contain a child span bar that is **noticeably** longer than its siblings (occupying the majority of the trace's width).",
+      "spec_clauses": [
+        "PNG exists and is ≥ 5 KB",
+        "screenshot is from actually rendered Jaeger UI, not stitching or placeholder",
+        "Trace timeline waterfall for a slow trace is open",
+        "payments subtree is expanded",
+        "a child span bar is noticeably longer than siblings and occupies majority of trace width"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 5 KB", "satisfied": true, "evidence": "File exists, 1920x1080, size 145465 bytes."},
+        {"clause": "screenshot is from actually rendered Jaeger UI, not stitching or placeholder", "satisfied": true, "evidence": "Image shows real localhost Jaeger trace detail page; chat shows gnome-screenshot capture from desktop."},
+        {"clause": "Trace timeline waterfall for a slow trace is open", "satisfied": true, "evidence": "Trace title checkout-api: POST /checkout is visible with duration about 3.61s and 6 spans."},
+        {"clause": "payments subtree is expanded", "satisfied": true, "evidence": "payments.charge is expanded and nested payments.gateway.http is visible."},
+        {"clause": "a child span bar is noticeably longer than siblings and occupies majority of trace width", "satisfied": true, "evidence": "payments.gateway.http child bar spans nearly the whole timeline and dwarfs auth.verify, inventory.reserve, and db.commit."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Waterfall shows slow 3.61s trace with expanded payments.charge -> payments.gateway.http and a dominant child bar occupying most of the width.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_span_tags.png",
+      "task_says": "`view_span_tags.png`: the expanded Tags / Logs drawer of the bottleneck span above — the image must clearly show the specific value of `http.status_code` (504) and error tags such as `otel.status_code = ERROR` (highlighted as a red chip).",
+      "spec_clauses": [
+        "PNG exists and is ≥ 5 KB",
+        "screenshot is from actually rendered Jaeger UI, not stitching or placeholder",
+        "expanded Tags / Logs drawer of the bottleneck span is visible",
+        "bottleneck span payments.gateway.http is the selected/expanded span",
+        "specific value http.status_code = 504 is clearly visible",
+        "error tag otel.status_code = ERROR is clearly visible",
+        "ERROR/status tag is highlighted as a red chip"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 5 KB", "satisfied": true, "evidence": "File exists, 1920x1080, size 207577 bytes."},
+        {"clause": "screenshot is from actually rendered Jaeger UI, not stitching or placeholder", "satisfied": true, "evidence": "Image shows real Jaeger span detail drawer in browser; chat shows gnome-screenshot capture."},
+        {"clause": "expanded Tags / Logs drawer of the bottleneck span is visible", "satisfied": "partial", "evidence": "The expanded span detail drawer and Tags section are visible; a separate Logs section is not visible."},
+        {"clause": "bottleneck span payments.gateway.http is the selected/expanded span", "satisfied": true, "evidence": "Expanded row label shows checkout-api payments.gateway.http."},
+        {"clause": "specific value http.status_code = 504 is clearly visible", "satisfied": true, "evidence": "Tag text includes http.status_code = 504."},
+        {"clause": "error tag otel.status_code = ERROR is clearly visible", "satisfied": true, "evidence": "Tag text includes otel.status_code = ERROR."},
+        {"clause": "ERROR/status tag is highlighted as a red chip", "satisfied": false, "evidence": "The span has a red error icon and error=true is visible, but otel.status_code=ERROR appears as plain tag text rather than a distinct red chip."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.79,
+      "evidence_quote": "Rendered Jaeger span drawer clearly shows payments.gateway.http, http.status_code=504 and otel.status_code=ERROR, but not a red ERROR chip and no Logs section is visible.",
+      "missing_or_wrong": "Tags drawer visible but Logs not shown; otel.status_code=ERROR is not highlighted as a red chip",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_trace_compare.png",
+      "task_says": "`view_trace_compare.png`: the Compare Traces diff view — showing the side-by-side structures of one fast trace and one slow trace simultaneously, with diff spans highlighted (color / border / label all acceptable) and shared spans de-emphasized.",
+      "spec_clauses": [
+        "PNG exists and is ≥ 5 KB",
+        "screenshot is from actually rendered Jaeger UI, not stitching or placeholder",
+        "Compare Traces diff view is visible",
+        "one fast trace and one slow trace are shown simultaneously",
+        "side-by-side structures are shown",
+        "diff spans are highlighted by color, border, or label",
+        "shared spans are de-emphasized"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists and is ≥ 5 KB", "satisfied": true, "evidence": "File exists, 1920x1080, size 193377 bytes."},
+        {"clause": "screenshot is from actually rendered Jaeger UI, not stitching or placeholder", "satisfied": true, "evidence": "Image shows real localhost Jaeger Compare page and diff graph; chat shows it was navigated in browser and captured with gnome-screenshot."},
+        {"clause": "Compare Traces diff view is visible", "satisfied": true, "evidence": "Compare tab/view and central diff graph are visible."},
+        {"clause": "one fast trace and one slow trace are shown simultaneously", "satisfied": true, "evidence": "Header shows A duration 136.26ms and B duration 3.61s for checkout-api: POST /checkout."},
+        {"clause": "side-by-side structures are shown", "satisfied": "partial", "evidence": "Trace A and B metadata are side by side, but Jaeger renders the structural comparison as one merged diff tree rather than two fully separate side-by-side trees."},
+        {"clause": "diff spans are highlighted by color, border, or label", "satisfied": true, "evidence": "Red and green diff spans with +/- labels and percentages are visible."},
+        {"clause": "shared spans are de-emphasized", "satisfied": true, "evidence": "Shared spans such as auth.verify, inventory.reserve and db.commit appear muted gray compared with highlighted diffs."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.93,
+      "evidence_quote": "Rendered Jaeger Compare page shows fast A=136.26ms and slow B=3.61s, muted shared spans, and red/green highlighted diffs; structure is merged rather than fully side-by-side.",
+      "missing_or_wrong": "side-by-side structures are only partial because Jaeger shows a merged diff graph, not two separate full trees",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "hypothesis.md",
+      "task_says": "`hypothesis.md`: a hypothesis writeup of ≥ 400 characters; must explicitly state the true bottleneck span's full name (in `service.subsystem.protocol` form), its HTTP status code, and its `peer.service` tag.",
+      "spec_clauses": [
+        "file is named hypothesis.md and exists under results/",
+        "writeup length is ≥ 400 characters",
+        "explicitly states true bottleneck span full name in service.subsystem.protocol form",
+        "explicitly states HTTP status code",
+        "explicitly states peer.service tag"
+      ],
+      "clause_results": [
+        {"clause": "file is named hypothesis.md and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 700 characters."},
+        {"clause": "writeup length is ≥ 400 characters", "satisfied": true, "evidence": "Character count is 700."},
+        {"clause": "explicitly states true bottleneck span full name in service.subsystem.protocol form", "satisfied": true, "evidence": "Text states leaf span payments.gateway.http."},
+        {"clause": "explicitly states HTTP status code", "satisfied": true, "evidence": "Text states http.status_code=504."},
+        {"clause": "explicitly states peer.service tag", "satisfied": true, "evidence": "Text states peer.service=payments-gateway."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "hypothesis.md is 700 chars and names payments.gateway.http, http.status_code=504, otel.status_code=ERROR, peer.service=payments-gateway.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "root_cause_report.md",
+      "task_says": "`root_cause_report.md`: an incident report of ≥ 800 characters; suggested structure 1) symptoms → 2) what RED metrics showed / failed to show → 3) the true cause seen in the trace waterfall → 4) differences revealed by Compare Traces → 5) immediate mitigation (fail-fast / timeout / circuit breaker) → 6) long-term governance → 7) verification plan (write a query using Jaeger's native search to monitor future regressions).",
+      "spec_clauses": [
+        "file is named root_cause_report.md and exists under results/",
+        "incident report length is ≥ 800 characters",
+        "covers symptoms",
+        "covers what RED metrics showed / failed to show",
+        "covers true cause seen in trace waterfall",
+        "covers differences revealed by Compare Traces",
+        "covers immediate mitigation including fail-fast / timeout / circuit breaker concepts",
+        "covers long-term governance",
+        "covers verification plan with a Jaeger native search query"
+      ],
+      "clause_results": [
+        {"clause": "file is named root_cause_report.md and exists under results/", "satisfied": true, "evidence": "File exists in results/ with size 3446 characters."},
+        {"clause": "incident report length is ≥ 800 characters", "satisfied": true, "evidence": "Character count is 3446."},
+        {"clause": "covers symptoms", "satisfied": true, "evidence": "Section 1 Symptoms describes p95 jump and bimodal distribution."},
+        {"clause": "covers what RED metrics showed / failed to show", "satisfied": true, "evidence": "Section 2 explains RED proved duration regression but not which internal segment."},
+        {"clause": "covers true cause seen in trace waterfall", "satisfied": true, "evidence": "Section 3 identifies payments.gateway.http with 3501.833 ms, 504, ERROR and peer.service."},
+        {"clause": "covers differences revealed by Compare Traces", "satisfied": true, "evidence": "Section 4 compares fast and slow traces and notes slow trace has payments.charge -> payments.gateway.http path."},
+        {"clause": "covers immediate mitigation including fail-fast / timeout / circuit breaker concepts", "satisfied": true, "evidence": "Section 5 explicitly recommends fail-fast behavior, strict timeout, and circuit breaker."},
+        {"clause": "covers long-term governance", "satisfied": true, "evidence": "Section 6 describes governed dependency, SLOs, timeout budgets, retry limits and ownership."},
+        {"clause": "covers verification plan with a Jaeger native search query", "satisfied": true, "evidence": "Section 7 gives Jaeger Search query: service checkout-api, operation POST /checkout, tags http.status_code=504 error=true, min duration 2s, Last Hour."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "root_cause_report.md is 3446 chars and covers all seven requested report sections with the Jaeger search verification query.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.94, "reason": "All required evidence-chain artifacts exist and the core trace root cause is proven by jaeger_services.json, raw_traces.json, duration_summary.json, slow_trace.json, slow_span.json, otlp_capture.pcap, and the reports. Minor deductions come from view_jaeger_search.png having only partial upper-right slow-cluster geometry and view_span_tags.png lacking the requested red ERROR chip."},
+    "deliverable_correctness": {"score": 0.97, "reason": "Mean artifact correctness is high: all JSON/CSV/pcap/document deliverables are fully correct; visual artifacts view_jaeger_search.png, view_span_tags.png, and view_trace_compare.png have minor/partial visual clause misses."},
+    "deliverable_quality": {"score": 0.96, "reason": "Every required file is present, parseable/readable, and non-empty; PNGs are 1920x1080 and well above 5 KB. Quality deductions are limited to visual presentation details in view_span_tags.png and view_jaeger_search.png."},
+    "evidence_authenticity": {"score": 0.94, "reason": "Artifacts are grounded in real Jaeger API exports and a real tcpdump pcap; screenshots appear to be rendered Jaeger UI captured via gnome-screenshot. Chat grep found no PIL/ImageDraw fake-render commands, no /tmp_workspace/gt reads, and no LD_PRELOAD/injection; slight caution only because the agent emitted additional real traces during the run."},
+    "tool_use_correctness": {"score": 0.92, "reason": "The agent used appropriate Jaeger HTTP APIs, tcpdump/strings, browser UI screenshots, and cross-validation. It initially tried the wrong API port and spent extra effort around browser/CDP issues, but recovered without fabricating screenshots."},
+    "final_state_correctness": {"score": 0.94, "reason": "Final results/ contains the full requested service list, operation list, bulk traces, latency summary, slow trace/span decomposition, OTLP pcap, four UI screenshots, and two conclusion docs. Remaining final-state gaps are only the red-chip visual detail and imperfect search scatter cluster placement."},
+    "efficiency_robustness": {"score": 0.82, "reason": "The rollout recovered from initial 16685 curl failures, sparse pcap capture, and browser screenshot/compositor issues, but the chat shows many repeated GUI attempts and CDP exploration before final screenshots were captured."},
+    "instruction_following": {"score": 0.92, "reason": "Explicit output requirements and hard constraints were mostly respected: all files are under results/, pcap strings hit checkout-api/POST /checkout, and screenshots are real UI captures. Deductions reflect partial satisfaction of precise visual wording for view_jaeger_search.png and view_span_tags.png."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.02,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.926,
+  "summary": "The rollout produced a nearly complete, genuine Jaeger evidence chain: API exports show 173 checkout traces with p95 3405 ms, slow_span.json correctly identifies real leaf payments.gateway.http at 3501.833 ms with 504/ERROR/peer.service, and the pcap proves live OTLP traffic. The main strict-review deductions are visual: the search scatter does not clearly place the slow cluster at the upper right, and the span-tags screenshot shows ERROR as normal tag text rather than the requested red chip."
+}

@@ -1,0 +1,313 @@
+{
+  "artifact_checks": [
+    {
+      "id": "run_before.log",
+      "task_says": "Execution log forensics (before / after) - `run_before.log`: the full stdout of one `dbt run` on the original project (containing model counts, \"Done.\", \"Completed successfully\" or similar markers).",
+      "spec_clauses": [
+        "`run_before.log` exists under `/tmp_workspace/results/`.",
+        "It is the full stdout of one `dbt run` on the original project.",
+        "It contains model counts.",
+        "It contains `Done.`, `Completed successfully`, or similar dbt completion markers."
+      ],
+      "clause_results": [
+        {"clause": "`run_before.log` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists in results and is 1827 bytes."},
+        {"clause": "It is the full stdout of one `dbt run` on the original project.", "satisfied": true, "evidence": "Log starts with dbt=1.8.9, adapter duckdb, and model run entries 1 of 5 through 5 of 5."},
+        {"clause": "It contains model counts.", "satisfied": true, "evidence": "Log says `Found 5 models, 12 data tests, 3 seeds, 561 macros` and `Finished running 4 view models, 1 table model`."},
+        {"clause": "It contains `Done.`, `Completed successfully`, or similar dbt completion markers.", "satisfied": true, "evidence": "Log ends with `Done. PASS=4 WARN=0 ERROR=1 SKIP=0 TOTAL=5`; the original run failed with the Binder Error but has the dbt completion summary."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "run_before.log contains dbt run output, model counts, the original `Binder Error: Cannot mix values of type VARCHAR and DOUBLE in COALESCE operator`, and `Done. PASS=4 WARN=0 ERROR=1 SKIP=0 TOTAL=5`.",
+      "missing_or_wrong": "Does not show `Completed successfully`; however the initial project is expected to reproduce the Binder Error and the log has a dbt `Done.` summary.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "test_before.log",
+      "task_says": "Execution log forensics (before / after) - `test_before.log`: the full stdout of running tests on the original project; must contain one of `FAIL` / `ERROR` / `Failure` to prove the problem is reproducible in the initial state.",
+      "spec_clauses": [
+        "`test_before.log` exists under `/tmp_workspace/results/`.",
+        "It is stdout from running tests on the original project.",
+        "It contains one of `FAIL` / `ERROR` / `Failure`.",
+        "It proves the initial problem is reproducible."
+      ],
+      "clause_results": [
+        {"clause": "`test_before.log` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists and is 4648 bytes."},
+        {"clause": "It is stdout from running tests on the original project.", "satisfied": true, "evidence": "Log starts with dbt=1.8.9 and `Found 5 models, 12 data tests, 3 seeds, 561 macros`, then runs 12 tests."},
+        {"clause": "It contains one of `FAIL` / `ERROR` / `Failure`.", "satisfied": true, "evidence": "Multiple test lines contain `ERROR`, and final summary says `ERROR=5`."},
+        {"clause": "It proves the initial problem is reproducible.", "satisfied": true, "evidence": "Tests fail because `fct_customer_orders` does not exist after the failed run, and `assert_amount_numeric` errors."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "test_before.log includes `2 of 12 ERROR assert_amount_numeric`, several fct_customer_orders test errors, and `Done. PASS=7 WARN=0 ERROR=5 SKIP=0 TOTAL=12`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "build_after.log",
+      "task_says": "Execution log forensics (before / after) - `build_after.log`: the full stdout of running `dbt build` again after the fix; must contain `PASS` and must no longer contain `FAIL` / `ERROR`. Hard constraints: After the fix, `dbt build` must pass (`build_after.log` must show pass).",
+      "spec_clauses": [
+        "`build_after.log` exists under `/tmp_workspace/results/`.",
+        "It is the full stdout of running `dbt build` after the fix.",
+        "It contains `PASS`.",
+        "It no longer contains `FAIL` / `ERROR` tokens.",
+        "It shows dbt build passed."
+      ],
+      "clause_results": [
+        {"clause": "`build_after.log` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists and is 5208 bytes."},
+        {"clause": "It is the full stdout of running `dbt build` after the fix.", "satisfied": true, "evidence": "Log shows seeds, staging models, fct_customer_orders, and all tests in a 20-step dbt build."},
+        {"clause": "It contains `PASS`.", "satisfied": true, "evidence": "Multiple test rows say `PASS`, and final summary says `PASS=20`."},
+        {"clause": "It no longer contains `FAIL` / `ERROR` tokens.", "satisfied": true, "evidence": "The log contains `ERR_COUNT=0` but no standalone `FAIL` or `ERROR` failure token; it ends successfully."},
+        {"clause": "It shows dbt build passed.", "satisfied": true, "evidence": "Log says `[32mCompleted successfully` and `Done. PASS=20 WRN_COUNT=0 ERR_COUNT=0 SKIP=0 TOTAL=20`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "build_after.log ends with `Completed successfully` and `Done. PASS=20 WRN_COUNT=0 ERR_COUNT=0 SKIP=0 TOTAL=20`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "manifest_deps.json",
+      "task_says": "Dependency forensics - `manifest_deps.json`: the `depends_on.nodes` subset of the failing model (not the full manifest.json — the file should be far smaller than the original manifest, so a reviewer only sees the upstream list of the target model).",
+      "spec_clauses": [
+        "`manifest_deps.json` exists under `/tmp_workspace/results/`.",
+        "It is the `depends_on.nodes` subset of the failing model.",
+        "It is not the full manifest.json.",
+        "It shows the upstream list of the target model including stg_orders and stg_payments."
+      ],
+      "clause_results": [
+        {"clause": "`manifest_deps.json` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists and is 275 bytes."},
+        {"clause": "It is the `depends_on.nodes` subset of the failing model.", "satisfied": true, "evidence": "JSON contains node `model.jaffle_shop.fct_customer_orders` with a small `depends_on` object."},
+        {"clause": "It is not the full manifest.json.", "satisfied": true, "evidence": "Top-level keys are only `node`, `name`, `path`, and `depends_on`; no full-manifest `nodes`, `sources`, `macros` structure."},
+        {"clause": "It shows the upstream list of the target model including stg_orders and stg_payments.", "satisfied": true, "evidence": "depends_on.nodes lists `model.jaffle_shop.stg_orders` and `model.jaffle_shop.stg_payments`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "manifest_deps.json is a compact subset for `model.jaffle_shop.fct_customer_orders` and lists only `stg_orders` and `stg_payments` as nodes.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "column_types.json",
+      "task_says": "Column type forensics - `column_types.json`: keys are `<table>.<column>` and values are the column's actual SQL type string; must contain at least the three entries `stg_orders.amount`, `stg_payments.amount`, and `fct_customer_orders.amount`. These values must be queried from the real duckdb / dbt schema and may not be guessed. In the pre-fix stage, the type of `stg_orders.amount` should appear as one of `VARCHAR` / `TEXT` / `STRING` (i.e. the conflict scene). Hard constraints: After the fix, the actual data type of `stg_orders.amount` in duckdb must be in the numeric family (DOUBLE / NUMERIC / DECIMAL / FLOAT / INTEGER / BIGINT).",
+      "spec_clauses": [
+        "`column_types.json` exists under `/tmp_workspace/results/`.",
+        "Keys are `<table>.<column>` and values are SQL type strings.",
+        "It contains `stg_orders.amount`.",
+        "It contains `stg_payments.amount`.",
+        "It contains `fct_customer_orders.amount`.",
+        "Pre-fix `stg_orders.amount` appears as VARCHAR / TEXT / STRING.",
+        "After the fix, actual DuckDB `stg_orders.amount` is numeric family."
+      ],
+      "clause_results": [
+        {"clause": "`column_types.json` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists and parses as JSON."},
+        {"clause": "Keys are `<table>.<column>` and values are SQL type strings.", "satisfied": true, "evidence": "Keys include `stg_orders.amount`, `stg_payments.amount`, and `fct_customer_orders.amount`; values are `VARCHAR`/`DOUBLE`."},
+        {"clause": "It contains `stg_orders.amount`.", "satisfied": true, "evidence": "`stg_orders.amount`: `VARCHAR`."},
+        {"clause": "It contains `stg_payments.amount`.", "satisfied": true, "evidence": "`stg_payments.amount`: `DOUBLE`."},
+        {"clause": "It contains `fct_customer_orders.amount`.", "satisfied": true, "evidence": "`fct_customer_orders.amount`: `DOUBLE`."},
+        {"clause": "Pre-fix `stg_orders.amount` appears as VARCHAR / TEXT / STRING.", "satisfied": true, "evidence": "The JSON records `stg_orders.amount` as `VARCHAR` and notes it was pre-fix."},
+        {"clause": "After the fix, actual DuckDB `stg_orders.amount` is numeric family.", "satisfied": true, "evidence": "Direct DuckDB inspection of the staged jaffle_shop.duckdb showed `stg_orders.amount` is `DOUBLE`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "column_types.json records the conflict as `stg_orders.amount: VARCHAR` and `stg_payments.amount: DOUBLE`; a direct query of the delivered DuckDB file shows post-fix `stg_orders.amount` is `DOUBLE`.",
+      "missing_or_wrong": "The file mixes pre-fix and post-fix observations and includes an `_notes` field, so not every value is a single current schema snapshot; however the required conflict and fixed numeric state are evidenced.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed_models",
+      "task_says": "Fixed staging model source - `fixed_models/`: at least one `.sql` file preserving the project-relative path (e.g. `models/staging/stg_orders.sql`) containing the fixed version; the fix must be done at the SQL layer using `cast(... as ...)` or `::double` / `::numeric` / `::float` / `::decimal` type conversion to normalize the `amount` column to a numeric type consistent with downstream usage. Bypassing the test by deleting a schema test or running sed is not allowed. The fix must actually land under `/tmp_workspace/jaffle_shop/` (so that dbt build can pass), and the same file must also be copied into `fixed_models/` for archival.",
+      "spec_clauses": [
+        "`fixed_models/` exists under `/tmp_workspace/results/`.",
+        "It contains at least one `.sql` file preserving project-relative path.",
+        "The SQL contains the fixed version of the staging model.",
+        "The fix is at the SQL layer using cast / :: numeric conversion on `amount`.",
+        "The fix actually landed in the project so `dbt build` can pass.",
+        "Bypassing by deleting a schema test or running sed is not allowed."
+      ],
+      "clause_results": [
+        {"clause": "`fixed_models/` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "Directory exists."},
+        {"clause": "It contains at least one `.sql` file preserving project-relative path.", "satisfied": true, "evidence": "Contains `fixed_models/models/staging/stg_orders.sql`."},
+        {"clause": "The SQL contains the fixed version of the staging model.", "satisfied": true, "evidence": "The archived SQL selects `try_cast(amount as double) as amount` from `raw_orders`."},
+        {"clause": "The fix is at the SQL layer using cast / :: numeric conversion on `amount`.", "satisfied": true, "evidence": "`try_cast(amount as double) as amount` is present."},
+        {"clause": "The fix actually landed in the project so `dbt build` can pass.", "satisfied": true, "evidence": "Delivered project file also contains the cast, build_after.log passed, and DuckDB schema has `stg_orders.amount` as DOUBLE."},
+        {"clause": "Bypassing by deleting a schema test or running sed is not allowed.", "satisfied": "partial", "evidence": "No deleted schema test was observed, but the delivered fixed_models also includes a modified `models/marts/schema.yml` changing the dbt_utils expression test; findings.json does not report this extra fixed file."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.85,
+      "evidence_quote": "`fixed_models/models/staging/stg_orders.sql` contains `try_cast(amount as double) as amount`; build_after.log passes and DuckDB shows `stg_orders.amount` is DOUBLE. An extra schema.yml modification is present but not listed in findings.json.",
+      "missing_or_wrong": "Extra unreported schema.yml change under fixed_models/models/marts/schema.yml; this is not the primary SQL-layer fix and not clearly a test deletion, but it weakens strict instruction compliance.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dbt_dag_overview.png",
+      "task_says": "dbt-docs visual evidence (each ≥ 4 KB, from actual dbt-docs page renders) - `view_dbt_dag_overview.png`: the dbt-docs landing screen; both the left project tree and the central DAG view must be visible at the same time (≥ 5 nodes/edges visible).",
+      "spec_clauses": [
+        "`view_dbt_dag_overview.png` exists under `/tmp_workspace/results/`.",
+        "It is ≥ 4 KB.",
+        "It is from an actual dbt-docs page render.",
+        "It shows the dbt-docs landing screen / overview.",
+        "Both the left project tree and central DAG view are visible at the same time.",
+        "At least 5 nodes/edges are visible."
+      ],
+      "clause_results": [
+        {"clause": "`view_dbt_dag_overview.png` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "PNG exists."},
+        {"clause": "It is ≥ 4 KB.", "satisfied": true, "evidence": "File size is 169824 bytes."},
+        {"clause": "It is from an actual dbt-docs page render.", "satisfied": true, "evidence": "Screenshot shows Chrome at localhost:8080, dbt Docs, and dbt lineage controls/nodes."},
+        {"clause": "It shows the dbt-docs landing screen / overview.", "satisfied": true, "evidence": "URL includes `#!/overview` and the central `Lineage Graph` is visible."},
+        {"clause": "Both the left project tree and central DAG view are visible at the same time.", "satisfied": false, "evidence": "Image inspection found no readable left project tree; it shows the central/full lineage graph only."},
+        {"clause": "At least 5 nodes/edges are visible.", "satisfied": true, "evidence": "Visible nodes include raw_customers, stg_customers, raw_orders, stg_orders, stg_orders_legacy, raw_payments, stg_payments, fct_customer_orders, and assert_amount_numeric, with multiple edges."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.8,
+      "evidence_quote": "Actual dbt-docs overview screenshot with ~9 visible nodes and several edges, but the required left project tree is not visible alongside the DAG.",
+      "missing_or_wrong": "Left project tree is missing/not visible at the same time as the central DAG.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dbt_lineage_expanded.png",
+      "task_says": "dbt-docs visual evidence (each ≥ 4 KB, from actual dbt-docs page renders) - `view_dbt_lineage_expanded.png`: the DAG view after focusing on the failing model (the node `fct_customer_orders` / `customer_orders`), with at least 2 levels of ancestors expanded, showing the target model connected to two staging upstreams via distinguishable edges.",
+      "spec_clauses": [
+        "`view_dbt_lineage_expanded.png` exists under `/tmp_workspace/results/`.",
+        "It is ≥ 4 KB.",
+        "It is from an actual dbt-docs page render.",
+        "The failing model `fct_customer_orders` / `customer_orders` is focused.",
+        "At least 2 levels of ancestors are expanded.",
+        "The target model is connected to two staging upstreams.",
+        "The staging upstream edges are distinguishable."
+      ],
+      "clause_results": [
+        {"clause": "`view_dbt_lineage_expanded.png` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "PNG exists."},
+        {"clause": "It is ≥ 4 KB.", "satisfied": true, "evidence": "File size is 149088 bytes."},
+        {"clause": "It is from an actual dbt-docs page render.", "satisfied": true, "evidence": "Screenshot shows dbt Docs Lineage Graph at localhost:8080."},
+        {"clause": "The failing model `fct_customer_orders` / `customer_orders` is focused.", "satisfied": true, "evidence": "`fct_customer_orders` is centered and highlighted purple."},
+        {"clause": "At least 2 levels of ancestors are expanded.", "satisfied": true, "evidence": "Shows raw_orders → stg_orders → fct_customer_orders and raw_payments → stg_payments → fct_customer_orders."},
+        {"clause": "The target model is connected to two staging upstreams.", "satisfied": true, "evidence": "Edges from `stg_orders` and `stg_payments` both enter `fct_customer_orders`."},
+        {"clause": "The staging upstream edges are distinguishable.", "satisfied": true, "evidence": "The two separate curved lines from the staging nodes to target are visibly distinct."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "The screenshot clearly shows raw_orders/raw_payments two levels upstream through stg_orders/stg_payments into highlighted `fct_customer_orders`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dbt_column_lineage.png",
+      "task_says": "dbt-docs visual evidence (each ≥ 4 KB, from actual dbt-docs page renders) - `view_dbt_column_lineage.png`: in the column-lineage view or the node-detail Columns panel, the visible column lineage of the `amount` column — the column name `amount` and a tooltip / arrow pointing to multiple upstream columns must be readable.",
+      "spec_clauses": [
+        "`view_dbt_column_lineage.png` exists under `/tmp_workspace/results/`.",
+        "It is ≥ 4 KB.",
+        "It is from an actual dbt-docs page render.",
+        "It is in a column-lineage view or node-detail Columns panel.",
+        "The column name `amount` is readable.",
+        "A tooltip / arrow pointing to multiple upstream columns is readable.",
+        "It visibly documents the pre-fix amount column conflict scene."
+      ],
+      "clause_results": [
+        {"clause": "`view_dbt_column_lineage.png` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "PNG exists."},
+        {"clause": "It is ≥ 4 KB.", "satisfied": true, "evidence": "File size is 209401 bytes."},
+        {"clause": "It is from an actual dbt-docs page render.", "satisfied": true, "evidence": "Screenshot shows dbt Docs model page at localhost:8080."},
+        {"clause": "It is in a column-lineage view or node-detail Columns panel.", "satisfied": true, "evidence": "Node detail page has a visible `Columns` section."},
+        {"clause": "The column name `amount` is readable.", "satisfied": true, "evidence": "`amount` appears in the Columns table."},
+        {"clause": "A tooltip / arrow pointing to multiple upstream columns is readable.", "satisfied": false, "evidence": "No column-level tooltip or arrows to upstream columns are visible; only a mini model-level Lineage Graph with stg_orders and stg_payments nodes."},
+        {"clause": "It visibly documents the pre-fix amount column conflict scene.", "satisfied": false, "evidence": "The screenshot does not show upstream column names or conflicting type values; it shows the amount row and model-level graph only."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "The screenshot is a real dbt-docs fct_customer_orders detail page with the `Columns` section and `amount` row visible, plus a model-level side lineage graph. It lacks readable column-level upstream arrows/tooltips and does not visibly show the type conflict.",
+      "missing_or_wrong": "No readable tooltip/arrow to multiple upstream columns; no visible upstream column names or conflicting types for amount.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_dbt_column_lineage_after.png",
+      "task_says": "dbt-docs visual evidence (each ≥ 4 KB, from actual dbt-docs page renders) - `view_dbt_column_lineage_after.png`: after the fix and regenerating docs, the re-rendered column lineage for the same node's `amount` column — it must be visible that the conflict has been resolved (only a single upstream source of consistent type remains, or the upstream column types have been unified).",
+      "spec_clauses": [
+        "`view_dbt_column_lineage_after.png` exists under `/tmp_workspace/results/`.",
+        "It is ≥ 4 KB.",
+        "It is from an actual dbt-docs page render after fix/regeneration.",
+        "It shows the same node's `amount` column.",
+        "It is a re-rendered column lineage view for `amount`.",
+        "It visibly proves the conflict is resolved by single upstream source or unified upstream types."
+      ],
+      "clause_results": [
+        {"clause": "`view_dbt_column_lineage_after.png` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "PNG exists."},
+        {"clause": "It is ≥ 4 KB.", "satisfied": true, "evidence": "File size is 200897 bytes."},
+        {"clause": "It is from an actual dbt-docs page render after fix/regeneration.", "satisfied": true, "evidence": "Screenshot shows dbt Docs fct_customer_orders page; build_after and docs timeline indicate post-fix capture."},
+        {"clause": "It shows the same node's `amount` column.", "satisfied": true, "evidence": "`fct_customer_orders` page is visible and the Columns table has `amount` with type `DOUBLE`."},
+        {"clause": "It is a re-rendered column lineage view for `amount`.", "satisfied": "partial", "evidence": "It is a node-detail Columns panel and mini Lineage Graph, but not a true column-level lineage popover or explicit upstream-column view."},
+        {"clause": "It visibly proves the conflict is resolved by single upstream source or unified upstream types.", "satisfied": "partial", "evidence": "The `amount` row shows type `DOUBLE`, and the graph still shows stg_orders/stg_payments upstreams; upstream column types are not shown, so unified upstream types are inferred rather than directly visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.65,
+      "evidence_quote": "Post-fix screenshot shows `fct_customer_orders` Columns table with `amount` type `DOUBLE`, plus the same model-level lineage graph. It does not show explicit upstream column-lineage/type unification.",
+      "missing_or_wrong": "No explicit column-level upstream arrows/tooltips; upstream column types are not visible, so resolution is only partially evidenced visually.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "findings.json",
+      "task_says": "Final report - `findings.json`, which must contain all of the following keys: `failing_test`, `failing_model`, `conflicting_column`, `upstream_models`, `upstream_types_before`, `fix_summary`, `fixed_files`, `evidence_screenshots`. `upstream_models` must contain both `stg_orders` and `stg_payments`; `conflicting_column` must be `amount`; `upstream_types_before` must give at least the actual types on both the stg_orders and stg_payments sides.",
+      "spec_clauses": [
+        "`findings.json` exists under `/tmp_workspace/results/`.",
+        "It parses as JSON.",
+        "It contains all required keys.",
+        "`failing_model` identifies fct_customer_orders/customer_orders.",
+        "`conflicting_column` is `amount`.",
+        "`upstream_models` contains both `stg_orders` and `stg_payments`.",
+        "`upstream_types_before` gives at least actual stg_orders and stg_payments amount types.",
+        "`fixed_files` and `evidence_screenshots` list the required archival SQL and screenshots."
+      ],
+      "clause_results": [
+        {"clause": "`findings.json` exists under `/tmp_workspace/results/`.", "satisfied": true, "evidence": "File exists."},
+        {"clause": "It parses as JSON.", "satisfied": true, "evidence": "File was read and parsed successfully."},
+        {"clause": "It contains all required keys.", "satisfied": true, "evidence": "Required keys are present, plus root_cause/docs_port/upstream_types_after extras."},
+        {"clause": "`failing_model` identifies fct_customer_orders/customer_orders.", "satisfied": true, "evidence": "`failing_model`: `fct_customer_orders`."},
+        {"clause": "`conflicting_column` is `amount`.", "satisfied": true, "evidence": "`conflicting_column`: `amount`."},
+        {"clause": "`upstream_models` contains both `stg_orders` and `stg_payments`.", "satisfied": true, "evidence": "Array is [`stg_orders`, `stg_payments`]."},
+        {"clause": "`upstream_types_before` gives at least actual stg_orders and stg_payments amount types.", "satisfied": true, "evidence": "Records `stg_orders.amount`: `VARCHAR`, `stg_payments.amount`: `DOUBLE`."},
+        {"clause": "`fixed_files` and `evidence_screenshots` list the required archival SQL and screenshots.", "satisfied": "partial", "evidence": "Lists `models/staging/stg_orders.sql` and all four screenshots, but omits the extra modified `models/marts/schema.yml` that was also archived under fixed_models."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "findings.json contains the required root-cause fields, upstream models/types, fix summary, fixed SQL path, and four screenshot names; it omits the extra schema.yml change present in fixed_models.",
+      "missing_or_wrong": "Does not list the additional modified schema.yml found in fixed_models; visual evidence names point to screenshots that are partly weaker than the spec for column lineage.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.86, "reason": "Core dbt objective was achieved: run/test failure reproduced (run_before.log, test_before.log), SQL cast fix archived and landed (fixed_models), build passed (build_after.log), and report produced (findings.json). The visual evidence chain is incomplete because view_dbt_column_lineage.png lacks column-level upstream arrows/tooltips and view_dbt_dag_overview.png lacks the required left tree."},
+    "deliverable_correctness": {"score": 0.7, "reason": "Most CLI/JSON artifacts are correct, but artifact view_dbt_column_lineage.png scores below 0.6 due to missing readable upstream column lineage/tooltip, so this dimension is capped at 0.70 by the rubric. Additional gaps: overview screenshot lacks the left project tree, and after screenshot only partially proves resolved column lineage."},
+    "deliverable_quality": {"score": 0.93, "reason": "All required files are present, logs and JSON parse/read correctly, screenshots are large PNGs, and fixed SQL is readable. Quality is reduced for visual screenshots that are real but not the exact requested views, and for an extra unreported schema.yml modification."},
+    "evidence_authenticity": {"score": 0.9, "reason": "Logs, DuckDB inspection, and screenshots appear genuine; fabrication grep found no Image.new/ImageDraw/np.random/LD_PRELOAD/gt-read signals. Minor concern: column_types.json mixes pre-fix and post-fix observations rather than a single currently reproducible schema snapshot."},
+    "tool_use_correctness": {"score": 0.88, "reason": "The rollout used dbt, DuckDB/schema inspection, dbt docs/browser screenshots, and file archival appropriately. The screenshot workflow was confused in chat and selected weaker views for overview/column lineage; it also modified schema.yml in addition to the SQL-layer fix."},
+    "final_state_correctness": {"score": 0.88, "reason": "Delivered DuckDB shows stg_orders.amount DOUBLE and build_after.log shows `Completed successfully`/`PASS=20`, so the final dbt state is largely correct. Final evidence state is not perfect because the column-lineage screenshots do not directly show upstream column type unification, and findings omits the schema.yml change."},
+    "efficiency_robustness": {"score": 0.82, "reason": "The agent recovered the failing run, applied a working fix, rebuilt, and produced artifacts. Robustness is reduced by screenshot confusion noted in chat, overwriting the overview with a fullscreen graph lacking the left tree, and relying on partial column-lineage screenshots."},
+    "instruction_following": {"score": 0.78, "reason": "Explicit file/JSON/log constraints were mostly followed, and no anti-cheat patterns were found. However, the instruction requiring left project tree + central DAG in view_dbt_dag_overview.png was not met, the required tooltip/arrow to multiple upstream columns was not met, and an additional schema.yml change was made but not disclosed in fixed_files."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.7,
+  "summary": "The rollout successfully diagnosed and fixed the dbt type conflict at the SQL layer, produced passing dbt build evidence, compact dependency/type forensics, and a mostly complete findings report. The main strict failures are visual: the overview screenshot lacks the left project tree, and the column-lineage screenshots do not show readable upstream-column arrows/tooltips or explicit upstream type unification, so deliverable_correctness is capped at 0.70. No hack/fabrication signal was found."
+}

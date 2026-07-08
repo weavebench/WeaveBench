@@ -1,0 +1,893 @@
+{
+  "artifact_checks": [
+    {
+      "id": "ogrinfo_schema.txt",
+      "task_says": "`ogrinfo_schema.txt` — Schema description of `flood_parcels.geojson`, containing at least field names (`owner` / `area_m2` / `land_use`, etc.) and CRS (EPSG:4326 / WGS 84).",
+      "spec_clauses": [
+        "Schema description of flood_parcels.geojson",
+        "contains field names owner / area_m2 / land_use etc.",
+        "contains CRS EPSG:4326 / WGS 84"
+      ],
+      "clause_results": [
+        {
+          "clause": "Schema description of flood_parcels.geojson",
+          "satisfied": true,
+          "evidence": "File is ogrinfo output for /tmp_workspace/parcels/flood_parcels.geojson layer flood_parcels."
+        },
+        {
+          "clause": "contains field names owner / area_m2 / land_use etc.",
+          "satisfied": true,
+          "evidence": "Fields listed include id, owner, area_m2, land_use."
+        },
+        {
+          "clause": "contains CRS EPSG:4326 / WGS 84",
+          "satisfied": true,
+          "evidence": "Layer SRS WKT shows GEOGCRS[\"WGS 84\"] and ID[\"EPSG\",4326]."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "ogrinfo_schema.txt lists Feature Count 120, WGS 84 EPSG:4326, and fields id/owner/area_m2/land_use.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dem_stats.txt",
+      "task_says": "`dem_stats.txt` — Numeric statistics of DEM elevation, containing at least Min / Max / Mean.",
+      "spec_clauses": [
+        "numeric DEM elevation statistics",
+        "contains Min",
+        "contains Max",
+        "contains Mean"
+      ],
+      "clause_results": [
+        {
+          "clause": "numeric DEM elevation statistics",
+          "satisfied": true,
+          "evidence": "File contains numeric float values for Min/Max/Mean/StdDev."
+        },
+        {
+          "clause": "contains Min",
+          "satisfied": true,
+          "evidence": "Min: 15.027696."
+        },
+        {
+          "clause": "contains Max",
+          "satisfied": true,
+          "evidence": "Max: 77.577095."
+        },
+        {
+          "clause": "contains Mean",
+          "satisfied": true,
+          "evidence": "Mean: 61.293903."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "dem_stats.txt: Min 15.027696, Max 77.577095, Mean 61.293903.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parcels_sample.txt",
+      "task_says": "`parcels_sample.txt` — Sample of the first 5 rows of parcels (CSV or equivalent tabular format), ≥ 5 rows, in field order matching the schema.",
+      "spec_clauses": [
+        "sample of first 5 rows of parcels",
+        "CSV or equivalent tabular format",
+        "≥ 5 rows",
+        "field order matching schema"
+      ],
+      "clause_results": [
+        {
+          "clause": "sample of first 5 rows of parcels",
+          "satisfied": true,
+          "evidence": "Rows id 0 through 4 are present."
+        },
+        {
+          "clause": "CSV or equivalent tabular format",
+          "satisfied": true,
+          "evidence": "Comma-separated header and rows."
+        },
+        {
+          "clause": "≥ 5 rows",
+          "satisfied": true,
+          "evidence": "Five data rows plus header are present."
+        },
+        {
+          "clause": "field order matching schema",
+          "satisfied": true,
+          "evidence": "Header id,owner,area_m2,land_use matches source schema field order."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parcels_sample.txt header id,owner,area_m2,land_use followed by rows 0-4.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "zonal_verify.txt",
+      "task_says": "`zonal_verify.txt` — Aggregation verification text of elevation statistics written per parcel (zone), such as the `elev_mean` column, including concrete numeric values.",
+      "spec_clauses": [
+        "aggregation verification text per parcel/zone",
+        "includes elevation statistics columns such as elev_mean",
+        "includes concrete numeric values"
+      ],
+      "clause_results": [
+        {
+          "clause": "aggregation verification text per parcel/zone",
+          "satisfied": true,
+          "evidence": "File lists all parcel ids 0-119 with one row per parcel."
+        },
+        {
+          "clause": "includes elevation statistics columns such as elev_mean",
+          "satisfied": true,
+          "evidence": "Header includes elev_min,elev_max,elev_mean."
+        },
+        {
+          "clause": "includes concrete numeric values",
+          "satisfied": true,
+          "evidence": "Rows include values such as elev_mean 66.672852, 34.557644, 22.456524."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "zonal_verify.txt includes id, owner, area_m2, land_use, elev_min/elev_max/elev_mean, flood_risk for 120 rows.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "field_distinct.txt",
+      "task_says": "`field_distinct.txt` — Deduplicated list of values in the `flood_risk` field of parcels, containing only HIGH / MEDIUM / LOW.",
+      "spec_clauses": [
+        "deduplicated list of values in flood_risk field",
+        "contains only HIGH / MEDIUM / LOW"
+      ],
+      "clause_results": [
+        {
+          "clause": "deduplicated list of values in flood_risk field",
+          "satisfied": true,
+          "evidence": "File has one line each for HIGH, MEDIUM, LOW."
+        },
+        {
+          "clause": "contains only HIGH / MEDIUM / LOW",
+          "satisfied": true,
+          "evidence": "No other values appear."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "field_distinct.txt contains exactly HIGH, MEDIUM, LOW.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "risk_summary.txt",
+      "task_says": "`risk_summary.txt` — Count text grouped by `flood_risk`; the sum of counts for the three categories must equal the total number of parcels.",
+      "spec_clauses": [
+        "count text grouped by flood_risk",
+        "includes counts for HIGH/MEDIUM/LOW",
+        "sum of three category counts equals total parcels"
+      ],
+      "clause_results": [
+        {
+          "clause": "count text grouped by flood_risk",
+          "satisfied": true,
+          "evidence": "CSV has flood_risk,count rows."
+        },
+        {
+          "clause": "includes counts for HIGH/MEDIUM/LOW",
+          "satisfied": true,
+          "evidence": "HIGH 5, MEDIUM 11, LOW 104."
+        },
+        {
+          "clause": "sum of three category counts equals total parcels",
+          "satisfied": true,
+          "evidence": "5+11+104=120 and TOTAL row is 120."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "risk_summary.txt reports HIGH=5, MEDIUM=11, LOW=104, TOTAL=120.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pdf_check.txt",
+      "task_says": "`pdf_check.txt` — Page/metadata text of the exported PDF, verifiable as A4 (approximately 595×842 pts, ±15).",
+      "spec_clauses": [
+        "page/metadata text of exported PDF",
+        "verifiable as A4 approximately 595×842 pts ±15"
+      ],
+      "clause_results": [
+        {
+          "clause": "page/metadata text of exported PDF",
+          "satisfied": true,
+          "evidence": "File is pdfinfo metadata for flood_map_layout.pdf."
+        },
+        {
+          "clause": "verifiable as A4 approximately 595×842 pts ±15",
+          "satisfied": true,
+          "evidence": "Page size is 842 x 595 pts (A4), landscape orientation within tolerance."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pdf_check.txt shows Pages: 1 and Page size: 842 x 595 pts (A4).",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "shp_verify.txt",
+      "task_says": "`shp_verify.txt` — Schema text of the exported Shapefile, showing the 10-character field name truncation behavior.",
+      "spec_clauses": [
+        "schema text of exported Shapefile",
+        "shows 10-character field name truncation behavior"
+      ],
+      "clause_results": [
+        {
+          "clause": "schema text of exported Shapefile",
+          "satisfied": true,
+          "evidence": "File is ogrinfo -so output for flood_parcels.shp with geometry, count, CRS, and fields."
+        },
+        {
+          "clause": "shows 10-character field name truncation behavior",
+          "satisfied": "partial",
+          "evidence": "Field flood_risk is exactly 10 characters and appears intact; no longer field is shown truncated, so truncation behavior is not really demonstrated."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "shp_verify.txt lists Shapefile fields id, owner, area_m2, land_use, elev_min, elev_max, elev_mean, flood_risk; flood_risk is 10 chars but no truncation example appears.",
+      "missing_or_wrong": "Does not clearly demonstrate truncation of a >10-character field name; only shows field names already ≤10 chars.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "flood_parcels.gpkg",
+      "task_says": "`flood_parcels.gpkg` — GeoPackage containing the parcels layer (with `elev_*` elevation statistics columns and a `flood_risk` field, values ⊆ {HIGH, MEDIUM, LOW}).",
+      "spec_clauses": [
+        "GeoPackage exists and contains parcels layer",
+        "layer has elev_* elevation statistics columns",
+        "layer has flood_risk field",
+        "flood_risk values subset of HIGH/MEDIUM/LOW"
+      ],
+      "clause_results": [
+        {
+          "clause": "GeoPackage exists and contains parcels layer",
+          "satisfied": true,
+          "evidence": "SQLite inspection found table flood_parcels with 120 rows."
+        },
+        {
+          "clause": "layer has elev_* elevation statistics columns",
+          "satisfied": true,
+          "evidence": "Columns include elev_min, elev_max, elev_mean."
+        },
+        {
+          "clause": "layer has flood_risk field",
+          "satisfied": true,
+          "evidence": "Column flood_risk exists."
+        },
+        {
+          "clause": "flood_risk values subset of HIGH/MEDIUM/LOW",
+          "satisfied": true,
+          "evidence": "SQL bad-value count was 0 and counts were HIGH 5, LOW 104, MEDIUM 11."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "SQLite inspection of GPKG: flood_parcels table has 120 rows, elev_min/elev_max/elev_mean/flood_risk columns, no invalid risk values.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "flood_parcels_shp",
+      "task_says": "`flood_parcels_shp/` — Shapefile set of four files (`.shp` / `.shx` / `.dbf` / `.prj`), exported from the GPKG above.",
+      "spec_clauses": [
+        "directory flood_parcels_shp exists",
+        "contains .shp file",
+        "contains .shx file",
+        "contains .dbf file",
+        "contains .prj file",
+        "exported from GPKG above"
+      ],
+      "clause_results": [
+        {
+          "clause": "directory flood_parcels_shp exists",
+          "satisfied": true,
+          "evidence": "Directory exists in results."
+        },
+        {
+          "clause": "contains .shp file",
+          "satisfied": true,
+          "evidence": "flood_parcels.shp present."
+        },
+        {
+          "clause": "contains .shx file",
+          "satisfied": true,
+          "evidence": "flood_parcels.shx present."
+        },
+        {
+          "clause": "contains .dbf file",
+          "satisfied": true,
+          "evidence": "flood_parcels.dbf present."
+        },
+        {
+          "clause": "contains .prj file",
+          "satisfied": true,
+          "evidence": "flood_parcels.prj present."
+        },
+        {
+          "clause": "exported from GPKG above",
+          "satisfied": true,
+          "evidence": "make_outputs.py uses ogr2ogr from flood_parcels.gpkg and shp_verify shows 120-feature schema matching GPKG."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Directory contains flood_parcels.shp/.shx/.dbf/.prj; script and schema indicate export from flood_parcels.gpkg.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "flood_map_layout.pdf",
+      "task_says": "`flood_map_layout.pdf` — A4 landscape flood risk map containing at least a Map frame, Legend, Title `Flood Risk Assessment`, Scale bar, and North arrow.",
+      "spec_clauses": [
+        "PDF exists and is A4 landscape",
+        "contains Map frame",
+        "contains Legend",
+        "contains Title Flood Risk Assessment",
+        "contains Scale bar",
+        "contains North arrow"
+      ],
+      "clause_results": [
+        {
+          "clause": "PDF exists and is A4 landscape",
+          "satisfied": true,
+          "evidence": "pdfinfo: 1 page, 842 x 595 pts A4 landscape."
+        },
+        {
+          "clause": "contains Map frame",
+          "satisfied": true,
+          "evidence": "Rendered PDF shows a large bordered map frame on the left."
+        },
+        {
+          "clause": "contains Legend",
+          "satisfied": true,
+          "evidence": "Rendered PDF shows legend titled Flood risk with HIGH/MEDIUM/LOW and DEM entry."
+        },
+        {
+          "clause": "contains Title Flood Risk Assessment",
+          "satisfied": true,
+          "evidence": "Rendered PDF and pdftotext show Flood Risk Assessment."
+        },
+        {
+          "clause": "contains Scale bar",
+          "satisfied": true,
+          "evidence": "Rendered PDF shows scale bar labeled 0, 250, 500, 750."
+        },
+        {
+          "clause": "contains North arrow",
+          "satisfied": true,
+          "evidence": "Rendered PDF shows a north arrow on the right."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Rendered PDF inspection confirmed A4 landscape map frame, legend, title, scale bar, and north arrow.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "validation.json",
+      "task_says": "`validation.json` — Structure as follows (values computed from actual data, must not be hard-coded):\n  ```json\n  {\n    \"total_parcels\": <int>,\n    \"high_count\": <int>, \"medium_count\": <int>, \"low_count\": <int>,\n    \"high_total_area_m2\": <float>,\n    \"all_risk_valid\": true,\n    \"crs\": \"EPSG:4326\"\n  }\n  ```",
+      "spec_clauses": [
+        "valid JSON with required structure",
+        "total_parcels int",
+        "high_count/medium_count/low_count ints",
+        "high_total_area_m2 float",
+        "all_risk_valid true",
+        "crs EPSG:4326",
+        "values computed from actual data, not hard-coded"
+      ],
+      "clause_results": [
+        {
+          "clause": "valid JSON with required structure",
+          "satisfied": true,
+          "evidence": "File parses as JSON and contains exactly the requested keys."
+        },
+        {
+          "clause": "total_parcels int",
+          "satisfied": true,
+          "evidence": "total_parcels is 120."
+        },
+        {
+          "clause": "high_count/medium_count/low_count ints",
+          "satisfied": true,
+          "evidence": "high_count 5, medium_count 11, low_count 104."
+        },
+        {
+          "clause": "high_total_area_m2 float",
+          "satisfied": true,
+          "evidence": "high_total_area_m2 is 15251.0."
+        },
+        {
+          "clause": "all_risk_valid true",
+          "satisfied": true,
+          "evidence": "all_risk_valid is true."
+        },
+        {
+          "clause": "crs EPSG:4326",
+          "satisfied": true,
+          "evidence": "crs is EPSG:4326."
+        },
+        {
+          "clause": "values computed from actual data, not hard-coded",
+          "satisfied": true,
+          "evidence": "make_outputs.py computes counts and area from gdf; SQL cross-check matched risk counts and no bad rule rows."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "validation.json: total_parcels 120, high 5, medium 11, low 104, high_total_area_m2 15251.0, all_risk_valid true, crs EPSG:4326; script computes these from GDF.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_layers.png",
+      "task_says": "`view_01_layers.png` — Project main view with both the parcels and DEM layers loaded, showing the Layers panel and map canvas.",
+      "spec_clauses": [
+        "project main view",
+        "both parcels and DEM layers loaded",
+        "Layers panel visible",
+        "map canvas visible"
+      ],
+      "clause_results": [
+        {
+          "clause": "project main view",
+          "satisfied": true,
+          "evidence": "QGIS Desktop main window is visible."
+        },
+        {
+          "clause": "both parcels and DEM layers loaded",
+          "satisfied": true,
+          "evidence": "Layers panel lists Flood parcels classified and Flood DEM elevation."
+        },
+        {
+          "clause": "Layers panel visible",
+          "satisfied": true,
+          "evidence": "Left Layers panel is visible with expanded symbology."
+        },
+        {
+          "clause": "map canvas visible",
+          "satisfied": true,
+          "evidence": "Canvas shows colored parcel polygons with labels."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Image inspection: QGIS main window with Layers panel listing parcels and DEM and a visible parcel map canvas.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_dem_styled.png",
+      "task_says": "`view_02_dem_styled.png` — DEM layer rendered with Singleband Pseudocolor / RdYlGn colormap (red→yellow→green), Min/Max taken from the actual DEM value range; the Symbology panel and color ramp scale must be visible.",
+      "spec_clauses": [
+        "DEM layer rendered with Singleband Pseudocolor",
+        "RdYlGn red→yellow→green colormap",
+        "Min/Max taken from actual DEM value range",
+        "Symbology panel visible",
+        "color ramp scale visible"
+      ],
+      "clause_results": [
+        {
+          "clause": "DEM layer rendered with Singleband Pseudocolor",
+          "satisfied": true,
+          "evidence": "Layer Properties Symbology shows Render type: Singleband pseudocolor."
+        },
+        {
+          "clause": "RdYlGn red→yellow→green colormap",
+          "satisfied": "partial",
+          "evidence": "A red/orange through pale green/teal ramp is visible; it is close but not clearly labeled RdYlGn and class table appears empty."
+        },
+        {
+          "clause": "Min/Max taken from actual DEM value range",
+          "satisfied": true,
+          "evidence": "Min 15.0276957 and Max 77.577095 match dem_stats actual range."
+        },
+        {
+          "clause": "Symbology panel visible",
+          "satisfied": true,
+          "evidence": "Layer Properties — Flood DEM elevation — Symbology is open."
+        },
+        {
+          "clause": "color ramp scale visible",
+          "satisfied": true,
+          "evidence": "Color ramp widget/scale is visible in the Symbology panel."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "Image shows QGIS Symbology with Singleband pseudocolor, Min 15.0276957, Max 77.577095, and visible red/green color ramp; ramp is not explicitly labeled RdYlGn and class table is empty.",
+      "missing_or_wrong": "Color ramp is visible but not unambiguously the named RdYlGn red→yellow→green ramp; class/value table is empty.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_zonal_dialog.png",
+      "task_says": "`view_03_zonal_dialog.png` — Zonal Statistics settings dialog using parcels as zones and the DEM as the value raster, with Mean / Min / Max checked and the prefix `elev_` visible.",
+      "spec_clauses": [
+        "Zonal Statistics settings dialog visible",
+        "parcels used as zones",
+        "DEM used as value raster",
+        "Mean / Min / Max checked",
+        "prefix elev_ visible"
+      ],
+      "clause_results": [
+        {
+          "clause": "Zonal Statistics settings dialog visible",
+          "satisfied": true,
+          "evidence": "QGIS Zonal Statistics processing dialog is visible."
+        },
+        {
+          "clause": "parcels used as zones",
+          "satisfied": false,
+          "evidence": "Input layer field is blank; parcels are not selected/visible as zones."
+        },
+        {
+          "clause": "DEM used as value raster",
+          "satisfied": true,
+          "evidence": "Raster layer is Flood DEM elevation [EPSG:4326]."
+        },
+        {
+          "clause": "Mean / Min / Max checked",
+          "satisfied": "partial",
+          "evidence": "Dialog says 3 options selected, but individual Mean/Min/Max checkboxes are not visible."
+        },
+        {
+          "clause": "prefix elev_ visible",
+          "satisfied": false,
+          "evidence": "Output column prefix field shows \"_\", not \"elev_\"."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "Image shows Zonal Statistics dialog and DEM raster, but Input layer is blank, prefix is \"_\", and individual Mean/Min/Max checks are not visible.",
+      "missing_or_wrong": "Parcels-as-zones not shown; prefix elev_ not visible; Mean/Min/Max only indirectly indicated as 3 options selected.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_field_calc.png",
+      "task_says": "`view_04_field_calc.png` — Field Calculator dialog generating the `flood_risk` field using an `elev_mean`-based classification expression, showing the expression and a preview.",
+      "spec_clauses": [
+        "Field Calculator dialog visible",
+        "generating flood_risk field",
+        "uses elev_mean-based classification expression",
+        "expression visible",
+        "preview visible"
+      ],
+      "clause_results": [
+        {
+          "clause": "Field Calculator dialog visible",
+          "satisfied": true,
+          "evidence": "QGIS Field Calculator dialog is visible."
+        },
+        {
+          "clause": "generating flood_risk field",
+          "satisfied": "partial",
+          "evidence": "Output field name is flood_risk, but output field type is Whole number (integer) despite text labels."
+        },
+        {
+          "clause": "uses elev_mean-based classification expression",
+          "satisfied": "partial",
+          "evidence": "Expression references elev_mean but uses incorrect logic (WHEN elev_mean > 35 THEN HIGH before >55, opposite of required thresholds)."
+        },
+        {
+          "clause": "expression visible",
+          "satisfied": true,
+          "evidence": "CASE expression is visible in editor."
+        },
+        {
+          "clause": "preview visible",
+          "satisfied": false,
+          "evidence": "No expression output preview/result is visible."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Image shows Field Calculator with output field flood_risk and a CASE expression referencing elev_mean, but type is integer, threshold logic is wrong, and no preview is visible.",
+      "missing_or_wrong": "Output type wrong for text categories; classification expression does not implement elev_mean <35 HIGH / 35-55 MEDIUM / otherwise LOW; preview missing.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_categorized.png",
+      "task_says": "`view_05_categorized.png` — Map with parcels categorized by `flood_risk` color (HIGH=red / MEDIUM=orange / LOW=green) and labeled with `owner`, including the legend and colored categories on the map canvas.",
+      "spec_clauses": [
+        "map with parcels categorized by flood_risk",
+        "HIGH red / MEDIUM orange / LOW green",
+        "labeled with owner",
+        "legend included",
+        "colored categories on map canvas"
+      ],
+      "clause_results": [
+        {
+          "clause": "map with parcels categorized by flood_risk",
+          "satisfied": true,
+          "evidence": "QGIS map shows parcel polygons colored by categories."
+        },
+        {
+          "clause": "HIGH red / MEDIUM orange / LOW green",
+          "satisfied": true,
+          "evidence": "Layer legend shows HIGH red, MEDIUM orange, LOW green and map uses those colors."
+        },
+        {
+          "clause": "labeled with owner",
+          "satisfied": true,
+          "evidence": "Chinese owner-name labels are visible in parcels."
+        },
+        {
+          "clause": "legend included",
+          "satisfied": true,
+          "evidence": "Layers panel legend is visible with HIGH/MEDIUM/LOW."
+        },
+        {
+          "clause": "colored categories on map canvas",
+          "satisfied": true,
+          "evidence": "Canvas contains red, orange, and green parcel polygons."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Image inspection: QGIS map has HIGH red, MEDIUM orange, LOW green legend and labeled colored parcels.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_07_attribute_table_selection.png",
+      "task_says": "`view_07_attribute_table_selection.png` — In QGIS, **open the Attribute Table of the parcels layer** (shortcut F6 or right-click → Open Attribute Table), **click to select a single row where `flood_risk = HIGH`** (row highlighted), then capture: the screenshot must show **in the same frame** both (a) the Attribute Table floating window with the selected row highlighted, and (b) the corresponding parcel synchronized and highlighted on the main map canvas (default QGIS yellow selection color). This \"table-map linked selection\" is a real-time UI behavior unique to QGIS Desktop that cannot be reproduced with static screenshots or PIL composites.",
+      "spec_clauses": [
+        "QGIS Attribute Table of parcels layer open",
+        "single row where flood_risk = HIGH selected",
+        "selected row highlighted",
+        "same frame includes main map canvas",
+        "corresponding parcel synchronized and highlighted yellow on map"
+      ],
+      "clause_results": [
+        {
+          "clause": "QGIS Attribute Table of parcels layer open",
+          "satisfied": true,
+          "evidence": "Floating attribute table titled Flood parcels classified — Features Total: 120 is visible."
+        },
+        {
+          "clause": "single row where flood_risk = HIGH selected",
+          "satisfied": true,
+          "evidence": "Table indicates Selected: 1 and highlighted row has flood_risk HIGH."
+        },
+        {
+          "clause": "selected row highlighted",
+          "satisfied": true,
+          "evidence": "One table row is highlighted blue."
+        },
+        {
+          "clause": "same frame includes main map canvas",
+          "satisfied": true,
+          "evidence": "Map canvas is visible behind the table."
+        },
+        {
+          "clause": "corresponding parcel synchronized and highlighted yellow on map",
+          "satisfied": true,
+          "evidence": "A parcel polygon on the map is highlighted bright yellow."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Image shows attribute table Selected: 1 with a HIGH row highlighted and corresponding parcel highlighted yellow on the QGIS map in the same frame.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_08_qgis_and_terminal.png",
+      "task_says": "`view_08_qgis_and_terminal.png` — **Single screenshot** containing two real windows: on the left, QGIS Desktop showing the categorized parcels map; on the right, a local terminal emulator (`gnome-terminal` / `xterm` / any desktop terminal) running `cat /tmp_workspace/results/zonal_verify.txt | head -20` to display zonal stats output. Both windows must appear side-by-side in the same screenshot and require a real desktop window manager.",
+      "spec_clauses": [
+        "single screenshot with two real windows",
+        "left window QGIS Desktop",
+        "QGIS shows categorized parcels map",
+        "right window local terminal emulator",
+        "terminal running cat /tmp_workspace/results/zonal_verify.txt | head -20",
+        "zonal stats output displayed",
+        "windows side-by-side"
+      ],
+      "clause_results": [
+        {
+          "clause": "single screenshot with two real windows",
+          "satisfied": true,
+          "evidence": "One screenshot contains QGIS and a terminal window."
+        },
+        {
+          "clause": "left window QGIS Desktop",
+          "satisfied": true,
+          "evidence": "QGIS Desktop is on the left."
+        },
+        {
+          "clause": "QGIS shows categorized parcels map",
+          "satisfied": "partial",
+          "evidence": "QGIS layers/legend show categorized parcels, but map canvas appears mostly yellow/washed out with limited visible category variation."
+        },
+        {
+          "clause": "right window local terminal emulator",
+          "satisfied": true,
+          "evidence": "Terminal window is on the right."
+        },
+        {
+          "clause": "terminal running cat /tmp_workspace/results/zonal_verify.txt | head -20",
+          "satisfied": "partial",
+          "evidence": "Output matches zonal_verify first rows, but the command line itself is not visible."
+        },
+        {
+          "clause": "zonal stats output displayed",
+          "satisfied": true,
+          "evidence": "Terminal displays header id,owner,area_m2,land_use,elev_min,elev_max,elev_mean,flood_risk and first rows."
+        },
+        {
+          "clause": "windows side-by-side",
+          "satisfied": true,
+          "evidence": "QGIS and terminal appear adjacent in same screenshot."
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.8,
+      "evidence_quote": "Image contains side-by-side QGIS and terminal; terminal shows zonal_verify CSV rows, but command is not visible and the QGIS map is visually dominated by yellow rather than clear categories.",
+      "missing_or_wrong": "Command line itself not visible; categorized map display is not very clear though legend/layers indicate categories.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_09_print_layout_dragging.png",
+      "task_says": "`view_09_print_layout_dragging.png` — In the Print Layout editor, **actively dragging** an element (e.g., the moment the Legend box is being dragged to the lower-right corner, or the resize corner handle visible while resizing the Map frame). The screenshot must include the Layout toolbar and the 8 corner resize handles (blue squares) of the selected element, proving this is a live Layout editing session rather than a static screenshot of the exported PDF.",
+      "spec_clauses": [
+        "Print Layout editor visible",
+        "actively dragging an element",
+        "Layout toolbar included",
+        "8 corner resize handles/blue squares of selected element visible",
+        "proves live Layout editing session rather than static PDF"
+      ],
+      "clause_results": [
+        {
+          "clause": "Print Layout editor visible",
+          "satisfied": false,
+          "evidence": "File is absent from results."
+        },
+        {
+          "clause": "actively dragging an element",
+          "satisfied": false,
+          "evidence": "No screenshot exists."
+        },
+        {
+          "clause": "Layout toolbar included",
+          "satisfied": false,
+          "evidence": "No screenshot exists."
+        },
+        {
+          "clause": "8 corner resize handles/blue squares of selected element visible",
+          "satisfied": false,
+          "evidence": "No screenshot exists."
+        },
+        {
+          "clause": "proves live Layout editing session rather than static PDF",
+          "satisfied": false,
+          "evidence": "No screenshot exists."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; chat only shows attempted step \"The saved `Flood Risk Assessment` layout is listed. I’m opening it in the Print Layout editor.\" followed by AGENT_EXIT=-1 timed_out_after=3602s, with no capture command.",
+      "missing_or_wrong": "Required PNG absent; no unstaged evidence of successful screenshot capture.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_print_layout.png",
+      "task_says": "`view_06_print_layout.png` — A4 landscape print layout editor view showing at least 4 of the following elements: Map / Legend / Title / Scale bar / North arrow.",
+      "spec_clauses": [
+        "A4 landscape print layout editor view",
+        "shows at least 4 of Map / Legend / Title / Scale bar / North arrow"
+      ],
+      "clause_results": [
+        {
+          "clause": "A4 landscape print layout editor view",
+          "satisfied": false,
+          "evidence": "File is absent from results."
+        },
+        {
+          "clause": "shows at least 4 of Map / Legend / Title / Scale bar / North arrow",
+          "satisfied": false,
+          "evidence": "No screenshot exists to inspect."
+        }
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Missing from results; chat shows the agent was opening the Print Layout editor when the run timed out, but no view_06 capture command or file exists.",
+      "missing_or_wrong": "Required PNG absent; no unstaged evidence of successful screenshot capture.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.78,
+      "reason": "Most data/vector/PDF outputs are complete and correct, but required visual artifacts view_06_print_layout.png and view_09_print_layout_dragging.png are missing, and view_03/view_04 have substantive UI-spec failures."
+    },
+    "deliverable_correctness": {
+      "score": 0.7,
+      "reason": "Raw mean artifact correctness is 0.826, but dimension is capped at 0.70 because multiple required artifacts are below 0.60: view_09_print_layout_dragging.png=0, view_06_print_layout.png=0, view_03_zonal_dialog.png=0.40, and view_04_field_calc.png=0.50."
+    },
+    "deliverable_quality": {
+      "score": 0.82,
+      "reason": "Existing text/JSON/vector/PDF files are parseable and most screenshots are real 1920x1080 PNGs, but two required PNGs are absent and several screenshots do not fully show requested UI state."
+    },
+    "evidence_authenticity": {
+      "score": 0.92,
+      "reason": "No fabrication grep hits beyond the prompt text; screenshots were captured via gnome-screenshot/computer from real QGIS. Minor uncertainty remains for view_08 command not visible, but no hack evidence."
+    },
+    "tool_use_correctness": {
+      "score": 0.88,
+      "reason": "Used appropriate GDAL/QGIS/Python GIS tooling and real GUI capture methods; however the Zonal dialog/Field Calculator screenshots were not configured correctly and layout capture timed out."
+    },
+    "final_state_correctness": {
+      "score": 0.78,
+      "reason": "Final staged results contain correct classified GPKG/Shapefile/PDF and validation data, but the final state lacks two required layout screenshots and has imperfect dialog evidence."
+    },
+    "efficiency_robustness": {
+      "score": 0.65,
+      "reason": "The agent computed data robustly, but the GUI path was slow and ultimately timed out while opening Print Layout, leaving missing deliverables."
+    },
+    "instruction_following": {
+      "score": 0.78,
+      "reason": "It wrote outputs under /tmp_workspace/results and used real desktop screenshots, but did not verify/produce every required output before stopping and missed the two layout evidence files."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.7,
+  "summary": "The rollout produced strong GIS data outputs: the GPKG, Shapefile, validation JSON, risk counts, DEM stats, and exported A4 PDF are mostly correct. The main failures are visual-evidence completeness and fidelity: two required Print Layout screenshots are missing due to timeout, and the Zonal Statistics and Field Calculator screenshots do not show the required settings correctly. No hack/fabrication signal was found."
+}

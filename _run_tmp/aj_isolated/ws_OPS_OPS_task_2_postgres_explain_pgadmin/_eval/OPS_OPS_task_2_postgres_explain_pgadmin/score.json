@@ -1,0 +1,1007 @@
+{
+  "artifact_checks": [
+    {
+      "id": "task.md",
+      "task_says": "Task spec should be readable from task.md",
+      "spec_clauses": [
+        "task.md contains actual task spec"
+      ],
+      "clause_results": [
+        {
+          "clause": "task.md contains actual task spec",
+          "satisfied": false,
+          "evidence": "task.md is a broken stub: task md not found at cache path"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.0,
+      "evidence_quote": "task.md is a broken stub: task md not found at cache path",
+      "missing_or_wrong": "task.md contains actual task spec",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "compose_up.log_ready_ts.txt_schema_load.log",
+      "task_says": "`compose_up.log` / `ready_ts.txt` / `schema_load.log` | Full set: service startup log + readiness timestamp + schema-load log",
+      "spec_clauses": [
+        "compose_up.log service startup log exists",
+        "ready_ts.txt readiness timestamp exists",
+        "schema_load.log schema-load log exists"
+      ],
+      "clause_results": [
+        {
+          "clause": "compose_up.log service startup log exists",
+          "satisfied": true,
+          "evidence": "contains pg_isready accepting connections"
+        },
+        {
+          "clause": "ready_ts.txt readiness timestamp exists",
+          "satisfied": true,
+          "evidence": "contains 2026-07-01T09:55:36+08:00"
+        },
+        {
+          "clause": "schema_load.log schema-load log exists",
+          "satisfied": true,
+          "evidence": "shows CREATE TABLE, INSERT counts, ANALYZE"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "contains pg_isready accepting connections | contains 2026-07-01T09:55:36+08:00 | shows CREATE TABLE, INSERT counts, ANALYZE",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "optimization_plan.json",
+      "task_says": "Top-level object contains a `queries` array with **at least 5 entries**. Each entry must contain 8 fields: `query_id`, `bottleneck_node_type` (one of `Seq Scan` / `Nested Loop` / `Hash Join` / `Sort` / `Aggregate` / `Other`), `bottleneck_table`, `actual_rows_observed` (int), `evidence_screenshot` (pointing to some `view_*.png`), `evidence_explain_json` (pointing to `baseline_plans/qN.json`), `proposed_index_ddl` (a valid `CREATE INDEX ...`), `expected_node_after` (one of `Index Scan` / `Index Only Scan` / `Bitmap Heap Scan`). The bottleneck conclusion must be supported by both the EXPLAIN JSON and the plan-tree screenshot — not guesswork.",
+      "spec_clauses": [
+        "top-level object contains queries array with at least 5 entries",
+        "each entry contains 8 required fields",
+        "bottleneck_node_type is one of allowed values",
+        "evidence_screenshot points to view_*.png and evidence_explain_json points to baseline_plans/qN.json",
+        "proposed_index_ddl is valid CREATE INDEX",
+        "expected_node_after is allowed",
+        "bottleneck conclusion supported by EXPLAIN JSON",
+        "bottleneck conclusion supported by plan-tree screenshot"
+      ],
+      "clause_results": [
+        {
+          "clause": "top-level object contains queries array with at least 5 entries",
+          "satisfied": true,
+          "evidence": "queries has 5 entries"
+        },
+        {
+          "clause": "each entry contains 8 required fields",
+          "satisfied": true,
+          "evidence": "all entries have required fields"
+        },
+        {
+          "clause": "bottleneck_node_type is one of allowed values",
+          "satisfied": true,
+          "evidence": "all bottleneck types allowed"
+        },
+        {
+          "clause": "evidence_screenshot points to view_*.png and evidence_explain_json points to baseline_plans/qN.json",
+          "satisfied": true,
+          "evidence": "all referenced evidence files exist"
+        },
+        {
+          "clause": "proposed_index_ddl is valid CREATE INDEX",
+          "satisfied": true,
+          "evidence": "all DDL values start CREATE INDEX"
+        },
+        {
+          "clause": "expected_node_after is allowed",
+          "satisfied": true,
+          "evidence": "all expected_node_after allowed"
+        },
+        {
+          "clause": "bottleneck conclusion supported by EXPLAIN JSON",
+          "satisfied": true,
+          "evidence": "baseline EXPLAIN JSONs match the listed node/table/rows"
+        },
+        {
+          "clause": "bottleneck conclusion supported by plan-tree screenshot",
+          "satisfied": "partial",
+          "evidence": "screenshots show terminal-rendered plan trees with node data, not actual pgAdmin graphical plans"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.938,
+      "evidence_quote": "queries has 5 entries | all entries have required fields | all bottleneck types allowed | all referenced evidence files exist | all DDL values start CREATE INDEX | all expected_node_after allowed",
+      "missing_or_wrong": "bottleneck conclusion supported by plan-tree screenshot",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_plans",
+      "task_says": "`baseline_plans/q1.json` … `q5.json` | 5 files, **each a valid non-empty JSON array**, raw output of `EXPLAIN(ANALYZE,BUFFERS,FORMAT JSON)`",
+      "spec_clauses": [
+        "5 files exist",
+        "valid non-empty JSON arrays",
+        "raw EXPLAIN JSON structure"
+      ],
+      "clause_results": [
+        {
+          "clause": "5 files exist",
+          "satisfied": true,
+          "evidence": "q1-q5 exist"
+        },
+        {
+          "clause": "valid non-empty JSON arrays",
+          "satisfied": true,
+          "evidence": "all parsed as arrays"
+        },
+        {
+          "clause": "raw EXPLAIN JSON structure",
+          "satisfied": true,
+          "evidence": "roots include Plan/Execution Time/Planning Time"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "q1-q5 exist | all parsed as arrays | roots include Plan/Execution Time/Planning Time",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "baseline_times.csv",
+      "task_says": "`baseline_times.csv` | Header `query_id,execution_time_ms,planning_time_ms`, **at least 5 data rows**",
+      "spec_clauses": [
+        "header exactly query_id,execution_time_ms,planning_time_ms",
+        "at least 5 data rows",
+        "numeric values match baseline JSON"
+      ],
+      "clause_results": [
+        {
+          "clause": "header exactly query_id,execution_time_ms,planning_time_ms",
+          "satisfied": true,
+          "evidence": "header exact"
+        },
+        {
+          "clause": "at least 5 data rows",
+          "satisfied": true,
+          "evidence": "5 rows"
+        },
+        {
+          "clause": "numeric values match baseline JSON",
+          "satisfied": true,
+          "evidence": "CSV values match plan roots"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "header exact | 5 rows | CSV values match plan roots",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "table_stats.txt",
+      "task_says": "`table_stats.txt` | Sample of `pg_stat_user_tables`; text contains `seq_scan`",
+      "spec_clauses": [
+        "table_stats.txt exists",
+        "text contains seq_scan",
+        "looks like requested pg_stat sample"
+      ],
+      "clause_results": [
+        {
+          "clause": "table_stats.txt exists",
+          "satisfied": true,
+          "evidence": "table_stats.txt exists"
+        },
+        {
+          "clause": "text contains seq_scan",
+          "satisfied": true,
+          "evidence": "header includes seq_scan"
+        },
+        {
+          "clause": "looks like requested pg_stat sample",
+          "satisfied": true,
+          "evidence": "contains relation/index rows and counters"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "table_stats.txt exists | header includes seq_scan | contains relation/index rows and counters",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "index_stats.txt",
+      "task_says": "`index_stats.txt` | Sample of `pg_stat_user_indexes`; text contains `idx_scan`",
+      "spec_clauses": [
+        "index_stats.txt exists",
+        "text contains idx_scan",
+        "looks like requested pg_stat sample"
+      ],
+      "clause_results": [
+        {
+          "clause": "index_stats.txt exists",
+          "satisfied": true,
+          "evidence": "index_stats.txt exists"
+        },
+        {
+          "clause": "text contains idx_scan",
+          "satisfied": true,
+          "evidence": "header includes idx_scan"
+        },
+        {
+          "clause": "looks like requested pg_stat sample",
+          "satisfied": true,
+          "evidence": "contains relation/index rows and counters"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "index_stats.txt exists | header includes idx_scan | contains relation/index rows and counters",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "create_indexes.sql",
+      "task_says": "`create_indexes.sql` | **At least 3** `CREATE INDEX` statements, all actually executed on the database",
+      "spec_clauses": [
+        "at least 3 CREATE INDEX statements",
+        "all actually executed on database",
+        "valid index DDL"
+      ],
+      "clause_results": [
+        {
+          "clause": "at least 3 CREATE INDEX statements",
+          "satisfied": true,
+          "evidence": "10 CREATE INDEX statements"
+        },
+        {
+          "clause": "all actually executed on database",
+          "satisfied": true,
+          "evidence": "log contains CREATE INDEX lines and ANALYZE"
+        },
+        {
+          "clause": "valid index DDL",
+          "satisfied": true,
+          "evidence": "syntax appears valid and execution log succeeded"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "10 CREATE INDEX statements | log contains CREATE INDEX lines and ANALYZE | syntax appears valid and execution log succeeded",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "optimized_plans",
+      "task_says": "`optimized_plans/q1.json` … `q5.json` | 5 EXPLAIN JSON files re-run after index creation; each file must contain one of `Index Scan` / `Index Only Scan` / `Bitmap Heap Scan` / `Bitmap Index Scan`",
+      "spec_clauses": [
+        "5 files exist",
+        "valid non-empty JSON arrays",
+        "each contains index/bitmap access node"
+      ],
+      "clause_results": [
+        {
+          "clause": "5 files exist",
+          "satisfied": true,
+          "evidence": "q1-q5 exist"
+        },
+        {
+          "clause": "valid non-empty JSON arrays",
+          "satisfied": true,
+          "evidence": "all parsed as arrays"
+        },
+        {
+          "clause": "each contains index/bitmap access node",
+          "satisfied": true,
+          "evidence": "all optimized plans have index/bitmap nodes"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "q1-q5 exist | all parsed as arrays | all optimized plans have index/bitmap nodes",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "optimized_times.csv",
+      "task_says": "`optimized_times.csv` | Same columns as baseline; average execution time over 5 Qs **≥ 50% faster** than baseline",
+      "spec_clauses": [
+        "same columns as baseline",
+        "5 rows",
+        "average execution time over 5 Qs ≥50% faster than baseline",
+        "values match optimized JSON"
+      ],
+      "clause_results": [
+        {
+          "clause": "same columns as baseline",
+          "satisfied": true,
+          "evidence": "header matches"
+        },
+        {
+          "clause": "5 rows",
+          "satisfied": true,
+          "evidence": "5 rows"
+        },
+        {
+          "clause": "average execution time over 5 Qs ≥50% faster than baseline",
+          "satisfied": true,
+          "evidence": "baseline avg 156.950, optimized avg 74.306, speedup 52.7%"
+        },
+        {
+          "clause": "values match optimized JSON",
+          "satisfied": true,
+          "evidence": "CSV matches plan roots"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "header matches | 5 rows | baseline avg 156.950, optimized avg 74.306, speedup 52.7% | CSV matches plan roots",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "comparison_report.md",
+      "task_says": "`comparison_report.md` | **≥ 350 characters**; contains a markdown table (before/after `execution_time_ms` + speedup percentage); body contains both `before` and `after` (or \"speedup\"); **references at least 3 `view_*.png` files**; includes prose interpretation of Dashboard curve changes",
+      "spec_clauses": [
+        "≥350 characters",
+        "markdown table",
+        "before/after execution_time_ms + speedup percentage",
+        "body contains before and after or speedup",
+        "references ≥3 view_*.png files",
+        "Dashboard curve interpretation"
+      ],
+      "clause_results": [
+        {
+          "clause": "≥350 characters",
+          "satisfied": true,
+          "evidence": "1712 chars"
+        },
+        {
+          "clause": "markdown table",
+          "satisfied": true,
+          "evidence": "table syntax present"
+        },
+        {
+          "clause": "before/after execution_time_ms + speedup percentage",
+          "satisfied": true,
+          "evidence": "headers present"
+        },
+        {
+          "clause": "body contains before and after or speedup",
+          "satisfied": true,
+          "evidence": "contains before/after/speedup"
+        },
+        {
+          "clause": "references ≥3 view_*.png files",
+          "satisfied": true,
+          "evidence": "['view_02_pgadmin_plan_tree_q1.png', 'view_05_pgadmin_plan_tree_q3.png', 'view_06_pgadmin_dashboard_activity.png', 'view_08_pgadmin_plan_tree_qN_after.png', 'view_10_pgadmin_dashboard_after.png']"
+        },
+        {
+          "clause": "Dashboard curve interpretation",
+          "satisfied": true,
+          "evidence": "dashboard paragraph interprets before and after curves"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1712 chars | table syntax present | headers present | contains before/after/speedup | ['view_02_pgadmin_plan_tree_q1.png', 'view_05_pgadmin_plan_tree_q3.png', 'view_06_pgadmin_dashboard_activity.png', 'view_08_pgadmin_plan_tree_qN_after.png', 'view_10_pgadmin_dashboard_after.png'] | dashboard paragraph interprets before and after curves",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_pgadmin_indexes_before.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_01_pgadmin_indexes_before.png` | Object Explorer expanded to the `orders` table Indexes subtree + Properties panel on the right",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Object Explorer expanded to orders/Indexes",
+        "Properties panel on right",
+        "strong before/no-index evidence"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 197KB"
+        },
+        {
+          "clause": "Object Explorer expanded to orders/Indexes",
+          "satisfied": true,
+          "evidence": "pgAdmin UI shows orders > Indexes expanded"
+        },
+        {
+          "clause": "Properties panel on right",
+          "satisfied": true,
+          "evidence": "Properties tab visible"
+        },
+        {
+          "clause": "strong before/no-index evidence",
+          "satisfied": "partial",
+          "evidence": "no index children shown, but panel says no properties available"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.875,
+      "evidence_quote": "1920x1080 197KB | pgAdmin UI shows orders > Indexes expanded | Properties tab visible | no index children shown, but panel says no properties available",
+      "missing_or_wrong": "strong before/no-index evidence",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_pgadmin_plan_tree_q1.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_02_pgadmin_plan_tree_q1.png` | Q1 Graphical EXPLAIN plan tree (nodes + color + actual rows)",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q1 plan tree nodes visible",
+        "color + actual rows visible",
+        "actual pgAdmin Graphical EXPLAIN UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 733KB"
+        },
+        {
+          "clause": "Q1 plan tree nodes visible",
+          "satisfied": true,
+          "evidence": "Sort/Aggregate/Gather/Seq Scan shown"
+        },
+        {
+          "clause": "color + actual rows visible",
+          "satisfied": true,
+          "evidence": "colored terminal rows include rows/times/buffers"
+        },
+        {
+          "clause": "actual pgAdmin Graphical EXPLAIN UI",
+          "satisfied": false,
+          "evidence": "gnome-terminal rendering, not pgAdmin"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 733KB | Sort/Aggregate/Gather/Seq Scan shown | colored terminal rows include rows/times/buffers | gnome-terminal rendering, not pgAdmin",
+      "missing_or_wrong": "actual pgAdmin Graphical EXPLAIN UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_pgadmin_node_detail.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_03_pgadmin_node_detail.png` | Detail panel of the most expensive node in Q1's plan tree (Actual Rows / Buffers etc.)",
+      "spec_clauses": [
+        "size/resolution ok",
+        "detail panel of Q1 node",
+        "most expensive node evidence",
+        "Actual Rows/Buffers visible"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 716KB"
+        },
+        {
+          "clause": "detail panel of Q1 node",
+          "satisfied": "partial",
+          "evidence": "terminal detail, not pgAdmin detail panel"
+        },
+        {
+          "clause": "most expensive node evidence",
+          "satisfied": "partial",
+          "evidence": "claims most expensive but selected Sort timing is ambiguous"
+        },
+        {
+          "clause": "Actual Rows/Buffers visible",
+          "satisfied": true,
+          "evidence": "Actual Rows, loops, times, hit/read blocks visible"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 716KB | terminal detail, not pgAdmin detail panel | claims most expensive but selected Sort timing is ambiguous | Actual Rows, loops, times, hit/read blocks visible",
+      "missing_or_wrong": "detail panel of Q1 node; most expensive node evidence",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_pgadmin_q1_statistics.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_04_pgadmin_q1_statistics.png` | Q1 Statistics sub-tab in Query Tool (Planning / Execution Time)",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q1 statistics visible",
+        "Planning/Execution Time visible",
+        "actual pgAdmin Query Tool Statistics sub-tab"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 698KB"
+        },
+        {
+          "clause": "Q1 statistics visible",
+          "satisfied": true,
+          "evidence": "shows Q1 Query Tool Statistics"
+        },
+        {
+          "clause": "Planning/Execution Time visible",
+          "satisfied": true,
+          "evidence": "0.505 ms / 29.744 ms"
+        },
+        {
+          "clause": "actual pgAdmin Query Tool Statistics sub-tab",
+          "satisfied": false,
+          "evidence": "terminal text only"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 698KB | shows Q1 Query Tool Statistics | 0.505 ms / 29.744 ms | terminal text only",
+      "missing_or_wrong": "actual pgAdmin Query Tool Statistics sub-tab",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_pgadmin_plan_tree_q3.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_05_pgadmin_plan_tree_q3.png` | Q3 Graphical EXPLAIN plan tree",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q3 tree visible",
+        "nodes/color/rows visible",
+        "actual pgAdmin Graphical EXPLAIN UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 775KB"
+        },
+        {
+          "clause": "Q3 tree visible",
+          "satisfied": true,
+          "evidence": "Q3 tree with Seq Scans/joins/sort"
+        },
+        {
+          "clause": "nodes/color/rows visible",
+          "satisfied": true,
+          "evidence": "rows/times/buffers shown"
+        },
+        {
+          "clause": "actual pgAdmin Graphical EXPLAIN UI",
+          "satisfied": false,
+          "evidence": "terminal rendering"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 775KB | Q3 tree with Seq Scans/joins/sort | rows/times/buffers shown | terminal rendering",
+      "missing_or_wrong": "actual pgAdmin Graphical EXPLAIN UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_pgadmin_dashboard_activity.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_06_pgadmin_dashboard_activity.png` | 4 live line charts at the top of Dashboard's Server activity (≥ 2 with data)",
+      "spec_clauses": [
+        "size/resolution ok",
+        "actual pgAdmin dashboard",
+        "4 live line charts top",
+        "≥2 charts with data"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 162KB"
+        },
+        {
+          "clause": "actual pgAdmin dashboard",
+          "satisfied": true,
+          "evidence": "real pgAdmin Dashboard Activity page"
+        },
+        {
+          "clause": "4 live line charts top",
+          "satisfied": true,
+          "evidence": "multiple top chart panels visible"
+        },
+        {
+          "clause": "≥2 charts with data",
+          "satisfied": true,
+          "evidence": "at least two charts have visible plotted data"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "1920x1080 162KB | real pgAdmin Dashboard Activity page | multiple top chart panels visible | at least two charts have visible plotted data",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_07_pgadmin_dashboard_locks.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_07_pgadmin_dashboard_locks.png` | Sessions / Locks sub-tables at the bottom of Dashboard (with real rows)",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Sessions/Locks rows visible",
+        "actual dashboard bottom subtables",
+        "pgAdmin Dashboard UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 711KB"
+        },
+        {
+          "clause": "Sessions/Locks rows visible",
+          "satisfied": true,
+          "evidence": "LOCKS and SESSIONS rows shown"
+        },
+        {
+          "clause": "actual dashboard bottom subtables",
+          "satisfied": "partial",
+          "evidence": "content resembles required data but is terminal table"
+        },
+        {
+          "clause": "pgAdmin Dashboard UI",
+          "satisfied": false,
+          "evidence": "not actual pgAdmin dashboard"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.625,
+      "evidence_quote": "1920x1080 711KB | LOCKS and SESSIONS rows shown | content resembles required data but is terminal table | not actual pgAdmin dashboard",
+      "missing_or_wrong": "actual dashboard bottom subtables; pgAdmin Dashboard UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_08_pgadmin_plan_tree_qN_after.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_08_pgadmin_plan_tree_qN_after.png` | Re-run Graphical EXPLAIN of any optimized query, showing Index Scan / Bitmap nodes",
+      "spec_clauses": [
+        "size/resolution ok",
+        "optimized re-run shown",
+        "Index nodes visible",
+        "actual pgAdmin Graphical EXPLAIN UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 755KB"
+        },
+        {
+          "clause": "optimized re-run shown",
+          "satisfied": true,
+          "evidence": "Optimized Q5 shown"
+        },
+        {
+          "clause": "Index nodes visible",
+          "satisfied": true,
+          "evidence": "Index Only Scan and Index Scan visible"
+        },
+        {
+          "clause": "actual pgAdmin Graphical EXPLAIN UI",
+          "satisfied": false,
+          "evidence": "terminal rendering"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 755KB | Optimized Q5 shown | Index Only Scan and Index Scan visible | terminal rendering",
+      "missing_or_wrong": "actual pgAdmin Graphical EXPLAIN UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_09_pgadmin_indexes_after.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_09_pgadmin_indexes_after.png` | Newly created index appears under `orders/Indexes` in Object Explorer",
+      "spec_clauses": [
+        "size/resolution ok",
+        "new orders indexes visible",
+        "under orders/Indexes",
+        "actual Object Explorer UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 705KB"
+        },
+        {
+          "clause": "new orders indexes visible",
+          "satisfied": true,
+          "evidence": "idx_orders_* rows listed"
+        },
+        {
+          "clause": "under orders/Indexes",
+          "satisfied": true,
+          "evidence": "path says Tables > orders > Indexes"
+        },
+        {
+          "clause": "actual Object Explorer UI",
+          "satisfied": false,
+          "evidence": "terminal listing"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 705KB | idx_orders_* rows listed | path says Tables > orders > Indexes | terminal listing",
+      "missing_or_wrong": "actual Object Explorer UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_10_pgadmin_dashboard_after.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_10_pgadmin_dashboard_after.png` | Dashboard curves observed for ≥ 30 seconds after creating indexes; shape differs from `view_06`",
+      "spec_clauses": [
+        "size/resolution ok",
+        "after curves/counters visible",
+        "≥30 seconds observation",
+        "differs from view_06",
+        "actual pgAdmin Dashboard UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 725KB"
+        },
+        {
+          "clause": "after curves/counters visible",
+          "satisfied": "partial",
+          "evidence": "ASCII sampled counter curves, not dashboard curves"
+        },
+        {
+          "clause": "≥30 seconds observation",
+          "satisfied": true,
+          "evidence": "title says 31 second observation"
+        },
+        {
+          "clause": "differs from view_06",
+          "satisfied": true,
+          "evidence": "different content and hash"
+        },
+        {
+          "clause": "actual pgAdmin Dashboard UI",
+          "satisfied": false,
+          "evidence": "terminal text"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.7,
+      "evidence_quote": "1920x1080 725KB | ASCII sampled counter curves, not dashboard curves | title says 31 second observation | different content and hash | terminal text",
+      "missing_or_wrong": "after curves/counters visible; actual pgAdmin Dashboard UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_11_pgadmin_plan_tree_q2.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_11_pgadmin_plan_tree_q2.png` | Additional evidence screenshot for Q2 plan",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q2 plan visible",
+        "nodes/color/rows visible",
+        "actual pgAdmin UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 751KB"
+        },
+        {
+          "clause": "Q2 plan visible",
+          "satisfied": true,
+          "evidence": "Q2 Limit/Sort/Aggregate/Seq Scan"
+        },
+        {
+          "clause": "nodes/color/rows visible",
+          "satisfied": true,
+          "evidence": "rows/times/buffers shown"
+        },
+        {
+          "clause": "actual pgAdmin UI",
+          "satisfied": false,
+          "evidence": "terminal rendering"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 751KB | Q2 Limit/Sort/Aggregate/Seq Scan | rows/times/buffers shown | terminal rendering",
+      "missing_or_wrong": "actual pgAdmin UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_12_pgadmin_plan_tree_q4.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_12_pgadmin_plan_tree_q4.png` | Additional evidence screenshot for Q4 plan",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q4 plan visible",
+        "nodes/color/rows visible",
+        "actual pgAdmin UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 714KB"
+        },
+        {
+          "clause": "Q4 plan visible",
+          "satisfied": true,
+          "evidence": "Aggregate/Sort/Seq Scan orders"
+        },
+        {
+          "clause": "nodes/color/rows visible",
+          "satisfied": true,
+          "evidence": "rows/times/buffers shown"
+        },
+        {
+          "clause": "actual pgAdmin UI",
+          "satisfied": false,
+          "evidence": "terminal rendering"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 714KB | Aggregate/Sort/Seq Scan orders | rows/times/buffers shown | terminal rendering",
+      "missing_or_wrong": "actual pgAdmin UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_13_pgadmin_plan_tree_q5.png",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI. | `view_13_pgadmin_plan_tree_q5.png` | Additional evidence screenshot for Q5 plan",
+      "spec_clauses": [
+        "size/resolution ok",
+        "Q5 plan visible",
+        "nodes/color/rows visible",
+        "actual pgAdmin UI"
+      ],
+      "clause_results": [
+        {
+          "clause": "size/resolution ok",
+          "satisfied": true,
+          "evidence": "1920x1080 759KB"
+        },
+        {
+          "clause": "Q5 plan visible",
+          "satisfied": true,
+          "evidence": "joins/sort/Seq Scan order_items"
+        },
+        {
+          "clause": "nodes/color/rows visible",
+          "satisfied": true,
+          "evidence": "rows/times/buffers shown"
+        },
+        {
+          "clause": "actual pgAdmin UI",
+          "satisfied": false,
+          "evidence": "terminal rendering"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "1920x1080 759KB | joins/sort/Seq Scan order_items | rows/times/buffers shown | terminal rendering",
+      "missing_or_wrong": "actual pgAdmin UI",
+      "fake_signal": true,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "screenshot_global_requirements",
+      "task_says": "Fixed filenames under results; each must be a real screenshot ≥20 KB and resolution ≥1024×600; plan screenshots must differ; Dashboard re-verification view_10 must differ from view_06; expected content must be visible in pgAdmin UI.",
+      "spec_clauses": [
+        "view_01 through view_10 all exist",
+        "all view PNGs are ≥20KB and ≥1024x600",
+        "plan screenshots differ",
+        "view_10 differs from view_06",
+        "screenshots genuine/no blanks"
+      ],
+      "clause_results": [
+        {
+          "clause": "view_01 through view_10 all exist",
+          "satisfied": true,
+          "evidence": "all fixed files exist"
+        },
+        {
+          "clause": "all view PNGs are ≥20KB and ≥1024x600",
+          "satisfied": true,
+          "evidence": "all are 1920x1080 and >20KB"
+        },
+        {
+          "clause": "plan screenshots differ",
+          "satisfied": true,
+          "evidence": "distinct Q1/Q2/Q3/Q4/Q5/Q5-after contents"
+        },
+        {
+          "clause": "view_10 differs from view_06",
+          "satisfied": true,
+          "evidence": "different hashes/content"
+        },
+        {
+          "clause": "screenshots genuine/no blanks",
+          "satisfied": "partial",
+          "evidence": "captured screenshots are nonblank, but many are terminal surrogate views"
+        }
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "all fixed files exist | all are 1920x1080 and >20KB | distinct Q1/Q2/Q3/Q4/Q5/Q5-after contents | different hashes/content | captured screenshots are nonblank, but many are terminal surrogate views",
+      "missing_or_wrong": "screenshots genuine/no blanks",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {
+      "score": 0.74,
+      "reason": "Core database artifacts and measured optimization are present, but visual artifact_checks view_02/view_03/view_04/view_05/view_07/view_08/view_09/view_10 miss strict pgAdmin UI requirements."
+    },
+    "deliverable_correctness": {
+      "score": 0.832,
+      "reason": "Mean artifact correctness is 0.832; text/JSON/CSV artifacts are strong while many screenshots are only partial terminal surrogates."
+    },
+    "deliverable_quality": {
+      "score": 0.84,
+      "reason": "All expected files are present, parseable, and screenshots meet size/resolution; quality is reduced by wrong visual modality for many images."
+    },
+    "evidence_authenticity": {
+      "score": 0.7,
+      "reason": "EXPLAIN JSON, SQL logs, timings, and real pgAdmin dashboard capture look genuine; terminal-rendered visual evidence weakens authenticity for requested pgAdmin views."
+    },
+    "tool_use_correctness": {
+      "score": 0.76,
+      "reason": "Used psql/EXPLAIN, pgAdmin, screenshots, and SQL appropriately, but replaced pgAdmin plan/dashboard panels with custom ANSI/HTML renderers."
+    },
+    "final_state_correctness": {
+      "score": 0.78,
+      "reason": "Indexes exist and optimized plans show index access with >50% average speedup, but Q2/Q3 regress and final visual state is not the requested pgAdmin UI."
+    },
+    "efficiency_robustness": {
+      "score": 0.72,
+      "reason": "Recovered from browser issues and completed files, but relied on surrogate renderers and forced planner options, which is less robust."
+    },
+    "instruction_following": {
+      "score": 0.69,
+      "reason": "Filenames and most file constraints were followed; repeated failure to capture requested pgAdmin Graphical EXPLAIN/Query Tool/Dashboard/Object Explorer views is significant."
+    }
+  },
+  "is_hack": false,
+  "hack_confidence": 0.15,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.758,
+  "summary": "The rollout produced a strong set of real database artifacts: EXPLAIN JSONs, timing CSVs, executed index DDL, stats, and a report with measured average speedup just over 50%. The major strict failure is visual: most required pgAdmin screenshots are terminal-rendered summaries or custom plan views rather than actual pgAdmin Graphical EXPLAIN/Query Tool/Dashboard/Object Explorer panels, so visual evidence receives only partial credit despite containing useful data."
+}

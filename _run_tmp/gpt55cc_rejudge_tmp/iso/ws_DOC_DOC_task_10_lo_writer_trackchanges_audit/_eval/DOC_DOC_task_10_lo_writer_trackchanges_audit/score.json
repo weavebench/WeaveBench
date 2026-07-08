@@ -1,0 +1,422 @@
+{
+  "artifact_checks": [
+    {
+      "id": "redlines_raw.json",
+      "task_says": "`redlines_raw.json` | `{\"total\":int,\"ins\":int,\"del\":int,\"by_author\":{\"Senior Partner\":int,\"Reviewer B\":int,\"Reviewer C\":int}}`; `total` deviates from the original docx revision count by ≤ 2 (≈ 27–32)",
+      "spec_clauses": [
+        "File is named redlines_raw.json and exists in /tmp_workspace/results/.",
+        "JSON schema has total:int, ins:int, del:int, by_author object.",
+        "by_author contains Senior Partner, Reviewer B, Reviewer C integer counts.",
+        "total deviates from original docx revision count by ≤ 2 (≈ 27–32)."
+      ],
+      "clause_results": [
+        {"clause": "File is named redlines_raw.json and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/redlines_raw.json exists."},
+        {"clause": "JSON schema has total:int, ins:int, del:int, by_author object.", "satisfied": true, "evidence": "Parsed JSON shows total=30, ins=20, del=10, by_author object."},
+        {"clause": "by_author contains Senior Partner, Reviewer B, Reviewer C integer counts.", "satisfied": true, "evidence": "by_author has Senior Partner=7, Reviewer B=11, Reviewer C=12."},
+        {"clause": "total deviates from original docx revision count by ≤ 2 (≈ 27–32).", "satisfied": true, "evidence": "total=30; gt expected redline_total=30."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Parsed redlines_raw.json: total 30, ins 20, del 10, by_author includes all three reviewers.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "redlines_full.csv",
+      "task_says": "`redlines_full.csv` | ≥ 25 rows; columns `id,kind,author,section,text_preview,is_money_related,planned_decision`; `author` ∈ the three reviewers; `kind` ∈ `ins`/`del`; `section` formatted like `3. Confidentiality` (starts with section number 1–6); `is_money_related` ∈ `true`/`false`; `planned_decision` ∈ `accept`/`reject`",
+      "spec_clauses": [
+        "File is named redlines_full.csv and exists in /tmp_workspace/results/.",
+        "CSV has ≥ 25 data rows.",
+        "Columns are id,kind,author,section,text_preview,is_money_related,planned_decision.",
+        "author values are within Senior Partner, Reviewer B, Reviewer C.",
+        "kind values are ins or del.",
+        "section starts with section number 1–6 and is formatted like 3. Confidentiality.",
+        "is_money_related values are true/false.",
+        "planned_decision values are accept/reject and reflect the policy."
+      ],
+      "clause_results": [
+        {"clause": "File is named redlines_full.csv and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/redlines_full.csv exists."},
+        {"clause": "CSV has ≥ 25 data rows.", "satisfied": true, "evidence": "DictReader found 30 rows."},
+        {"clause": "Columns are id,kind,author,section,text_preview,is_money_related,planned_decision.", "satisfied": true, "evidence": "Header exactly includes those seven columns."},
+        {"clause": "author values are within Senior Partner, Reviewer B, Reviewer C.", "satisfied": true, "evidence": "Counters: Reviewer C=12, Reviewer B=11, Senior Partner=7; invalid rows=0."},
+        {"clause": "kind values are ins or del.", "satisfied": true, "evidence": "Counters: ins=20, del=10; invalid rows=0."},
+        {"clause": "section starts with section number 1–6 and is formatted like 3. Confidentiality.", "satisfied": true, "evidence": "Validation found invalid rows=0 for sections starting with 1–6."},
+        {"clause": "is_money_related values are true/false.", "satisfied": true, "evidence": "Validation found invalid rows=0 for boolean field."},
+        {"clause": "planned_decision values are accept/reject and reflect the policy.", "satisfied": "partial", "evidence": "Values are accept/reject, but aggregation differs from gt expected policy: CSV/policy imply Reviewer B 5 accept/6 reject and Reviewer C 8 accept/4 reject versus expected B 5/4 and C 11/3."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.94,
+      "evidence_quote": "CSV has 30 rows, correct columns, valid enumerated values; policy counts are suspicious/mismatched against expected.json for Reviewer B and C.",
+      "missing_or_wrong": "planned_decision/policy aggregation does not match gt expected counts for Reviewer B and Reviewer C.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "policy_audit.json",
+      "task_says": "`policy_audit.json` | Each of the three authors contains `{\"accept\":int,\"reject\":int}`, consistent with the actual policy computation",
+      "spec_clauses": [
+        "File is named policy_audit.json and exists in /tmp_workspace/results/.",
+        "Each of Senior Partner, Reviewer B, Reviewer C appears.",
+        "Each author contains accept:int and reject:int.",
+        "Counts are consistent with actual policy computation / GT decision summary."
+      ],
+      "clause_results": [
+        {"clause": "File is named policy_audit.json and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/policy_audit.json exists."},
+        {"clause": "Each of Senior Partner, Reviewer B, Reviewer C appears.", "satisfied": true, "evidence": "Parsed keys include all three reviewers."},
+        {"clause": "Each author contains accept:int and reject:int.", "satisfied": true, "evidence": "All three entries have integer accept/reject counts."},
+        {"clause": "Counts are consistent with actual policy computation / GT decision summary.", "satisfied": false, "evidence": "Actual file has Senior Partner 7/0, Reviewer B 5/6, Reviewer C 8/4; gt/expected.json says Senior Partner 7/0, Reviewer B 5/4, Reviewer C 11/3."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.75,
+      "evidence_quote": "policy_audit.json parses and has all authors, but B and C accept/reject counts disagree with gt expected policy_audit values.",
+      "missing_or_wrong": "Reviewer B reject count 6 vs expected 4; Reviewer C accept/reject 8/4 vs expected 11/3.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "final.docx",
+      "task_says": "`final.docx` | See the primary deliverable hard constraints above. Hard constraints: After unzipping, `word/document.xml` must not contain any `<w:ins ` or `<w:del ` elements. The body must retain the original amounts: `USD 120,000`, `USD 8,500`, `USD 250 per week`. The body must not contain the money rewrites injected by `Reviewer B`: `150,000`, `12,000`, `1.5% per month`.",
+      "spec_clauses": [
+        "File is named final.docx and exists in /tmp_workspace/results/.",
+        "DOCX is unzip-readable and contains word/document.xml.",
+        "word/document.xml does not contain any <w:ins elements.",
+        "word/document.xml does not contain any <w:del elements.",
+        "Body retains USD 120,000.",
+        "Body retains USD 8,500.",
+        "Body retains USD 250 per week.",
+        "Body does not contain 150,000.",
+        "Body does not contain 12,000.",
+        "Body does not contain 1.5% per month."
+      ],
+      "clause_results": [
+        {"clause": "File is named final.docx and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/final.docx exists."},
+        {"clause": "DOCX is unzip-readable and contains word/document.xml.", "satisfied": true, "evidence": "zipfile read word/document.xml successfully, 4547 XML chars."},
+        {"clause": "word/document.xml does not contain any <w:ins elements.", "satisfied": true, "evidence": "xml.count('<w:ins') = 0."},
+        {"clause": "word/document.xml does not contain any <w:del elements.", "satisfied": true, "evidence": "xml.count('<w:del') = 0."},
+        {"clause": "Body retains USD 120,000.", "satisfied": true, "evidence": "Phrase found in final_text.txt and document.xml."},
+        {"clause": "Body retains USD 8,500.", "satisfied": true, "evidence": "Phrase found in final_text.txt and document.xml."},
+        {"clause": "Body retains USD 250 per week.", "satisfied": true, "evidence": "Phrase found in final_text.txt and document.xml."},
+        {"clause": "Body does not contain 150,000.", "satisfied": true, "evidence": "Phrase not found in final_text.txt or document.xml."},
+        {"clause": "Body does not contain 12,000.", "satisfied": true, "evidence": "Phrase not found in final_text.txt or document.xml."},
+        {"clause": "Body does not contain 1.5% per month.", "satisfied": true, "evidence": "Phrase not found in final_text.txt or document.xml."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "final.docx is readable, has 0 <w:ins and 0 <w:del; original money strings are present and Reviewer B rewrite strings are absent.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "final_document_xml.txt",
+      "task_says": "`final_document_xml.txt` | First 4000 characters of `word/document.xml` from `final.docx` (audits whether ins/del have been cleared)",
+      "spec_clauses": [
+        "File is named final_document_xml.txt and exists in /tmp_workspace/results/.",
+        "Content is the first 4000 characters of word/document.xml from final.docx.",
+        "It audits whether ins/del have been cleared."
+      ],
+      "clause_results": [
+        {"clause": "File is named final_document_xml.txt and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/final_document_xml.txt exists."},
+        {"clause": "Content is the first 4000 characters of word/document.xml from final.docx.", "satisfied": true, "evidence": "Read file starts with XML declaration and word/document body; file was 4000 chars per build listing."},
+        {"clause": "It audits whether ins/del have been cleared.", "satisfied": true, "evidence": "The excerpt contains no visible <w:ins or <w:del; full final.docx XML also has zero occurrences."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "final_document_xml.txt is a 4000-character XML excerpt from final.docx and shows no track-change tags.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "final_text.txt",
+      "task_says": "`final_text.txt` | Plain text extracted from `final.docx`",
+      "spec_clauses": [
+        "File is named final_text.txt and exists in /tmp_workspace/results/.",
+        "It contains plain text extracted from final.docx.",
+        "Extracted text reflects the cleaned final document and money constraints."
+      ],
+      "clause_results": [
+        {"clause": "File is named final_text.txt and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/final_text.txt exists."},
+        {"clause": "It contains plain text extracted from final.docx.", "satisfied": true, "evidence": "File contains section headings 1–6 and contract body text."},
+        {"clause": "Extracted text reflects the cleaned final document and money constraints.", "satisfied": true, "evidence": "Text includes USD 120,000, USD 8,500, USD 250 per week and excludes 150,000, 12,000, 1.5% per month."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "final_text.txt is readable plain contract text with required original money retained and injected money absent.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "final.pdf",
+      "task_says": "`final.pdf` | PDF exported from `final.docx`, ≥ 1 page and extractable to ≥ 200 characters",
+      "spec_clauses": [
+        "File is named final.pdf and exists in /tmp_workspace/results/.",
+        "PDF is exported from final.docx.",
+        "PDF has ≥ 1 page.",
+        "PDF text is extractable to ≥ 200 characters."
+      ],
+      "clause_results": [
+        {"clause": "File is named final.pdf and exists in /tmp_workspace/results/.", "satisfied": false, "evidence": "find/inspection found no results/final.pdf; Python check printed exists final.pdf False."},
+        {"clause": "PDF is exported from final.docx.", "satisfied": false, "evidence": "No PDF file to verify."},
+        {"clause": "PDF has ≥ 1 page.", "satisfied": false, "evidence": "No PDF file to inspect."},
+        {"clause": "PDF text is extractable to ≥ 200 characters.", "satisfied": false, "evidence": "No PDF file to run text extraction on."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/final.pdf is absent. Chat grep showed no successful PDF export command; deliverables.json also has an empty final_pdf_sha256.",
+      "missing_or_wrong": "Missing final.pdf; cannot verify export, page count, or text extraction.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "redline_diff.txt",
+      "task_says": "`redline_diff.txt` | One line per revision `id <author> <kind> <decision> <preview>`, ≥ 25 lines",
+      "spec_clauses": [
+        "File is named redline_diff.txt and exists in /tmp_workspace/results/.",
+        "It has one line per revision.",
+        "Each line follows id <author> <kind> <decision> <preview>.",
+        "It has ≥ 25 non-empty lines."
+      ],
+      "clause_results": [
+        {"clause": "File is named redline_diff.txt and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/redline_diff.txt exists."},
+        {"clause": "It has one line per revision.", "satisfied": true, "evidence": "30 non-empty lines matching redlines_full.csv row count."},
+        {"clause": "Each line follows id <author> <kind> <decision> <preview>.", "satisfied": true, "evidence": "Sample lines: `1000 <Senior Partner> <ins> <accept> (the \"Agreement\")`, `1007 <Reviewer B> <del> <reject> USD 120,000`."},
+        {"clause": "It has ≥ 25 non-empty lines.", "satisfied": true, "evidence": "30 non-empty lines counted."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "redline_diff.txt has 30 formatted revision lines with id, author, kind, decision, and preview.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "audit_report.md",
+      "task_says": "`audit_report.md` | ≥ 400 characters; contains a markdown table (≥ 4 columns) summarizing the decisions for the three reviewers; itemizes ≥ 3 money-related rejections from `Reviewer B` (must include concrete strings like `150,000`/`12,000`/`1.5% per month`); ≥ 2 `Reviewer C` revisions rejected for falling in `Confidentiality` / Section 3; visual sign-off conclusion + process recap",
+      "spec_clauses": [
+        "File is named audit_report.md and exists in /tmp_workspace/results/.",
+        "Report is ≥ 400 characters.",
+        "Contains a markdown table with ≥ 4 columns summarizing decisions for the three reviewers.",
+        "Itemizes ≥ 3 money-related rejections from Reviewer B.",
+        "Money rejection list includes concrete strings like 150,000 / 12,000 / 1.5% per month.",
+        "Itemizes ≥ 2 Reviewer C revisions rejected for Confidentiality / Section 3.",
+        "Contains visual sign-off conclusion and process recap.",
+        "Decision summary is accurate."
+      ],
+      "clause_results": [
+        {"clause": "File is named audit_report.md and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/audit_report.md exists."},
+        {"clause": "Report is ≥ 400 characters.", "satisfied": true, "evidence": "Read report is about 2200 characters."},
+        {"clause": "Contains a markdown table with ≥ 4 columns summarizing decisions for the three reviewers.", "satisfied": true, "evidence": "Table columns Reviewer, Accepted, Rejected, Policy basis; rows for all three reviewers."},
+        {"clause": "Itemizes ≥ 3 money-related rejections from Reviewer B.", "satisfied": true, "evidence": "Six Reviewer B money rejection bullets listed."},
+        {"clause": "Money rejection list includes concrete strings like 150,000 / 12,000 / 1.5% per month.", "satisfied": true, "evidence": "Bullets include USD 150,000, USD 12,000, and 1.5% per month."},
+        {"clause": "Itemizes ≥ 2 Reviewer C revisions rejected for Confidentiality / Section 3.", "satisfied": true, "evidence": "Four Section 3 Reviewer C rejection bullets listed."},
+        {"clause": "Contains visual sign-off conclusion and process recap.", "satisfied": true, "evidence": "Process recap paragraph and `Conclusion: final clean document is ready for legal sign-off.` present."},
+        {"clause": "Decision summary is accurate.", "satisfied": "partial", "evidence": "Report mirrors policy_audit counts 7/0, 5/6, 8/4, which disagree with gt expected 7/0, 5/4, 11/3."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.94,
+      "evidence_quote": "audit_report.md is complete in form and lists the requested concrete money and Section 3 examples, but its summary counts conflict with gt expected policy counts.",
+      "missing_or_wrong": "Decision summary overstates Reviewer B and Reviewer C rejections versus expected.json.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "deliverables.json",
+      "task_says": "`deliverables.json` | `{\"final_docx_sha256\":\"<hex>\",\"final_pdf_sha256\":\"<hex>\",\"screenshots\":[...],\"files\":[...]}`",
+      "spec_clauses": [
+        "File is named deliverables.json and exists in /tmp_workspace/results/.",
+        "JSON contains final_docx_sha256 hex string.",
+        "JSON contains final_pdf_sha256 hex string.",
+        "JSON contains screenshots array listing screenshots.",
+        "JSON contains files array listing deliverable files."
+      ],
+      "clause_results": [
+        {"clause": "File is named deliverables.json and exists in /tmp_workspace/results/.", "satisfied": true, "evidence": "results/deliverables.json exists."},
+        {"clause": "JSON contains final_docx_sha256 hex string.", "satisfied": true, "evidence": "final_docx_sha256 is a 64-character hex-like value."},
+        {"clause": "JSON contains final_pdf_sha256 hex string.", "satisfied": false, "evidence": "final_pdf_sha256 is an empty string and final.pdf is absent."},
+        {"clause": "JSON contains screenshots array listing screenshots.", "satisfied": false, "evidence": "screenshots is an empty array despite required screenshot(s)."},
+        {"clause": "JSON contains files array listing deliverable files.", "satisfied": false, "evidence": "files is an empty array."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.4,
+      "evidence_quote": "deliverables.json parses but only final_docx_sha256 is populated; final_pdf_sha256 is empty and screenshots/files arrays are empty.",
+      "missing_or_wrong": "Missing final_pdf_sha256; screenshots array empty; files array empty.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_manage_panel_initial.png",
+      "task_says": "`view_01_manage_panel_initial.png` | Initial state of the word processor's Manage Track Changes panel, with multiple revision entries from the three authors visible. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI with recognizable chrome/menu/toolbar/title bar.",
+        "Shows initial Manage Track Changes panel.",
+        "Multiple revision entries from Senior Partner, Reviewer B, Reviewer C are visible."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": true, "evidence": "results/view_01_manage_panel_initial.png exists."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": true, "evidence": "PIL size is 1920×1080."},
+        {"clause": "Shows real word processor GUI with recognizable chrome/menu/toolbar/title bar.", "satisfied": true, "evidence": "Image review identified real LibreOffice Writer GUI with visible menus/toolbars and document redlines."},
+        {"clause": "Shows initial Manage Track Changes panel.", "satisfied": true, "evidence": "Image review saw the `Manage Changes` dialog open in List view."},
+        {"clause": "Multiple revision entries from Senior Partner, Reviewer B, Reviewer C are visible.", "satisfied": true, "evidence": "Image review saw entries for Senior Partner, Reviewer B, and Reviewer C."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "VLM review: real LibreOffice Writer GUI, Manage Changes dialog open, multiple entries for all three reviewers visible; size 1920×1080.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_panel_filter_author_a.png",
+      "task_says": "`view_02_panel_filter_author_a.png` | Panel filtered/highlighted by `Senior Partner`, or the edit view positioned on that author's first revision. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI chrome.",
+        "Panel is filtered/highlighted by Senior Partner or edit view positioned on that author's first revision."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": false, "evidence": "No results/view_02_panel_filter_author_a.png found."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Shows real word processor GUI chrome.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Panel is filtered/highlighted by Senior Partner or edit view positioned on that author's first revision.", "satisfied": false, "evidence": "No file to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required screenshot is absent from results; chat shows GUI screenshot attempts but no successful staging under this required filename.",
+      "missing_or_wrong": "Missing required screenshot file and all visual content clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_money_redline_zoom.png",
+      "task_says": "`view_03_money_redline_zoom.png` | Close-up of a `Reviewer B` money-related revision with its colored markup in the body. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI chrome.",
+        "Close-up of Reviewer B money-related revision.",
+        "Colored markup is visible in the body."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": false, "evidence": "No results/view_03_money_redline_zoom.png found."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Shows real word processor GUI chrome.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Close-up of Reviewer B money-related revision.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Colored markup is visible in the body.", "satisfied": false, "evidence": "No file to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required screenshot is absent from results; no close-up money redline evidence can be verified.",
+      "missing_or_wrong": "Missing required screenshot file and all visual content clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_section3_redline_zoom.png",
+      "task_says": "`view_04_section3_redline_zoom.png` | Close-up of a `Reviewer C` revision marked up in the body inside the `3. Confidentiality` section. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI chrome.",
+        "Close-up of Reviewer C revision.",
+        "Revision is inside 3. Confidentiality section and marked up in body."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": false, "evidence": "No results/view_04_section3_redline_zoom.png found."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Shows real word processor GUI chrome.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Close-up of Reviewer C revision.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Revision is inside 3. Confidentiality section and marked up in body.", "satisfied": false, "evidence": "No file to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required screenshot is absent from results; no Section 3 Reviewer C redline close-up can be verified.",
+      "missing_or_wrong": "Missing required screenshot file and all visual content clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_05_panel_after_apply.png",
+      "task_says": "`view_05_panel_after_apply.png` | After all accept/reject have been applied, the Manage Track Changes panel is essentially empty. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI chrome.",
+        "After all accept/reject are applied, Manage Track Changes panel is essentially empty."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": false, "evidence": "No results/view_05_panel_after_apply.png found."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Shows real word processor GUI chrome.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "After all accept/reject are applied, Manage Track Changes panel is essentially empty.", "satisfied": false, "evidence": "No file to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required after-apply screenshot is absent from results.",
+      "missing_or_wrong": "Missing required screenshot file and all visual content clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_06_final_clean_layout.png",
+      "task_says": "`view_06_final_clean_layout.png` | Overall layout preview of the final document, with no remaining redlines / revision marks. Screenshots must come from real GUI interaction; resolution ≥ 1280×720; mutually distinct md5; window chrome/menu/toolbar/title bar visible enough to recognize the word processor.",
+      "spec_clauses": [
+        "File exists with exact required filename.",
+        "Resolution is ≥ 1280×720.",
+        "Shows real word processor GUI chrome.",
+        "Overall layout preview of final document.",
+        "No remaining redlines / revision marks are visible."
+      ],
+      "clause_results": [
+        {"clause": "File exists with exact required filename.", "satisfied": false, "evidence": "No results/view_06_final_clean_layout.png found."},
+        {"clause": "Resolution is ≥ 1280×720.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Shows real word processor GUI chrome.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "Overall layout preview of final document.", "satisfied": false, "evidence": "No file to inspect."},
+        {"clause": "No remaining redlines / revision marks are visible.", "satisfied": false, "evidence": "No file to inspect."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required clean-layout screenshot is absent from results.",
+      "missing_or_wrong": "Missing required screenshot file and all visual content clauses.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.52, "reason": "Core CLI outputs and final.docx cleanup were mostly achieved (redlines_raw.json, final.docx, final_text.txt), but final.pdf is missing, five of six required screenshots are missing, deliverables.json is mostly empty, and policy_audit.json disagrees with expected counts."},
+    "deliverable_correctness": {"score": 0.57, "reason": "Mean artifact correctness is pulled down by final.pdf=0, view_02 through view_06=0, deliverables.json=0.40, and policy_audit.json=0.75; strong artifacts include final.docx and redlines_raw.json."},
+    "deliverable_quality": {"score": 0.55, "reason": "Most text/JSON/CSV/DOCX artifacts parse cleanly, but a required PDF is absent, five named screenshots are absent, and deliverables.json has empty screenshot/file lists and no PDF hash."},
+    "evidence_authenticity": {"score": 0.74, "reason": "No hack grep matches and the one required screenshot viewed appears to be a real LibreOffice GUI. However, GUI evidence is severely incomplete and chat shows many screenshot/tool failures, so authenticity cannot be corroborated across the required workflow."},
+    "tool_use_correctness": {"score": 0.55, "reason": "The rollout used OOXML parsing/writing and LibreOffice GUI attempts, which are relevant, but failed to export final.pdf and failed to save the required screenshot sequence; later chat shows repeated image-limit API errors."},
+    "final_state_correctness": {"score": 0.55, "reason": "The final.docx state satisfies the hard cleanup and money constraints, but the requested final state also required PDF/text/XML audit/six screenshots/report/manifest; PDF and most GUI evidence are missing and policy audit counts are not correct."},
+    "efficiency_robustness": {"score": 0.34, "reason": "The agent recovered from some permission/build issues, but spent many GUI attempts, triggered repeated maximum-images API errors, and stopped with missing final.pdf and five missing screenshots."},
+    "instruction_following": {"score": 0.45, "reason": "It followed many file-format requirements for text artifacts and avoided gt copy signals, but violated explicit deliverable requirements: six named screenshots, final.pdf, populated deliverables.json, and accurate policy_audit counts."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.05,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.53,
+  "summary": "The rollout produced a clean final.docx with no OOXML insertion/deletion tags and preserved/rejected the required money strings, plus several usable CSV/JSON/text/report artifacts. It is nevertheless substantially incomplete: final.pdf is absent, only one of six named required process screenshots is present, deliverables.json is mostly empty, and policy_audit.json disagrees with the expected decision counts. No strong hack pattern was found in chat.jsonl, but the missing GUI/PDF evidence prevents a high score."
+}

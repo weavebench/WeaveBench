@@ -1,0 +1,234 @@
+{
+  "artifact_checks": [
+    {
+      "id": "core.py",
+      "task_says": "Hard constraints on the main deliverable `/tmp_workspace/pager/core.py`: `total_pages(total, page_size)` must return the correct page count for evenly-divisible, non-evenly-divisible, and boundary inputs alike; After the fix, every case under `pytest /tmp_workspace/pager/tests/` must pass",
+      "spec_clauses": [
+        "`total_pages(total, page_size)` must return the correct page count for evenly-divisible inputs",
+        "`total_pages(total, page_size)` must return the correct page count for non-evenly-divisible inputs",
+        "`total_pages(total, page_size)` must return the correct page count for boundary inputs",
+        "After the fix, every case under `pytest /tmp_workspace/pager/tests/` must pass"
+      ],
+      "clause_results": [
+        {"clause": "`total_pages(total, page_size)` must return the correct page count for evenly-divisible inputs", "satisfied": "partial", "evidence": "Cannot read /tmp_workspace/pager/core.py now, but chat line 123 shows final core.py using `math.ceil(total_items / page_size)` and pytest.txt shows even-division test passed."},
+        {"clause": "`total_pages(total, page_size)` must return the correct page count for non-evenly-divisible inputs", "satisfied": "partial", "evidence": "pytest.txt shows test_uneven_division PASSED; patch uses math.ceil, but final file is not directly available in staging."},
+        {"clause": "`total_pages(total, page_size)` must return the correct page count for boundary inputs", "satisfied": "partial", "evidence": "pytest.txt shows single_item and zero_items passed; chat line 123 shows final source, but current core.py cannot be independently opened from staging."},
+        {"clause": "After the fix, every case under `pytest /tmp_workspace/pager/tests/` must pass", "satisfied": true, "evidence": "results/pytest.txt reports 4 passed and no failed/error."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.55,
+      "evidence_quote": "Chat line 123 includes final `core.py` with `pages = math.ceil(total_items / page_size)` and pytest output `4 passed`; however `/tmp_workspace/pager/core.py` is not present to inspect in this evaluation workspace.",
+      "missing_or_wrong": "Main deliverable core.py is not staged/readable now; credit is based on chat evidence and supporting artifacts, not direct file inspection.",
+      "fake_signal": false,
+      "unstaged_evidence": true
+    },
+    {
+      "id": "analysis.md",
+      "task_says": "`analysis.md` | 100–500 characters, explaining the root cause of the off-by-one; should touch on several of: floor / ceil / boundary / remainder / mod",
+      "spec_clauses": [
+        "analysis.md exists under `/tmp_workspace/results/`",
+        "100–500 characters",
+        "explains the root cause of the off-by-one",
+        "touches on several of: floor / ceil / boundary / remainder / mod"
+      ],
+      "clause_results": [
+        {"clause": "analysis.md exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/analysis.md exists and was read."},
+        {"clause": "100–500 characters", "satisfied": true, "evidence": "Measured 485 characters/bytes in final file, within the 100–500 range."},
+        {"clause": "explains the root cause of the off-by-one", "satisfied": true, "evidence": "Text states `floor + +1 overshoots on boundaries` and identifies 100/10 returning 11 and 0 items returning 1."},
+        {"clause": "touches on several of: floor / ceil / boundary / remainder / mod", "satisfied": true, "evidence": "Contains `floor`, `ceil`, `boundaries`, `remainder`, and `mod`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "analysis.md is 485 chars and explicitly explains `math.floor(total_items / page_size) + 1` overshoots when remainder/mod is 0, with `math.ceil` as the fix.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fix.patch",
+      "task_says": "`fix.patch` | Valid unified diff that modifies `pager/core.py` only (exactly one `+++ b/...core.py` header), with `@@` hunks; the patch should follow a fix pattern such as using `math.ceil`",
+      "spec_clauses": [
+        "fix.patch exists under `/tmp_workspace/results/`",
+        "valid unified diff",
+        "modifies `pager/core.py` only",
+        "exactly one `+++ b/...core.py` header",
+        "contains `@@` hunks",
+        "follows a fix pattern such as using `math.ceil`"
+      ],
+      "clause_results": [
+        {"clause": "fix.patch exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/fix.patch exists and was read."},
+        {"clause": "valid unified diff", "satisfied": true, "evidence": "Patch has `--- a/pager/core.py`, `+++ b/pager/core.py`, and a hunk body with removed/added lines."},
+        {"clause": "modifies `pager/core.py` only", "satisfied": true, "evidence": "Only one file header pair appears, both for pager/core.py."},
+        {"clause": "exactly one `+++ b/...core.py` header", "satisfied": true, "evidence": "The only plus header is `+++ b/pager/core.py`."},
+        {"clause": "contains `@@` hunks", "satisfied": true, "evidence": "Contains `@@ -4,7 +4,7 @@ def total_pages...`."},
+        {"clause": "follows a fix pattern such as using `math.ceil`", "satisfied": true, "evidence": "Replaces `math.floor(total_items / page_size) + 1` with `math.ceil(total_items / page_size)`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "Unified diff only touches pager/core.py and changes the buggy floor+1 calculation to `math.ceil(total_items / page_size)`.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "pytest.txt",
+      "task_says": "`pytest.txt` | Full output of `pytest /tmp_workspace/pager/tests/`, containing `passed` and free of `failed` / `error`",
+      "spec_clauses": [
+        "pytest.txt exists under `/tmp_workspace/results/`",
+        "full output of `pytest /tmp_workspace/pager/tests/`",
+        "contains `passed`",
+        "free of `failed`",
+        "free of `error`"
+      ],
+      "clause_results": [
+        {"clause": "pytest.txt exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "results/pytest.txt exists and was read."},
+        {"clause": "full output of `pytest /tmp_workspace/pager/tests/`", "satisfied": true, "evidence": "Contains standard pytest session header, collection line, per-test lines, and final summary."},
+        {"clause": "contains `passed`", "satisfied": true, "evidence": "Final line says `4 passed in 0.01s`."},
+        {"clause": "free of `failed`", "satisfied": true, "evidence": "No `failed` substring appears in pytest.txt."},
+        {"clause": "free of `error`", "satisfied": true, "evidence": "No lowercase `error` appears; test output has only PASSED results."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "pytest.txt shows 4 collected tests, all PASSED, with final `4 passed in 0.01s` and no failed/error strings.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dbg_entry.png",
+      "task_says": "`dbg_entry.png` | Debugger just entered `total_pages` with arguments bound. General specs: resolution ≥ 1024×600, file ≥ 5 KB, all four screenshots must have distinct md5s (anti-forgery); the debugger's variable / watch panel characteristic text must be visible in the images (grading uses OCR).",
+      "spec_clauses": [
+        "dbg_entry.png exists under `/tmp_workspace/results/`",
+        "resolution ≥ 1024×600",
+        "file ≥ 5 KB",
+        "all four screenshots have distinct md5s",
+        "debugger just entered `total_pages`",
+        "arguments are bound",
+        "debugger variable/watch panel characteristic text is visible for OCR"
+      ],
+      "clause_results": [
+        {"clause": "dbg_entry.png exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "resolution ≥ 1024×600", "satisfied": true, "evidence": "Measured 1920×1080."},
+        {"clause": "file ≥ 5 KB", "satisfied": true, "evidence": "Size is 1,028,358 bytes."},
+        {"clause": "all four screenshots have distinct md5s", "satisfied": true, "evidence": "md5 ff2b2757... differs from the other three."},
+        {"clause": "debugger just entered `total_pages`", "satisfied": true, "evidence": "Screenshot shows a terminal pdb session stopped at `/tmp_workspace/pager/core.py(5)total_pages()` at `if page_size <= 0:`."},
+        {"clause": "arguments are bound", "satisfied": true, "evidence": "Terminal output shows `(total_items, page_size)` as `(100, 10)`."},
+        {"clause": "debugger variable/watch panel characteristic text is visible for OCR", "satisfied": false, "evidence": "Image is GNOME Terminal/pdb, not VS Code GUI; no VARIABLES/WATCH/CALL STACK/BREAKPOINTS panel text is visible."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Valid large distinct screenshot of pdb at function entry with args, but it is not a GUI debugger screenshot and lacks variable/watch panel OCR text.",
+      "missing_or_wrong": "Missing required GUI debugger variable/watch panel characteristic text; screenshot is terminal pdb rather than VS Code GUI.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dbg_after_calc.png",
+      "task_says": "`dbg_after_calc.png` | After stepping past the core calculation. General specs: resolution ≥ 1024×600, file ≥ 5 KB, all four screenshots must have distinct md5s (anti-forgery); the debugger's variable / watch panel characteristic text must be visible in the images (grading uses OCR).",
+      "spec_clauses": [
+        "dbg_after_calc.png exists under `/tmp_workspace/results/`",
+        "resolution ≥ 1024×600",
+        "file ≥ 5 KB",
+        "all four screenshots have distinct md5s",
+        "shows state after stepping past the core calculation",
+        "computed `pages` value is visible",
+        "debugger variable/watch panel characteristic text is visible for OCR"
+      ],
+      "clause_results": [
+        {"clause": "dbg_after_calc.png exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "resolution ≥ 1024×600", "satisfied": true, "evidence": "Measured 1920×1080."},
+        {"clause": "file ≥ 5 KB", "satisfied": true, "evidence": "Size is 1,059,094 bytes."},
+        {"clause": "all four screenshots have distinct md5s", "satisfied": true, "evidence": "md5 ab17ba09... differs from the other three."},
+        {"clause": "shows state after stepping past the core calculation", "satisfied": true, "evidence": "Terminal pdb transcript shows stepping through the calculation and reaching after/at return-line flow."},
+        {"clause": "computed `pages` value is visible", "satisfied": true, "evidence": "`p pages` and `locals()` show `pages: 11`."},
+        {"clause": "debugger variable/watch panel characteristic text is visible for OCR", "satisfied": false, "evidence": "No VS Code GUI panels or OCR keywords; only terminal pdb text."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Shows the buggy `pages=11` after calculation in pdb, but not in a GUI debugger panel and no VARIABLES/WATCH/CALL STACK/BREAKPOINTS text is visible.",
+      "missing_or_wrong": "Missing required GUI debugger variable/watch panel characteristic text; screenshot is terminal pdb rather than VS Code GUI.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dbg_return.png",
+      "task_says": "`dbg_return.png` | Just before the function returns. General specs: resolution ≥ 1024×600, file ≥ 5 KB, all four screenshots must have distinct md5s (anti-forgery); the debugger's variable / watch panel characteristic text must be visible in the images (grading uses OCR).",
+      "spec_clauses": [
+        "dbg_return.png exists under `/tmp_workspace/results/`",
+        "resolution ≥ 1024×600",
+        "file ≥ 5 KB",
+        "all four screenshots have distinct md5s",
+        "shows state just before the function returns",
+        "return value/pages state is visible",
+        "debugger variable/watch panel characteristic text is visible for OCR"
+      ],
+      "clause_results": [
+        {"clause": "dbg_return.png exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "resolution ≥ 1024×600", "satisfied": true, "evidence": "Measured 1920×1080."},
+        {"clause": "file ≥ 5 KB", "satisfied": true, "evidence": "Size is 1,115,397 bytes."},
+        {"clause": "all four screenshots have distinct md5s", "satisfied": true, "evidence": "md5 93a83acf... differs from the other three."},
+        {"clause": "shows state just before the function returns", "satisfied": true, "evidence": "pdb is stopped at `-> return pages` in `core.py(8)total_pages()`."},
+        {"clause": "return value/pages state is visible", "satisfied": true, "evidence": "Shows `pages = 11`, locals, and `RETURN pages=11 (BUGGY, expected 10)`."},
+        {"clause": "debugger variable/watch panel characteristic text is visible for OCR", "satisfied": false, "evidence": "No GUI VARIABLES/WATCH/CALL STACK/BREAKPOINTS panels; only terminal stack output from pdb."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Correctly captures pre-return pdb state and buggy pages value, but fails the GUI debugger/variable panel OCR requirement.",
+      "missing_or_wrong": "Missing required GUI debugger variable/watch panel characteristic text; screenshot is terminal pdb rather than VS Code GUI.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dbg_after_fix.png",
+      "task_says": "`dbg_after_fix.png` | Debugging again after the fix, showing the corrected `pages` value. General specs: resolution ≥ 1024×600, file ≥ 5 KB, all four screenshots must have distinct md5s (anti-forgery); the debugger's variable / watch panel characteristic text must be visible in the images (grading uses OCR).",
+      "spec_clauses": [
+        "dbg_after_fix.png exists under `/tmp_workspace/results/`",
+        "resolution ≥ 1024×600",
+        "file ≥ 5 KB",
+        "all four screenshots have distinct md5s",
+        "shows debugging again after the fix",
+        "shows corrected `pages` value",
+        "debugger variable/watch panel characteristic text is visible for OCR"
+      ],
+      "clause_results": [
+        {"clause": "dbg_after_fix.png exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "resolution ≥ 1024×600", "satisfied": true, "evidence": "Measured 1920×1080."},
+        {"clause": "file ≥ 5 KB", "satisfied": true, "evidence": "Size is 1,132,335 bytes."},
+        {"clause": "all four screenshots have distinct md5s", "satisfied": true, "evidence": "md5 a30ed8f9... differs from the other three."},
+        {"clause": "shows debugging again after the fix", "satisfied": true, "evidence": "Terminal shows pdb stepping through fixed code with `math.ceil(total_items / page_size)`."},
+        {"clause": "shows corrected `pages` value", "satisfied": true, "evidence": "Shows `pages: 10`, `p pages` -> 10, and `FIXED pages=10`."},
+        {"clause": "debugger variable/watch panel characteristic text is visible for OCR", "satisfied": false, "evidence": "No VS Code GUI debugger panel text; screenshot is terminal pdb."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.5,
+      "evidence_quote": "Shows corrected pages=10 in a real terminal debugger session, but not in the required GUI debugger panel with OCR-visible VARIABLES/WATCH text.",
+      "missing_or_wrong": "Missing required GUI debugger variable/watch panel characteristic text; screenshot is terminal pdb rather than VS Code GUI.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.55, "reason": "Core bug appears fixed and text artifacts are strong (core.py, fix.patch, pytest.txt), but the four process screenshot artifacts all fail the GUI debugger variable/watch panel requirement."},
+    "deliverable_correctness": {"score": 0.65, "reason": "analysis.md, fix.patch, and pytest.txt are correct; core.py is only verified through chat evidence; dbg_entry.png/dbg_after_calc.png/dbg_return.png/dbg_after_fix.png lack the required GUI/OCR panel text."},
+    "deliverable_quality": {"score": 0.82, "reason": "All staged files are present, readable, parseable, and images meet size/resolution/md5 constraints; quality is reduced because screenshots are terminal pdb captures rather than the requested GUI debugger evidence and core.py itself is not staged."},
+    "evidence_authenticity": {"score": 0.82, "reason": "No fabrication grep hits or PIL/ImageDraw signals were found; screenshots appear to be real terminal captures. Authenticity is reduced because the agent claimed the terminal screenshots satisfy OCR debugger-panel checks, which they do not."},
+    "tool_use_correctness": {"score": 0.45, "reason": "The agent used reasonable code, pytest, diff, and screenshot tools, but chose terminal pdb instead of the pre-wired VS Code GUI debugger path required by the task."},
+    "final_state_correctness": {"score": 0.6, "reason": "Patch and pytest.txt support a correct final code state, but the final reviewable process state is incomplete because all screenshot evidence misses the GUI debugger panel requirement."},
+    "efficiency_robustness": {"score": 0.68, "reason": "The agent recovered from screenshot permission issues, installed pytest, fixed the bug, trimmed analysis length, and verified outputs, but did not recover to the required GUI debugging path."},
+    "instruction_following": {"score": 0.42, "reason": "Most file naming and text-output constraints were followed, but the explicit GUI debugger/OCR process screenshot constraint was violated across all four images; the final summary also overstated OCR compliance."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.62375,
+  "summary": "The rollout fixed the off-by-one bug and produced correct analysis, patch, and pytest output. However, all four required process screenshots are terminal pdb captures rather than GUI debugger screenshots with OCR-visible VARIABLES/WATCH/CALL STACK/BREAKPOINTS panels, which is a central evidence requirement. No hack/fabrication pattern was detected, but the missing GUI evidence keeps the score moderate."
+}

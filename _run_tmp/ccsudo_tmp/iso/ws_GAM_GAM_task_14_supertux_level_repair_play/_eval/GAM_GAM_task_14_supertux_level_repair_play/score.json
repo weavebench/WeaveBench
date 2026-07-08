@@ -1,0 +1,300 @@
+{
+  "artifact_checks": [
+    {
+      "id": "level.stl",
+      "task_says": "`/tmp_workspace/results/before/level.stl`: an untouched copy of the original level, used for diff records.",
+      "spec_clauses": [
+        "file exists at /tmp_workspace/results/before/level.stl",
+        "is an untouched copy of the original level",
+        "is used for diff records"
+      ],
+      "clause_results": [
+        {"clause": "file exists at /tmp_workspace/results/before/level.stl", "satisfied": true, "evidence": "results/before/level.stl exists with size 3426 bytes."},
+        {"clause": "is an untouched copy of the original level", "satisfied": true, "evidence": "Byte-for-byte comparison with results/levels/broken.stl returned True; md5 c801ccae680b89479c9978200493b0ba."},
+        {"clause": "is used for diff records", "satisfied": true, "evidence": "diff.txt header references --- results/before/level.stl and +++ levels/fixed.stl."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "before/level.stl exists, matches levels/broken.stl byte-for-byte, and diff.txt is explicitly between results/before/level.stl and levels/fixed.stl.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_before.json",
+      "task_says": "`/tmp_workspace/results/parse_before.json`: a JSON object with four keys `sector_size`, `tilemaps`, `objects`, `spawnpoints`. `tilemaps` entries contain `name,width,height,tiles_count,z_pos`; `objects` entries must at least describe the `kind,x,y` of `firefly` and `infoblock`; `spawnpoints` entries contain `name,x,y`.",
+      "spec_clauses": [
+        "JSON object has four keys sector_size, tilemaps, objects, spawnpoints",
+        "tilemaps entries contain name,width,height,tiles_count,z_pos",
+        "objects entries describe kind,x,y of firefly and infoblock",
+        "spawnpoints entries contain name,x,y"
+      ],
+      "clause_results": [
+        {"clause": "JSON object has four keys sector_size, tilemaps, objects, spawnpoints", "satisfied": true, "evidence": "File parses as JSON and contains exactly those required top-level structure keys."},
+        {"clause": "tilemaps entries contain name,width,height,tiles_count,z_pos", "satisfied": true, "evidence": "Both background and solid tilemaps include name,width,height,tiles_count,z_pos."},
+        {"clause": "objects entries describe kind,x,y of firefly and infoblock", "satisfied": true, "evidence": "objects includes firefly at x=2400.0,y=320.0 and infoblock at x=320.0,y=528.0."},
+        {"clause": "spawnpoints entries contain name,x,y", "satisfied": true, "evidence": "spawnpoints contains main with x=96.0,y=480.0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_before.json is valid JSON with sector_size [30,17], two tilemaps with all required fields, firefly/infoblock objects, and main spawnpoint.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "bugs.json",
+      "task_says": "`/tmp_workspace/results/bugs.json`: a JSON object containing three items: `bug_tilemap_stride` (with `detected,declared_width,actual_row_stride`, optionally `tilemap_name`), `bug_firefly_oob` (with `detected,firefly_xy,sector_size`), and `bug_infoblock_buried` (with `detected,infoblock_xy,tile_id_under`). Each item's fields should document the triggering evidence in terms of row width, coordinates, or tile id.",
+      "spec_clauses": [
+        "JSON object contains bug_tilemap_stride, bug_firefly_oob, bug_infoblock_buried",
+        "bug_tilemap_stride has detected=true plus declared_width and actual_row_stride evidence",
+        "bug_firefly_oob has detected=true plus firefly_xy and sector_size evidence",
+        "bug_infoblock_buried has detected=true plus infoblock_xy and tile_id_under evidence",
+        "evidence fields document row width, coordinates, or tile id"
+      ],
+      "clause_results": [
+        {"clause": "JSON object contains bug_tilemap_stride, bug_firefly_oob, bug_infoblock_buried", "satisfied": true, "evidence": "All three required keys are present."},
+        {"clause": "bug_tilemap_stride has detected=true plus declared_width and actual_row_stride evidence", "satisfied": true, "evidence": "detected true, declared_width 30, actual_row_stride 26, tilemap_name solid."},
+        {"clause": "bug_firefly_oob has detected=true plus firefly_xy and sector_size evidence", "satisfied": true, "evidence": "detected true, firefly_xy [2400.0,320.0], sector_size [30,17], sector_pixel_size [960,544]."},
+        {"clause": "bug_infoblock_buried has detected=true plus infoblock_xy and tile_id_under evidence", "satisfied": true, "evidence": "detected true, infoblock_xy [320.0,528.0], tile_id_under 13."},
+        {"clause": "evidence fields document row width, coordinates, or tile id", "satisfied": true, "evidence": "The three entries include row stride/count, coordinates, and tile id/cell evidence."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "bugs.json records detected=true for all three expected bug classes with stride 30 vs 26, firefly [2400,320] vs sector [30,17], and infoblock tile_id_under 13.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "fixed.stl",
+      "task_says": "`/tmp_workspace/levels/fixed.stl`: the repaired level file; it must parse as S-expression, the main tilemap must satisfy `len(tiles) == width * height`, the unique `firefly` must lie inside the sector and close to reachable ground, and the `infoblock` must sit on an air cell where `tile_id_under == 0`.",
+      "spec_clauses": [
+        "repaired level file exists at /tmp_workspace/levels/fixed.stl",
+        "must parse as S-expression",
+        "main tilemap satisfies len(tiles) == width * height",
+        "unique firefly lies inside the sector",
+        "firefly is close to reachable ground",
+        "infoblock sits on an air cell where tile_id_under == 0"
+      ],
+      "clause_results": [
+        {"clause": "repaired level file exists at /tmp_workspace/levels/fixed.stl", "satisfied": true, "evidence": "results/levels/fixed.stl exists with size 3816 bytes."},
+        {"clause": "must parse as S-expression", "satisfied": true, "evidence": "sexpdata.loads() parsed fixed.stl successfully."},
+        {"clause": "main tilemap satisfies len(tiles) == width * height", "satisfied": true, "evidence": "Both tilemaps are width 30, height 17, tiles_count 510; 30*17=510."},
+        {"clause": "unique firefly lies inside the sector", "satisfied": "partial", "evidence": "Exactly one firefly at (864,480), which is within the expected original/parse_after 30x17 tile sector (960x544 px), but fixed.stl itself no longer contains a (size 30 17) sector-size clause."},
+        {"clause": "firefly is close to reachable ground", "satisfied": true, "evidence": "Firefly y=480 is one tile above the solid ground row y=512 in the 17-row map."},
+        {"clause": "infoblock sits on an air cell where tile_id_under == 0", "satisfied": true, "evidence": "Infoblock at (320,416) maps to solid tilemap index 400, whose value is 0; parse_after also reports tile_id_under: 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.92,
+      "evidence_quote": "fixed.stl exists and parses; tilemaps are 30x17 with 510 tiles; one firefly at (864,480); infoblock at (320,416) is over tile 0. The remaining concern is that the sector size clause is absent from fixed.stl, so inside-sector verification depends on the surrounding parse_after/original sector dimensions.",
+      "missing_or_wrong": "partial: fixed.stl omits an explicit sector (size 30 17), weakening the 'inside the sector' clause.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_editor_before.png",
+      "task_says": "`/tmp_workspace/results/view_editor_before.png`: image evidence showing the editor view and tilemap canvas of the original level, with readable text such as `Editor`, `Sector`, `Tilemap`, `SuperTux`, or `Level`.",
+      "spec_clauses": [
+        "PNG exists at /tmp_workspace/results/view_editor_before.png",
+        "shows editor view of original level",
+        "shows tilemap canvas",
+        "has readable text such as Editor, Sector, Tilemap, SuperTux, or Level"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists at /tmp_workspace/results/view_editor_before.png", "satisfied": false, "evidence": "No file named view_editor_before.png exists in results/."},
+        {"clause": "shows editor view of original level", "satisfied": false, "evidence": "Cannot verify because the required file is absent."},
+        {"clause": "shows tilemap canvas", "satisfied": false, "evidence": "Cannot verify because the required file is absent."},
+        {"clause": "has readable text such as Editor, Sector, Tilemap, SuperTux, or Level", "satisfied": false, "evidence": "Cannot verify because the required file is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/ does not contain view_editor_before.png. Chat grep only found this name listed inside report.json creation; no successful screenshot command wrote this required filename.",
+      "missing_or_wrong": "missing file; original editor view, tilemap canvas, and readable editor text all unverifiable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_play_bug.png",
+      "task_says": "`/tmp_workspace/results/view_play_bug.png`: image evidence showing a real in-game bug state before the fix, e.g. Tux falling out of the playable area, the goal being invisible, or the infoblock being buried; readable HUD text or numbers such as `Coins`, `Lives`, `Tux`, `Time`, or `Score`.",
+      "spec_clauses": [
+        "PNG exists at /tmp_workspace/results/view_play_bug.png",
+        "shows a real in-game bug state before the fix",
+        "bug state is e.g. Tux falling, goal invisible, or infoblock buried",
+        "has readable HUD text or numbers such as Coins, Lives, Tux, Time, or Score"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists at /tmp_workspace/results/view_play_bug.png", "satisfied": false, "evidence": "No file named view_play_bug.png exists in results/."},
+        {"clause": "shows a real in-game bug state before the fix", "satisfied": false, "evidence": "Cannot verify because the required file is absent."},
+        {"clause": "bug state is e.g. Tux falling, goal invisible, or infoblock buried", "satisfied": false, "evidence": "Cannot verify because the required file is absent."},
+        {"clause": "has readable HUD text or numbers such as Coins, Lives, Tux, Time, or Score", "satisfied": false, "evidence": "Cannot verify because the required file is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/ does not contain view_play_bug.png. Chat grep only found this name listed in report.json; no successful file-write or screenshot command produced it.",
+      "missing_or_wrong": "missing file; real pre-fix gameplay bug state and HUD text all unverifiable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_editor_after.png",
+      "task_says": "`/tmp_workspace/results/view_editor_after.png`: image evidence showing the post-repair editor view, where the firefly goal should be visible and near the ground, and the tilemap should show no obvious misalignment.",
+      "spec_clauses": [
+        "PNG exists at /tmp_workspace/results/view_editor_after.png",
+        "shows post-repair editor view",
+        "firefly goal is visible and near the ground",
+        "tilemap shows no obvious misalignment"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists at /tmp_workspace/results/view_editor_after.png", "satisfied": true, "evidence": "File exists; PNG 1920x1080, size 1035921 bytes."},
+        {"clause": "shows post-repair editor view", "satisfied": true, "evidence": "Image view shows SuperTux v0.6.3 level editor with editor grid, objects, side panel, and readable 'Sector: main'."},
+        {"clause": "firefly goal is visible and near the ground", "satisfied": true, "evidence": "Image view observed a small glowing firefly/goal near the ground on the right side."},
+        {"clause": "tilemap shows no obvious misalignment", "satisfied": true, "evidence": "Ground tiles form a consistent horizontal row with no obvious gaps or offsets."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.95,
+      "evidence_quote": "Visual inspection: SuperTux editor view with 'SuperTux v0.6.3' and 'Sector: main'; firefly is visible near the icy floor; tilemap alignment looks clean. Minor issue: exact words 'Editor'/'Tilemap' are not visible, though 'Sector: main' is.",
+      "missing_or_wrong": "minor: specific text labels 'Editor' and 'Tilemap' are not visible, but the editor view and 'Sector: main' are readable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_play_finish.png",
+      "task_says": "`/tmp_workspace/results/view_play_finish.png`: image evidence showing the level-completion state, with readable result text such as `Level Finished`, `You Win`, `Bonus`, `goal`, or `completed`.",
+      "spec_clauses": [
+        "PNG exists at /tmp_workspace/results/view_play_finish.png",
+        "shows level-completion state",
+        "has readable result text such as Level Finished, You Win, Bonus, goal, or completed"
+      ],
+      "clause_results": [
+        {"clause": "PNG exists at /tmp_workspace/results/view_play_finish.png", "satisfied": false, "evidence": "No file named view_play_finish.png exists in results/."},
+        {"clause": "shows level-completion state", "satisfied": false, "evidence": "Cannot verify because the required file is absent."},
+        {"clause": "has readable result text such as Level Finished, You Win, Bonus, goal, or completed", "satisfied": false, "evidence": "Cannot verify because the required file is absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "results/ does not contain view_play_finish.png. Chat grep only found this name listed in report.json; no successful screenshot command wrote this required filename.",
+      "missing_or_wrong": "missing file; completion screen and readable result text are unverifiable.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "save_excerpt.sexp",
+      "task_says": "`/tmp_workspace/results/save_excerpt.sexp`: a non-empty S-expression excerpt from the SuperTux progress state, which must parse and relate to progress on the repaired level.",
+      "spec_clauses": [
+        "file exists and is non-empty",
+        "is an S-expression excerpt that parses",
+        "relates to progress on the repaired level"
+      ],
+      "clause_results": [
+        {"clause": "file exists and is non-empty", "satisfied": true, "evidence": "save_excerpt.sexp exists and is 128 bytes."},
+        {"clause": "is an S-expression excerpt that parses", "satisfied": true, "evidence": "sexpdata parsed the excerpt (also parses when wrapped as excerpt)."},
+        {"clause": "relates to progress on the repaired level", "satisfied": true, "evidence": "Contains (level \"levels/weavebench/fixed.stl\") and (status \"completed\")."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "save_excerpt.sexp contains a parseable (level-progress ...) entry for levels/weavebench/fixed.stl with status completed.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "parse_after.json",
+      "task_says": "`/tmp_workspace/results/parse_after.json`: a JSON object with the same schema as `parse_before.json`; for the `infoblock` object it should include `tile_id_under: 0` to demonstrate that it sits on an air cell.",
+      "spec_clauses": [
+        "JSON object has same schema as parse_before.json: sector_size, tilemaps, objects, spawnpoints",
+        "tilemaps entries contain name,width,height,tiles_count,z_pos",
+        "objects entries include firefly and infoblock kind,x,y",
+        "spawnpoints entries contain name,x,y",
+        "infoblock object includes tile_id_under: 0"
+      ],
+      "clause_results": [
+        {"clause": "JSON object has same schema as parse_before.json: sector_size, tilemaps, objects, spawnpoints", "satisfied": true, "evidence": "parse_after.json contains sector_size, tilemaps, objects, spawnpoints."},
+        {"clause": "tilemaps entries contain name,width,height,tiles_count,z_pos", "satisfied": true, "evidence": "Both tilemap entries include name,width,height,tiles_count,z_pos."},
+        {"clause": "objects entries include firefly and infoblock kind,x,y", "satisfied": true, "evidence": "firefly object at (864.0,480.0); infoblock object at (320.0,416.0)."},
+        {"clause": "spawnpoints entries contain name,x,y", "satisfied": true, "evidence": "spawnpoints includes main at x=96.0,y=448.0."},
+        {"clause": "infoblock object includes tile_id_under: 0", "satisfied": true, "evidence": "infoblock object includes tile_id_under: 0."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "parse_after.json matches the parse_before schema and explicitly reports infoblock tile_id_under: 0.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "diff.txt",
+      "task_says": "`/tmp_workspace/results/diff.txt`: textual diff between the original level and `fixed.stl`, between 6 and 200 lines.",
+      "spec_clauses": [
+        "diff.txt exists",
+        "is textual diff between original level and fixed.stl",
+        "line count is between 6 and 200 lines"
+      ],
+      "clause_results": [
+        {"clause": "diff.txt exists", "satisfied": true, "evidence": "diff.txt exists with size 3625 bytes."},
+        {"clause": "is textual diff between original level and fixed.stl", "satisfied": true, "evidence": "Header reads --- results/before/level.stl and +++ levels/fixed.stl, with unified diff hunks."},
+        {"clause": "line count is between 6 and 200 lines", "satisfied": true, "evidence": "diff.txt has 106 lines."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "diff.txt is a 106-line unified diff from results/before/level.stl to levels/fixed.stl.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "report.json",
+      "task_says": "`/tmp_workspace/results/report.json`: a JSON object containing `bugs_found`, `fixes_applied`, `tilemap_stride_after`, `firefly_xy_after`, `infoblock_xy_after`, `playthrough_finished`, `screenshots`, `save_state_file`; `screenshots` lists the four image evidence file names.",
+      "spec_clauses": [
+        "JSON object contains bugs_found",
+        "JSON object contains fixes_applied",
+        "JSON object contains tilemap_stride_after, firefly_xy_after, infoblock_xy_after",
+        "JSON object contains playthrough_finished",
+        "screenshots lists the four image evidence file names",
+        "JSON object contains save_state_file"
+      ],
+      "clause_results": [
+        {"clause": "JSON object contains bugs_found", "satisfied": true, "evidence": "bugs_found lists the three reported bug classes."},
+        {"clause": "JSON object contains fixes_applied", "satisfied": true, "evidence": "fixes_applied lists stride expansion, moving firefly, moving infoblock, camera/spawn/end trigger changes."},
+        {"clause": "JSON object contains tilemap_stride_after, firefly_xy_after, infoblock_xy_after", "satisfied": true, "evidence": "tilemap_stride_after=30, firefly_xy_after=[864,480], infoblock_xy_after=[320,416]."},
+        {"clause": "JSON object contains playthrough_finished", "satisfied": "partial", "evidence": "Field is present and true, but the required completion screenshot is missing, so the claim is not independently verified from deliverables."},
+        {"clause": "screenshots lists the four image evidence file names", "satisfied": "partial", "evidence": "screenshots lists all four required names, but three of those files are absent from results/."},
+        {"clause": "JSON object contains save_state_file", "satisfied": true, "evidence": "save_state_file is 'save_excerpt.sexp'."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.83,
+      "evidence_quote": "report.json has all required keys and plausible fix summaries, but it claims four screenshots and playthrough_finished=true while view_editor_before.png, view_play_bug.png, and view_play_finish.png are missing.",
+      "missing_or_wrong": "partial: playthrough_finished is not backed by required completion screenshot; screenshots list names of three absent files.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.65, "reason": "Core parsing, bug detection, fixed level, diff, report, save excerpt, and one editor-after screenshot are present (parse_before.json, bugs.json, fixed.stl, parse_after.json, diff.txt, save_excerpt.sexp, report.json, view_editor_after.png). However three required image deliverables are missing: view_editor_before.png, view_play_bug.png, and view_play_finish.png, so the visual and completion-evidence goal is only partially achieved."},
+    "deliverable_correctness": {"score": 0.70, "reason": "Most non-image artifacts are correct, but per strict rules any artifact below 0.6 caps this dimension. Missing image artifacts view_editor_before.png, view_play_bug.png, and view_play_finish.png each score 0.0; fixed.stl has a partial sector-size issue; report.json overclaims missing screenshots."},
+    "deliverable_quality": {"score": 0.72, "reason": "All present JSON/S-expression/text files parse or are readable, and view_editor_after.png is a real PNG. Quality is substantially reduced because 3 of 4 required named screenshots are absent and fixed.stl omits an explicit sector size."},
+    "evidence_authenticity": {"score": 0.75, "reason": "No fabrication grep signals were found and view_editor_after.png was created by a real gnome-screenshot command. But the report claims playthrough completion and lists screenshots that are absent, leaving major evidence unverified rather than authenticated."},
+    "tool_use_correctness": {"score": 0.65, "reason": "The rollout used parsing/file generation and did capture one real editor screenshot, but it failed to stage/save the required before-editor, bug-state, and finish-state screenshots despite interacting with SuperTux, so tool use did not fully satisfy the visual-evidence requirements."},
+    "final_state_correctness": {"score": 0.65, "reason": "The repaired level mostly satisfies geometry invariants and save_excerpt.sexp says fixed.stl is completed, but final completion state is not demonstrated by the required view_play_finish.png and fixed.stl lacks an explicit sector size clause."},
+    "efficiency_robustness": {"score": 0.55, "reason": "The agent made many attempts and recovered enough to produce most file artifacts, but robustness was poor: several required screenshots were never saved to their required paths and the final report was inconsistent with staged results."},
+    "instruction_following": {"score": 0.60, "reason": "Required field names and many filenames were followed for JSON/text outputs, but the explicit deliverable list was not completed because three named PNG deliverables are missing; report.json still lists them, which violates strict evidence expectations."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.659,
+  "summary": "The rollout successfully parsed and repaired much of the level structure, documented the three geometry bugs, produced parseable JSON/text evidence, and staged one credible post-repair editor screenshot. It fails strict completion because view_editor_before.png, view_play_bug.png, and view_play_finish.png are missing, and report.json claims those screenshots and completion despite the absent evidence. No hack pattern was detected."
+}

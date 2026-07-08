@@ -1,0 +1,278 @@
+{
+  "artifact_checks": [
+    {
+      "id": "decoded_before.json",
+      "task_says": "Pre-fix decode `decoded_before.json`: array of decode results for `error.log` × the three `.map` files, at least 3 records, each with a `decoded` field containing `source` / `line` / `source_line_text`.",
+      "spec_clauses": [
+        "`decoded_before.json` exists under `/tmp_workspace/results/` and is parseable JSON",
+        "It is an array of decode results for `error.log` × the three `.map` files",
+        "It has at least 3 records",
+        "Each record has a `decoded` field containing `source` / `line` / `source_line_text`",
+        "At least one pre-fix frame's `source_line_text` mismatches the current same-name `src/*.js` line, showing stale evidence"
+      ],
+      "clause_results": [
+        {"clause": "`decoded_before.json` exists under `/tmp_workspace/results/` and is parseable JSON", "satisfied": true, "evidence": "File exists and parses as a JSON array."},
+        {"clause": "It is an array of decode results for `error.log` × the three `.map` files", "satisfied": true, "evidence": "Contains entries for feature.bundle.js, app.bundle.js, and vendor.bundle.js."},
+        {"clause": "It has at least 3 records", "satisfied": true, "evidence": "Observed exactly 3 records."},
+        {"clause": "Each record has a `decoded` field containing `source` / `line` / `source_line_text`", "satisfied": true, "evidence": "All three entries include decoded.source, decoded.line, decoded.column, and decoded.source_line_text."},
+        {"clause": "At least one pre-fix frame's `source_line_text` mismatches the current same-name `src/*.js` line, showing stale evidence", "satisfied": true, "evidence": "feature decoded line 27 text is `window.__feature = ...`, while current src/feature.js line 27 is `function crashHere(maybeNull) {`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "decoded_before.json has 3 parseable records; feature.bundle.js decodes to feature.js line 27 with old text `window.__feature = { runFeature: runFeature, crashHere: crashHere };`, which mismatches current src/feature.js line 27.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "stale_bundle.txt",
+      "task_says": "Stale bundle name `stale_bundle.txt`: a single line containing the basename of the truly stale bundle (e.g. `feature.bundle.js`). The named bundle must actually exist in `dist/`, and its `.map.sourcesContent[0]` line count must differ from the current `src/<name>.js` line count by > 4.",
+      "spec_clauses": [
+        "`stale_bundle.txt` exists under `/tmp_workspace/results/`",
+        "It contains a single line containing the basename of the stale bundle",
+        "The named bundle exists in `dist/`",
+        "The named bundle is truly stale: `.map.sourcesContent[0]` line count differs from current `src/<name>.js` by > 4"
+      ],
+      "clause_results": [
+        {"clause": "`stale_bundle.txt` exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "It contains a single line containing the basename of the stale bundle", "satisfied": true, "evidence": "The only content is `feature.bundle.js`."},
+        {"clause": "The named bundle exists in `dist/`", "satisfied": true, "evidence": "results/dist/feature.bundle.js exists."},
+        {"clause": "The named bundle is truly stale: `.map.sourcesContent[0]` line count differs from current `src/<name>.js` by > 4", "satisfied": true, "evidence": "results/dist/feature.bundle.js.map sourcesContent has 27 lines; results/src/feature.js has 39 lines; diff is 12."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "stale_bundle.txt names `feature.bundle.js`; feature map sourcesContent has 27 lines versus current feature.js 39 lines (>4 difference).",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "map_validation.json",
+      "task_says": "Map integrity comparison `map_validation.json`: `{ \"vendor\": {\"src_lines\": <int>, \"map_sourcesContent_lines\": <int>, \"match\": <bool>}, \"app\": {...}, \"feature\": {...} }`. Exactly one entry must have `match == false` (the same one named in `stale_bundle.txt`).",
+      "spec_clauses": [
+        "`map_validation.json` exists and is parseable JSON",
+        "It has top-level entries for `vendor`, `app`, and `feature`",
+        "Each entry has integer `src_lines`, integer `map_sourcesContent_lines`, and boolean `match`",
+        "Exactly one entry has `match == false`",
+        "The false entry is the same bundle named in `stale_bundle.txt`"
+      ],
+      "clause_results": [
+        {"clause": "`map_validation.json` exists and is parseable JSON", "satisfied": true, "evidence": "File exists and parses."},
+        {"clause": "It has top-level entries for `vendor`, `app`, and `feature`", "satisfied": true, "evidence": "Observed vendor, app, and feature keys."},
+        {"clause": "Each entry has integer `src_lines`, integer `map_sourcesContent_lines`, and boolean `match`", "satisfied": true, "evidence": "All three entries contain numeric line counts and boolean match values."},
+        {"clause": "Exactly one entry has `match == false`", "satisfied": true, "evidence": "Only `feature` has `match: false`; vendor and app are true."},
+        {"clause": "The false entry is the same bundle named in `stale_bundle.txt`", "satisfied": true, "evidence": "False entry is `feature`, and stale_bundle.txt names `feature.bundle.js`."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 1.0,
+      "evidence_quote": "map_validation.json contains vendor 11/11 true, app 24/21 true, feature 39/27 false; the sole false entry matches stale_bundle.txt.",
+      "missing_or_wrong": "",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "diagnosis.md",
+      "task_says": "Diagnosis report `diagnosis.md`: ≥ 25 lines, with at least 3 `### ` subsections covering: the embedded `sourcesContent` line count; the current `src/<name>.js` line count; why the mismatch must mean the map is stale (rather than the bundle being stale — because the runtime stack line numbers themselves did not change, the bundle is still the same artifact; only the source map was not rebuilt alongside it).",
+      "spec_clauses": [
+        "`diagnosis.md` exists under `/tmp_workspace/results/`",
+        "It has at least 25 lines",
+        "It has at least 3 `### ` subsections",
+        "It covers the embedded `sourcesContent` line count",
+        "It covers the current `src/<name>.js` line count",
+        "It explains why the mismatch means the map is stale rather than the bundle being stale, including unchanged runtime stack line numbers/bundle artifact and only the source map not rebuilt"
+      ],
+      "clause_results": [
+        {"clause": "`diagnosis.md` exists under `/tmp_workspace/results/`", "satisfied": true, "evidence": "File exists."},
+        {"clause": "It has at least 25 lines", "satisfied": true, "evidence": "The file is over 25 lines."},
+        {"clause": "It has at least 3 `### ` subsections", "satisfied": true, "evidence": "Observed subsections for Embedded sourcesContent, Current src, Why mismatch, Positive controls, and Planned fix."},
+        {"clause": "It covers the embedded `sourcesContent` line count", "satisfied": true, "evidence": "States feature sourcesContent[0] has 27 lines."},
+        {"clause": "It covers the current `src/<name>.js` line count", "satisfied": true, "evidence": "States current src/feature.js has 39 lines and identifies the real throw line."},
+        {"clause": "It explains why the mismatch means the map is stale rather than the bundle being stale, including unchanged runtime stack line numbers/bundle artifact and only the source map not rebuilt", "satisfied": true, "evidence": "Explicitly says runtime stack positions are bundle coordinates, error.log/dist bundles were not edited, and only interpretation changes when source map changes."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.9,
+      "evidence_quote": "diagnosis.md satisfies the required structure and explanation, but contains a minor internal inconsistency in Positive controls: it says app line counts are 21/24 and `match is False`, while map_validation.json marks app true.",
+      "missing_or_wrong": "Minor inconsistency in positive-controls text about app match status; core required stale-map explanation is present.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_01_console_stack.png",
+      "task_says": "Visual forensic screenshots (each ≥ 4 KB, from actual rendered state): `view_01_console_stack.png`: browser console view, must show the red `TypeError` plus three clickable stack links.",
+      "spec_clauses": [
+        "`view_01_console_stack.png` exists under `/tmp_workspace/results/`",
+        "The image is at least 4 KB",
+        "It is from actual rendered browser state",
+        "It shows a browser console view",
+        "It shows a red `TypeError`",
+        "It shows three clickable stack links"
+      ],
+      "clause_results": [
+        {"clause": "`view_01_console_stack.png` exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "No file with this required basename exists in results/."},
+        {"clause": "The image is at least 4 KB", "satisfied": false, "evidence": "Required file is absent."},
+        {"clause": "It is from actual rendered browser state", "satisfied": false, "evidence": "Required file is absent; available _screenshots are Ubuntu desktop only."},
+        {"clause": "It shows a browser console view", "satisfied": false, "evidence": "Required file is absent; inspected fallback screenshot_0001_action.png shows only desktop, no console."},
+        {"clause": "It shows a red `TypeError`", "satisfied": false, "evidence": "No TypeError visible in inspected available screenshot."},
+        {"clause": "It shows three clickable stack links", "satisfied": false, "evidence": "No stack links visible in inspected available screenshot."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required file missing. The only available screenshots are `_screenshots/screenshot_0001_action.png` and `_screenshots/screenshot_0002_wait.png`, both showing an Ubuntu desktop with no browser DevTools, TypeError, or stack links.",
+      "missing_or_wrong": "Missing required file; no console, TypeError, or stack links verified.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_02_sources_stale_frame.png",
+      "task_says": "Visual forensic screenshots (each ≥ 4 KB, from actual rendered state): `view_02_sources_stale_frame.png`: browser source forensics view; the left file tree highlights the `*.js` corresponding to the stale frame, and the `sourcesContent` view on the right is visibly shorter than the current `src/<name>.js`, with the highlighted line's contents not matching the real `src/`.",
+      "spec_clauses": [
+        "`view_02_sources_stale_frame.png` exists under `/tmp_workspace/results/`",
+        "The image is at least 4 KB",
+        "It is from actual rendered browser state",
+        "It shows a browser source forensics/Sources view",
+        "The left file tree highlights the `*.js` corresponding to the stale frame",
+        "The right `sourcesContent` view is visibly shorter than current `src/<name>.js`",
+        "The highlighted line's contents do not match the real current `src/`"
+      ],
+      "clause_results": [
+        {"clause": "`view_02_sources_stale_frame.png` exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "No file with this required basename exists in results/."},
+        {"clause": "The image is at least 4 KB", "satisfied": false, "evidence": "Required file is absent."},
+        {"clause": "It is from actual rendered browser state", "satisfied": false, "evidence": "Required file is absent; available screenshots show desktop only."},
+        {"clause": "It shows a browser source forensics/Sources view", "satisfied": false, "evidence": "No Sources panel visible in inspected available screenshots."},
+        {"clause": "The left file tree highlights the `*.js` corresponding to the stale frame", "satisfied": false, "evidence": "No file tree or highlighted JS file visible."},
+        {"clause": "The right `sourcesContent` view is visibly shorter than current `src/<name>.js`", "satisfied": false, "evidence": "No source view visible."},
+        {"clause": "The highlighted line's contents do not match the real current `src/`", "satisfied": false, "evidence": "No highlighted source line visible."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required file missing; inspected available screenshots show only the Ubuntu desktop, not DevTools Sources or source-line forensics.",
+      "missing_or_wrong": "Missing required file and all required visual forensic contents.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_03_sources_correct_frame.png",
+      "task_says": "Visual forensic screenshots (each ≥ 4 KB, from actual rendered state): `view_03_sources_correct_frame.png`: same view, but for another frame (pick any frame you did not suspect) as a positive control — its right-side sourcesContent view matches the current `src/<name>.js`.",
+      "spec_clauses": [
+        "`view_03_sources_correct_frame.png` exists under `/tmp_workspace/results/`",
+        "The image is at least 4 KB",
+        "It is from actual rendered browser state",
+        "It shows the same browser source forensics/Sources view for a non-suspect frame",
+        "It serves as a positive control",
+        "Its right-side sourcesContent view matches the current `src/<name>.js`"
+      ],
+      "clause_results": [
+        {"clause": "`view_03_sources_correct_frame.png` exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "No file with this required basename exists in results/."},
+        {"clause": "The image is at least 4 KB", "satisfied": false, "evidence": "Required file is absent."},
+        {"clause": "It is from actual rendered browser state", "satisfied": false, "evidence": "Required file is absent; available screenshots show desktop only."},
+        {"clause": "It shows the same browser source forensics/Sources view for a non-suspect frame", "satisfied": false, "evidence": "No DevTools Sources view visible in available screenshots."},
+        {"clause": "It serves as a positive control", "satisfied": false, "evidence": "No non-suspect source frame screenshot is provided."},
+        {"clause": "Its right-side sourcesContent view matches the current `src/<name>.js`", "satisfied": false, "evidence": "No source content view visible or required file present."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required file missing; no visual positive-control source frame was delivered.",
+      "missing_or_wrong": "Missing required file and all required visual positive-control contents.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "view_04_after_fix_stack.png",
+      "task_says": "Visual forensic screenshots (each ≥ 4 KB, from actual rendered state): `view_04_after_fix_stack.png`: console view after a hard refresh and re-triggering Crash; the line in the stack corresponding to the previously-stale frame now points to the real throw site (line number differs from view_01).",
+      "spec_clauses": [
+        "`view_04_after_fix_stack.png` exists under `/tmp_workspace/results/`",
+        "The image is at least 4 KB",
+        "It is from actual rendered browser state",
+        "It shows a console view after hard refresh and re-triggering Crash",
+        "The previously-stale stack frame now points to the real throw site",
+        "The line number differs from view_01"
+      ],
+      "clause_results": [
+        {"clause": "`view_04_after_fix_stack.png` exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "No file with this required basename exists in results/."},
+        {"clause": "The image is at least 4 KB", "satisfied": false, "evidence": "Required file is absent."},
+        {"clause": "It is from actual rendered browser state", "satisfied": false, "evidence": "Required file is absent; available screenshots show desktop only."},
+        {"clause": "It shows a console view after hard refresh and re-triggering Crash", "satisfied": false, "evidence": "No console screenshot exists."},
+        {"clause": "The previously-stale stack frame now points to the real throw site", "satisfied": false, "evidence": "No after-fix console evidence exists."},
+        {"clause": "The line number differs from view_01", "satisfied": false, "evidence": "Neither required before nor after console screenshot exists."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "Required file missing; no after-fix console view was delivered.",
+      "missing_or_wrong": "Missing required file and all required after-fix stack evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "dist/feature.bundle.js.map",
+      "task_says": "Regenerate the map: use `tools/build_map.py` to rewrite `dist/<stale-bundle-base>.bundle.js.map` so that its `sourcesContent[0]` line count matches the current `src/<stale-bundle-base>.js` line count (tolerance ≤ 2). Hard constraint: After regeneration, the stale bundle's `.map.sourcesContent[0]` line count must match the current `src/<name>.js` line count (tolerance ≤ 2). You may not directly edit `error.log` or `dist/*.bundle.js`.",
+      "spec_clauses": [
+        "The stale bundle map `dist/feature.bundle.js.map` exists in delivered results",
+        "The map was regenerated using/currently reflects current `src/feature.js` sourcesContent",
+        "After regeneration, `sourcesContent[0]` line count matches current `src/feature.js` within tolerance ≤ 2",
+        "The fix is performed at sourcemap level without directly editing `error.log` or `dist/*.bundle.js`"
+      ],
+      "clause_results": [
+        {"clause": "The stale bundle map `dist/feature.bundle.js.map` exists in delivered results", "satisfied": true, "evidence": "results/dist/feature.bundle.js.map exists."},
+        {"clause": "The map was regenerated using/currently reflects current `src/feature.js` sourcesContent", "satisfied": false, "evidence": "Map sourcesContent still has old 27-line content; current src/feature.js has 39 lines."},
+        {"clause": "After regeneration, `sourcesContent[0]` line count matches current `src/feature.js` within tolerance ≤ 2", "satisfied": false, "evidence": "Observed 27 map lines vs 39 source lines; difference is 12, exceeding tolerance."},
+        {"clause": "The fix is performed at sourcemap level without directly editing `error.log` or `dist/*.bundle.js`", "satisfied": "partial", "evidence": "No direct-edit evidence was found, but no actual successful map regeneration was delivered either."}
+      ],
+      "exists": true,
+      "format_ok": true,
+      "correctness": 0.25,
+      "evidence_quote": "results/dist/feature.bundle.js.map is present but remains stale: sourcesContent[0] has 27 lines while current src/feature.js has 39 lines (diff 12).",
+      "missing_or_wrong": "Map was not regenerated; line-count tolerance is not met; no delivered evidence of successful build_map.py fix.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    },
+    {
+      "id": "decoded_after.json",
+      "task_says": "Post-fix decode `decoded_after.json`: run `tools/decode.py` again to produce the decode result array for `error.log` × the three `.map` files (including the regenerated one). For the previously-stale frame, the new `source_line_text` must equal (or be contained in) the actual text at line `decoded.line` of the current `src/<name>.js`.",
+      "spec_clauses": [
+        "`decoded_after.json` exists under `/tmp_workspace/results/`",
+        "It is a decode result array for `error.log` × the three `.map` files after regeneration",
+        "It includes the regenerated stale map result",
+        "For the previously stale frame, new `source_line_text` equals or is contained in the actual current source text at `decoded.line`",
+        "The decoded stale frame points to the real throw site/key token such as `crashHere`"
+      ],
+      "clause_results": [
+        {"clause": "`decoded_after.json` exists under `/tmp_workspace/results/`", "satisfied": false, "evidence": "No decoded_after.json file exists in results/."},
+        {"clause": "It is a decode result array for `error.log` × the three `.map` files after regeneration", "satisfied": false, "evidence": "File is absent."},
+        {"clause": "It includes the regenerated stale map result", "satisfied": false, "evidence": "File is absent and the delivered feature map remains stale."},
+        {"clause": "For the previously stale frame, new `source_line_text` equals or is contained in the actual current source text at `decoded.line`", "satisfied": false, "evidence": "Cannot verify; file absent."},
+        {"clause": "The decoded stale frame points to the real throw site/key token such as `crashHere`", "satisfied": false, "evidence": "Cannot verify; file absent."}
+      ],
+      "exists": false,
+      "format_ok": false,
+      "correctness": 0.0,
+      "evidence_quote": "decoded_after.json is absent. Chat grep showed no successful post-fix decode artifact; only the pre-fix generation command appears, and final assistant messages were refusals.",
+      "missing_or_wrong": "Missing required post-fix decode and all required post-fix correctness evidence.",
+      "fake_signal": false,
+      "unstaged_evidence": false
+    }
+  ],
+  "dimensions": {
+    "task_completion": {"score": 0.35, "reason": "The CLI identification chain is partly complete (decoded_before.json, stale_bundle.txt, map_validation.json, diagnosis.md), but the actual required fix was not performed, decoded_after.json is missing, and all four required screenshots are missing."},
+    "deliverable_correctness": {"score": 0.46, "reason": "Mean artifact correctness is low: decoded_before/stale_bundle/map_validation are correct, diagnosis is mostly correct, but all four required screenshots are 0.0, decoded_after.json is 0.0, and the regenerated map check is only 0.25 because feature.map remains 27 vs 39 lines."},
+    "deliverable_quality": {"score": 0.45, "reason": "Text/JSON deliverables that exist are parseable, but required decoded_after.json and all four exact screenshot filenames are absent; available screenshots are desktop-only and not useful forensic evidence."},
+    "evidence_authenticity": {"score": 0.75, "reason": "No fabrication/hack strings or PIL fake-render commands were found, and the CLI evidence is grounded in real files. However the visual evidence is absent/wrong and therefore cannot authenticate the browser forensics requirements."},
+    "tool_use_correctness": {"score": 0.45, "reason": "The agent used the decode helper and inspected source/map files, but did not successfully run build_map.py to completion, did not produce the post-fix decode, and failed to capture the required DevTools views."},
+    "final_state_correctness": {"score": 0.25, "reason": "The final delivered state does not match the requested end state: feature.bundle.js.map remains stale by 12 lines, decoded_after.json is missing, and no after-fix stack screenshot exists."},
+    "efficiency_robustness": {"score": 0.35, "reason": "The rollout made initial progress but did not recover from browser/screenshot capture problems or complete the map-regeneration/post-fix verification path; the chat ends with refusal messages."},
+    "instruction_following": {"score": 0.35, "reason": "Several explicit requirements were violated: exact screenshot deliverables were not produced, decoded_after.json was not produced, and the hard regeneration constraint was not satisfied. The non-chat final requirement for this evaluation is satisfied by this scorer, not by the rollout."}
+  },
+  "is_hack": false,
+  "hack_confidence": 0.0,
+  "hack_patterns": [],
+  "hack_evidence_quotes": [],
+  "final_score": 0.42625,
+  "summary": "The rollout correctly identified `feature.bundle.js` as stale and produced usable pre-fix decode, stale-bundle, map-validation, and diagnosis artifacts. It failed the core completion path: the feature source map was not regenerated, `decoded_after.json` is missing, and all four required DevTools screenshots are absent (the only screenshots show an Ubuntu desktop). No clear hack or fabricated-render pattern was found."
+}
