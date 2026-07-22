@@ -79,21 +79,44 @@ The judge then checks an explicit **cross-channel evidence chain** (`cross_chann
 
 **Anti-gaming is built in:** text dumps must trace back to real broker queries in the action log (no `echo`-ing the answer), and screenshots must be real Management-UI renders — a PIL-drawn PNG that satisfies a file-existence check gets zeroed by the judge's VLM rubric.
 
-## 🏅 Leaderboard (from the paper)
+## 🏅 Leaderboard
 
-**Table 1 — Fixed harness (OpenClaw), varying backbone.** PR = PassRate (%) at τ=0.80; Overall = mean per-task score over all 114 tasks. Per-domain columns are PassRate.
+Every reported **model × harness** pairing over the full 114-task suite, ranked by PassRate. PR = PassRate (%) at τ=0.80; Overall = mean per-task score. Per-domain columns are PassRate for DSK (Desktop), DOC (Document), GAM (Games), WEB (Web Dev), DAV (Data Analysis & Viz), OPS (DevOps), SPA (Spatial/3D), DES (Design). This board is live — [submit your own pairing](#-submit-your-results) to be added.
+
+| # | Model | Harness | PR ↑ | Overall ↑ | DSK | DOC | GAM | WEB | DAV | OPS | SPA | DES |
+|--:|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| 1 | Claude Opus 4.7 | Claude Code | **41.2** | 0.532 | 55.6 | 47.1 | 23.5 | 53.3 | 23.1 | 50.0 | 33.3 | 40.0 |
+| 2 | GPT-5.5 | Codex CLI | 35.1 | 0.499 | 38.9 | 29.4 | 23.5 | 53.3 | 15.4 | 50.0 | 58.3 | 10.0 |
+| 3 | Claude Opus 4.7 | OpenClaw | 35.1 | 0.482 | 55.6 | 29.4 | 23.5 | 66.7 | 15.4 | 41.7 | 16.7 | 20.0 |
+| 4 | GPT-5.5 | OpenClaw | 33.3 | 0.466 | 38.9 | 35.3 | 35.3 | 21.4 | 23.1 | 38.5 | 33.3 | 40.0 |
+| 5 | GPT-5.5 | Hermes | 31.6 | 0.466 | 55.6 | 29.4 | 35.3 | 40.0 | 7.7 | 25.0 | 25.0 | 20.0 |
+| 6 | Seed 2.1 pro | Claude Code | 30.7 | 0.551 | 44.4 | 41.2 | 17.6 | 40.0 | 30.8 | 8.3 | 33.3 | 20.0 |
+| 7 | Seed 2.1 turbo | Claude Code | 28.9 | 0.571 | 38.9 | 35.3 | 17.6 | 33.3 | 30.8 | 16.7 | 33.3 | 20.0 |
+| 8 | Claude Opus 4.7 | Hermes | 28.1 | 0.516 | 33.3 | 47.1 | 11.8 | 26.7 | 30.8 | 50.0 | 8.3 | 10.0 |
+| 9 | GPT-5.4 | OpenClaw | 22.8 | 0.465 | 55.6 | 35.3 | 5.9 | 0.0 | 23.1 | 23.1 | 8.3 | 20.0 |
+| 10 | GPT-5.3-codex | OpenClaw | 18.4 | 0.456 | 33.3 | 23.5 | 29.4 | 0.0 | 7.7 | 16.7 | 8.3 | 20.0 |
+| 11 | GPT-5.5 | Claude Code | 14.9 | 0.299 | 33.3 | 11.8 | 11.8 | 0.0 | 15.4 | 16.7 | 25.0 | 0.0 |
+| 12 | Claude Opus 4.7 | Codex CLI | 13.2 | 0.378 | 16.7 | 11.8 | 11.8 | 6.7 | 7.7 | 25.0 | 16.7 | 10.0 |
+| 13 | GPT-5.2-codex | OpenClaw | 6.1 | 0.321 | 5.6 | 11.8 | 0.0 | 0.0 | 15.4 | 16.7 | 0.0 | 0.0 |
+| 14 | GPT-5.1-codex | OpenClaw | 1.8 | 0.226 | 0.0 | 5.9 | 0.0 | 0.0 | 7.7 | 0.0 | 0.0 | 0.0 |
+| 15 | Gemini 3.1 Pro | OpenClaw | 1.8 | 0.223 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 8.3 | 8.3 | 0.0 |
+| 16 | Qwen3.5-397B-A17B | OpenClaw | 0.9 | 0.318 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 8.3 | 0.0 | 0.0 |
+| 17 | Qwen3-VL-8B-Think | OpenClaw | 0.9 | 0.092 | 0.0 | 0.0 | 0.0 | 0.0 | 8.3 | 0.0 | 0.0 | 0.0 |
+| 18 | GUI-Owl-1.5-32B | OpenClaw | 0.0 | 0.065 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+> Two findings the numbers make concrete: **(1)** frontier backbones report >78% on OSWorld-Verified — WeaveBench is **far from saturation**; **(2)** runtime alignment matters as much as the model — the *same* GPT-5.5 API swings **20 pts** (35.1% on Codex CLI → 14.9% on Claude Code). The two most GUI-heavy domains (SPA, DES) are the bottom of the table for nearly every backbone, pinning the GUI side as the binding constraint. Reproduce exactly with [`docs/REPRODUCE.md`](./docs/REPRODUCE.md).
+
+<details>
+<summary>Original paper tables (Table 1: fixed OpenClaw × backbone · Table 2: strongest APIs × 4 runtimes)</summary>
 
 <p align="center">
   <img src="./docs/media/leaderboard_table1.png" width="100%" alt="WeaveBench Table 1: model API comparison on a fixed OpenClaw runtime" />
 </p>
-
-**Table 2 — Strongest APIs × 4 agent runtimes.** Same model API, runtime swapped. The model on its native runtime dominates; cross-pairing collapses.
-
 <p align="center">
   <img src="./docs/media/leaderboard_table2.png" width="100%" alt="WeaveBench Table 2: strongest model APIs across four agent runtimes" />
 </p>
 
-> Two findings the numbers make concrete: **(1)** frontier backbones report >78% on OSWorld-Verified — WeaveBench is **far from saturation**; **(2)** runtime alignment matters as much as the model — the *same* GPT-5.5 API swings **20 pts** (35.1% on Codex CLI → 14.9% on Claude Code). The two most GUI-heavy domains (SPA, DES) are the bottom of the table for nearly every backbone, pinning the GUI side as the binding constraint. Reproduce exactly with [`docs/REPRODUCE.md`](./docs/REPRODUCE.md); [submit your own pairing](#-submit-your-results).
+</details>
 
 ## The trajectory-aware judge — and why outcome-only grading lies
 
