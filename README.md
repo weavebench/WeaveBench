@@ -33,6 +33,10 @@
 
 **Headline** — Best model-runtime pairing (Claude Opus 4.7 + Claude Code) = **41.2% PassRate**, vs >78% the same backbones reach on OSWorld-Verified.
 
+## Related Benchmarks
+
+- **[ClawBench](https://claw-bench.com/)** — A complementary live-web benchmark with 153 real-world tasks across 144 websites and safe request interception for reproducible evaluation. [Paper](https://arxiv.org/abs/2604.08523) · [Code](https://github.com/TIGER-AI-Lab/ClawBench)
+
 ## 🎬 Demo
 
 https://github.com/weavebench/WeaveBench/raw/main/docs/media/rabbitmq_dlq_demo.mp4
