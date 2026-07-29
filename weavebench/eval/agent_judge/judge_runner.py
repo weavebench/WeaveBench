@@ -46,6 +46,7 @@ import os
 import shutil
 import subprocess
 import time
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -117,8 +118,13 @@ def _provision_isolated(case_id: str, stage_dir: Path,
     still resolves.
     """
     iso_root.mkdir(parents=True, exist_ok=True)
-    iso_state = iso_root / f"state_{case_id}"
-    iso_ws = iso_root / f"ws_{case_id}"
+    # Dir names must be unique per invocation, not per case: concurrent judges for the
+    # same task id (k>1 eval runs finishing together) would otherwise rmtree each
+    # other's live state mid-session (observed 2026-07-29: openclaw rc=1, no score.json).
+    # The agent-visible path stays ./_eval/<case_id>/ inside the workspace.
+    run_tag = f"{os.getpid()}_{uuid.uuid4().hex[:8]}"
+    iso_state = iso_root / f"state_{case_id}__{run_tag}"
+    iso_ws = iso_root / f"ws_{case_id}__{run_tag}"
     if iso_state.exists():
         shutil.rmtree(iso_state)
     if iso_ws.exists():
