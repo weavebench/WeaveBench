@@ -3,6 +3,7 @@
 > **WeaveBench: A Long-Horizon, Real-World Benchmark for Computer-Use Agents with Hybrid Interfaces**
 
 <p align="center">
+<a href="https://2026.emnlp.org/"><img src="https://img.shields.io/badge/EMNLP_2026-Main_Conference-b5179e.svg?style=flat-square" alt="EMNLP 2026 Main Conference" /></a>
 <a href="https://arxiv.org/abs/2606.09426"><img src="https://img.shields.io/badge/arXiv-2606.09426-b31b1b.svg?style=flat-square" alt="arXiv" /></a>
 <a href="https://weavebench.github.io"><img src="https://img.shields.io/badge/🌐-Website-1f6feb.svg?style=flat-square" alt="Website" /></a>
 <a href="https://huggingface.co/datasets/wanlilll/WeaveBench"><img src="https://img.shields.io/badge/🤗-Dataset-ffce00.svg?style=flat-square" alt="Dataset" /></a>
