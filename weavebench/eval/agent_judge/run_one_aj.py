@@ -99,8 +99,17 @@ def _parse_agent_log_markers(agent_log: Path) -> dict:
 # because a bare refusal ("I'm sorry, ...") still emits a few dozen tokens.
 EMPTY_RUN_OUTPUT_TOKENS = 8
 
+# aggregate_chat_jsonl only understands openclaw's message.usage records, so on
+# codex/hermes (whose chat.jsonl uses a different record schema) it reports
+# n_calls=0 / output=0 even for a rich, multi-MB transcript. A chat.jsonl this
+# large therefore proves the agent DID run — we must not call it an empty_run on
+# the strength of an unparseable token count alone. Empty/failed runs leave a
+# tiny (or absent) chat.jsonl, well under this bound.
+NONEMPTY_CHAT_BYTES = 4096
 
-def _classify_agent_status(agent_done, markers: dict, token_usage: dict) -> dict:
+
+def _classify_agent_status(agent_done, markers: dict, token_usage: dict,
+                           chat_bytes: int = 0) -> dict:
     """Unified post-run health verdict for ALL four harnesses.
 
     Returns a dict {status, reason, agent_exit, retries_used} where status is:
@@ -134,11 +143,15 @@ def _classify_agent_status(agent_done, markers: dict, token_usage: dict) -> dict
         return verdict
 
     # agent_done True (or unknown) and no non-zero exit: did the model actually
-    # produce anything? Use the token aggregation we already computed.
+    # produce anything? Use the token aggregation we already computed. But guard
+    # against aggregate_chat_jsonl's openclaw-only parsing: on codex/hermes it
+    # returns n_calls=0 even for a full transcript, so a large chat.jsonl vetoes
+    # the empty_run verdict (the agent clearly ran; we just can't count tokens).
     tu_ok = bool(token_usage.get("ok"))
     n_calls = token_usage.get("n_calls") or 0
     output = token_usage.get("output") or 0
-    if tu_ok and (n_calls == 0 or output <= EMPTY_RUN_OUTPUT_TOKENS):
+    if (tu_ok and (n_calls == 0 or output <= EMPTY_RUN_OUTPUT_TOKENS)
+            and chat_bytes < NONEMPTY_CHAT_BYTES):
         verdict["status"] = "empty_run"
         rsuffix = f", retries_used={retries_used}" if retries_used else ""
         verdict["reason"] = (f"clean exit but no model output "
@@ -211,9 +224,11 @@ def run_one_aj(env, agent: "OpenClawAgent", task: dict, mode: str,
         #     agent_done=True + AGENT_EXIT=0 alone cannot distinguish.
         agent_log = output_dir / "agent.log"
         markers = _parse_agent_log_markers(agent_log)
+        chat_path = output_dir / "chat.jsonl"
+        chat_bytes = chat_path.stat().st_size if chat_path.exists() else 0
         verdict = _classify_agent_status(
             record.get("agent_done"), markers,
-            record.get("agent_token_usage") or {})
+            record.get("agent_token_usage") or {}, chat_bytes)
         record["agent_status"] = verdict["status"]
         record["retries_used"] = verdict["retries_used"]
         record["agent_exit"] = verdict["agent_exit"]
